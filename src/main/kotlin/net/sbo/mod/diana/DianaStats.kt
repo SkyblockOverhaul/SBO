@@ -1,6 +1,5 @@
 package net.sbo.mod.diana
 
-import jdk.jfr.Percentage
 import net.sbo.mod.overlays.DianaLoot
 import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.utils.Helper
@@ -14,38 +13,40 @@ import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
 // TODO Once majority of people are on 0.7.2 or above, change the party message to send with [SBO] prefix in front.
-object DianaStats {
+internal object DianaStats {
     private val STATS_PATTERN: Pattern = Pattern.compile(
-        "§9Party §8> (.*?)§f: (?:\\[SBO\\] )?Playtime: (.*?) - Profit: (.*?) - (.*?) - Burrows: (.*?) \\((.*?)\\) - Mobs: (.*?) \\((.*?)\\) - Inquisitors: (.*?) \\((.*?)\\) - LS Inqs: (.*?) - Chimeras: (.*?) \\((.*?)\\) - LS: (.*?) \\((.*?)\\) - Sticks: (.*?) \\((.*?)\\) - Relics: (.*?) \\((.*?)\\)(.*?)",
+        """
+        §9Party §8> (.*?)§f: (?:\[SBO\] )?Playtime: (.*?) - Profit: (.*?) - (.*?) - Burrows: (.*?) \((.*?)\) - Mobs: (.*?) \((.*?)\) - Inquisitors: (.*?) \((.*?)\) - LS Inqs: (.*?) - Chimeras: (.*?) \((.*?)\) - LS: (.*?) \((.*?)\) - Sticks: (.*?) \((.*?)\) - Relics: (.*?) \((.*?)\)(.*?)
+        """.trimIndent(),
         Pattern.DOTALL
     )
 
     private val STATS_PATTERN_TWO: Pattern = Pattern.compile(
-        "§9Party §8> (.*?)§f: (?:\\[SBO\\] )?" +
-            "Pt:([^-]+)-" +                       // 2 playtime
-            "Pr:(.+?)/(.+?)/h-" +                 // 3 profit, 4 profit/h
-            "B:(.+?)/(.+?)-" +                    // 5 burrows, 6 burrows/h
-            "M:(\\d+)/(.+?)-" +                   // 7 mobs, 8 mobs/h
-            "(?:I:(\\d+)/(.+?)-)?" +              // 9 inqs, 10 inq %
-            "(?:LSI:(\\d+)-)?" +                  // 11 LS inqs
-            "(?:S:(\\d+)/(.+?)-)?" +              // 12 sphinx, 13 %
-            "(?:K:(\\d+)/(.+?)-)?" +              // 14 kings, 15 %
-            "(?:M:(\\d+)/(.+?)-)?" +              // 16 mantis, 17 %
-            "(?:C(\\d+)/(.+?)-)?" +               // 18 chimeras, 19 %
-            "(?:LS: (\\d+)/\\((.+?)\\)-)?" +      // 20 LS chimeras, 21 %
-            "(?:S(\\d+)/(.+?)-)?" +               // 22 sticks, 23 %
-            "(?:R(\\d+)/(.+?)-)?" +               // 24 relics, 25 %
-            "(?:C(\\d+)/(.+?)-)?" +               // 26 cores, 27 %
-            "(?:W(\\d+)/(.+?)-)?" +               // 28 wools, 29 %
-            "(?:D(\\d+)/(.+?))?-?$",              // 30 dyes, 31 %
+        """§9Party §8> (.*?)§f: (?:\[SBO\] )?""" +
+            """Pt:([^-]+)-""" +                       // 2 playtime
+            """Pr:(.+?)/(.+?)/h-""" +                 // 3 profit, 4 profit/h
+            """B:(.+?)/(.+?)-""" +                    // 5 burrows, 6 burrows/h
+            """M:(\d+)/(.+?)-""" +                    // 7 mobs, 8 mobs/h
+            """(?:I:(\d+)/(.+?)-)?""" +               // 9 inqs, 10 inq %
+            """(?:LSI:(\d+)-)?""" +                   // 11 LS inqs
+            """(?:S:(\d+)/(.+?)-)?""" +               // 12 sphinx, 13 %
+            """(?:K:(\d+)/(.+?)-)?""" +               // 14 kings, 15 %
+            """(?:M:(\d+)/(.+?)-)?""" +               // 16 mantis, 17 %
+            """(?:C(\d+)/(.+?)-)?""" +                // 18 chimeras, 19 %
+            """(?:LS: (\d+)/\((.+?)\)-)?""" +         // 20 LS chimeras, 21 %
+            """(?:S(\d+)/(.+?)-)?""" +                // 22 sticks, 23 %
+            """(?:R(\d+)/(.+?)-)?""" +                // 24 relics, 25 %
+            """(?:C(\d+)/(.+?)-)?""" +                // 26 cores, 27 %
+            """(?:W(\d+)/(.+?)-)?""" +                // 28 wools, 29 %
+            """(?:D(\d+)/(.+?))?-?$""",               // 30 dyes, 31 %
         Pattern.DOTALL
     )
 
-    fun registerReplaceStatsMessage() {
+    internal fun registerReplaceStatsMessage() {
         // Keep old pattern for compatibility with older versions
         Register.onChatMessageCancelable(
             STATS_PATTERN
-        ) { message, matcher ->
+        ) { _, matcher ->
             val statsMessage = ArrayList<String>()
             statsMessage.add("§9Party §8> ${matcher.group(1)}§f:")
             statsMessage.add("§ePlaytime: §b${matcher.group(2)}")
@@ -75,7 +76,7 @@ object DianaStats {
 
                 // Inquisitors (+ LS inqs on the same line, like the old format)
                 val lsInqs = matcher.group(11)
-                optional(9) { c, p -> "§dInquisitors: §b$c §7($p)" + (lsInqs?.let { " §6LS: §b$it" } ?: "") }
+                optional(9) { c, p -> "§dInquisitors: §b$c §7($p)" + lsInqs?.let { " §6LS: §b$it" }.orEmpty() }
                 if (matcher.group(9) == null && lsInqs != null) add("§dLS Inqs: §b$lsInqs")
 
                 optional(12) { c, p -> "§dSphinx: §b$c §7($p)" }
@@ -178,7 +179,7 @@ object DianaStats {
         )
     }
 
-    fun sendPlayerStats(total: Boolean? = false) {
+    internal fun sendPlayerStats(total: Boolean? = false) {
         val stats = getPlayerStats(total)
         val statsMessage = buildString {
             append("Pt:${stats.playtime}-") // Playtime
@@ -186,7 +187,7 @@ object DianaStats {
             append("B:${stats.burrows}/${stats.burrowsPerHour}-") // Burrows & Burrows/h
             append("M:${stats.totalMobs}/${stats.mobsPerHour}-") // Mobs & Mobs/h
 
-            // Only shows intresting stats to avoid cluttering the chat with 0s especially for players without the mythic griffin
+            // Only shows interesting stats to avoid cluttering the chat with 0s especially for players without the mythic griffin
             if (stats.inquisitors > 0) append("I:${stats.inquisitors}/${stats.inqPercentage}-") // Inquisitors & Inquisitor %
             if (stats.lsInqs > 0) append("LSI:${stats.lsInqs}-") // LS Inquisitors
             if (stats.sphinx > 0) append("S:${stats.sphinx}/${stats.sphinxPercentage}-") // Sphinx & Sphinx %
@@ -204,35 +205,35 @@ object DianaStats {
         Chat.pc(statsMessage)
     }
 
-    data class PlayerStats(
-        val playtime: String,
-        val profit: List<String>,
-        val burrows: String,
-        val burrowsPerHour: String,
-        val totalMobs: Int,
-        val mobsPerHour: String,
-        val inquisitors: Int,
-        val inqPercentage: String,
-        val sphinx: Int,
-        val sphinxPercentage: String,
-        val mantis: Int,
-        val mantisPercentage: String,
-        val kings: Int,
-        val kingPercentage: String,
-        val lsInqs: Int,
-        val chimeraDrops: Int,
-        val chimeraDropRate: String,
-        val chimeraLSDrops: Int,
-        val chimeraLSDropRate: String,
-        val sticksDropped: Int,
-        val stickDropRate: String,
-        val relicsDropped: Int,
-        val relicDropRate: String,
-        val coresDropped: Int,
-        val coreDropRate: String,
-        val woolsDropped: Int,
-        val woolDropRate: String,
-        val dyesDropped: Int,
-        val dyeDropRate: String
+    internal data class PlayerStats(
+        internal val playtime: String,
+        internal val profit: List<String>,
+        internal val burrows: String,
+        internal val burrowsPerHour: String,
+        internal val totalMobs: Int,
+        internal val mobsPerHour: String,
+        internal val inquisitors: Int,
+        internal val inqPercentage: String,
+        internal val sphinx: Int,
+        internal val sphinxPercentage: String,
+        internal val mantis: Int,
+        internal val mantisPercentage: String,
+        internal val kings: Int,
+        internal val kingPercentage: String,
+        internal val lsInqs: Int,
+        internal val chimeraDrops: Int,
+        internal val chimeraDropRate: String,
+        internal val chimeraLSDrops: Int,
+        internal val chimeraLSDropRate: String,
+        internal val sticksDropped: Int,
+        internal val stickDropRate: String,
+        internal val relicsDropped: Int,
+        internal val relicDropRate: String,
+        internal val coresDropped: Int,
+        internal val coreDropRate: String,
+        internal val woolsDropped: Int,
+        internal val woolDropRate: String,
+        internal val dyesDropped: Int,
+        internal val dyeDropRate: String
     )
 }

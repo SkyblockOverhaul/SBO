@@ -54,8 +54,10 @@ final class HubClientChunkCacheMixin implements ChunkStorageExt {
     }
 
     @Inject(method = "getChunk(IILnet/minecraft/world/level/chunk/status/ChunkStatus;Z)Lnet/minecraft/world/level/chunk/LevelChunk;", at = @At("RETURN"), cancellable = true)
+    @SuppressWarnings("ReferenceEquality") // comparing LevelChunk to the emptyChunk instance or null is safe
     private final void sbo$getFakeChunk(final int x, final int z, @NonNull final ChunkStatus status, final boolean orEmpty, @NonNull final CallbackInfoReturnable<LevelChunk> cir) {
         if (cir.getReturnValue() != (orEmpty ? this.emptyChunk : null)) return;
+
         final var manager = this.sbo$manager();
         if (manager == null) return;
         final var fake = manager.getChunk(x, z);

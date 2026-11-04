@@ -1,6 +1,5 @@
 package net.sbo.mod.mixin.compat;
 
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.sbo.mod.general.SboBadges;
 import org.jspecify.annotations.NonNull;
@@ -25,8 +24,8 @@ final class SkyblockAddonsTabListRendererMixin {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/locale/Language;getVisualOrder(Lnet/minecraft/network/chat/FormattedText;)Lnet/minecraft/util/FormattedCharSequence;", ordinal = 1),
             require = 0
     )
-    private static @NonNull FormattedText sbo$decorateLine(@NonNull final FormattedText line) {
-        final Component decorated = SboBadges.INSTANCE.decorateSbaTab(line.getString());
+    private static final @NonNull FormattedText sbo$decorateLine(@NonNull final FormattedText line) {
+        final var decorated = SboBadges.INSTANCE.decorateSbaTab(line.getString());
         return decorated != null ? decorated : line;
     }
 }

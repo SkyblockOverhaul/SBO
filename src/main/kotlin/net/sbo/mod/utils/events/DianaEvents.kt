@@ -16,8 +16,10 @@ import net.sbo.mod.utils.math.SboVec.Companion.toSboVec
 import java.util.regex.Pattern
 
 object DianaEvents {
-    private var lastBlockClicked: SboVec? = null
+    var lastBlockClicked: SboVec? = null
+        private set
     var lastWaypointClicked: SboVec? = null
+        private set
     private var lastBurrowClicked: SboVec? = null
 
     internal fun init() {
@@ -60,13 +62,10 @@ object DianaEvents {
     }
 
     private fun registerBurrowDug() {
-        Register.onChatMessageCancelable(Pattern.compile("^§eYou (.*?) Griffin [Bb]urrow(.*?) §7\\((.*?)/(.*?)\\)$", Pattern.DOTALL)) { message, matchResult ->
+        Register.onChatMessageCancelable(Pattern.compile("^§eYou (.*?) Griffin [Bb]urrow(.*?) §7\\((.*?)/(.*?)\\)$", Pattern.DOTALL)) { _, matchResult ->
             val currentBurrow = matchResult.group(3).toIntOrNull() ?: return@onChatMessageCancelable true
             val maxBurrow = matchResult.group(4).toIntOrNull() ?: return@onChatMessageCancelable true
             SBOEvent.emit(BurrowDugEvent(
-                lastBurrowClicked,
-                lastWaypointClicked,
-                lastBlockClicked,
                 currentBurrow,
                 maxBurrow
             ))

@@ -57,9 +57,13 @@ object HubChunkCache {
     }
 
     @JvmStatic
-    fun managerFor(cache: ClientChunkCache): FakeChunkManager? {
-        val current = manager ?: return null
-        return if (current.chunkCache === cache) current else null
+    fun managerFor(cache: ClientChunkCache?): FakeChunkManager? {
+        val current = manager
+
+        if (current == null) return null
+        if (current.chunkCache !== cache) return null
+
+        return current
     }
 
     /** True while fake chunks are shown, the render distance then ignores the server's limit. */
@@ -141,7 +145,7 @@ object HubChunkCache {
             if (current.level !== level) {
                 current.close(unloadFakes = false)
                 manager = null
-            } else if (!extendsServerView(level)) {
+            } else if (!extendsServerView()) {
                 current.close(unloadFakes = true)
                 manager = null
             } else {
@@ -160,7 +164,7 @@ object HubChunkCache {
             return
         }
         if (!World.isInSkyblock()) return // scoreboard not there yet
-        if (!extendsServerView(level)) return // checked again every tick, the setting and render distance can change
+        if (!extendsServerView()) return // checked again every tick, the setting and render distance can change
         skippedLevel = level
         if (bobbyLoaded && BobbyCompat.isEnabled()) {
             // Bobby already shows fake chunks in this level, two caches would fight. Bobby wins. Turning Bobby
@@ -181,23 +185,28 @@ object HubChunkCache {
      * Fake chunks only fill the client render distance, so while the server already sends that far they only
      * help right after a lobby switch. [General.chunkCacheAboveServerOnly] skips them then.
      */
-    private fun extendsServerView(level: ClientLevel): Boolean {
+    private fun extendsServerView(): Boolean {
         if (!General.chunkCacheAboveServerOnly) return true
         return mc.options.renderDistance().get() > 8
     }
 
     private fun logStats(current: FakeChunkManager) {
         val runtime = Runtime.getRuntime()
-        val usedMb = (runtime.totalMemory() - runtime.freeMemory()) shr 20
+        val usedMb = runtime.totalMemory() - runtime.freeMemory() shr 20
         SBOKotlin.logger.debug(
-            "[HubChunkCache] ${current.world}: fake=${current.fakeChunkCount} stored=${current.storedChunkCount} " +
-                "areas=${stores.mapValues { it.value.size }} heap=${usedMb}MB/${runtime.maxMemory() shr 20}MB"
+            "[HubChunkCache] {}: fake={} stored={} areas={} heap={}MB/{}MB",
+            current.world,
+            current.fakeChunkCount,
+            current.storedChunkCount,
+            stores.mapValues { it.value.size },
+            usedMb,
+            runtime.maxMemory() shr 20
         )
     }
 
     // One area per line, commas also split since no area name has one
     private fun cachedAreas(): Set<String> =
-        General.chunkCacheAreas.flatMap { it.split(',') }.mapNotNullTo(HashSet()) { it.trim().lowercase().ifEmpty { null } }
+        General.chunkCacheAreas.asSequence().flatMap { it.split(',') }.mapNotNullTo(HashSet()) { it.trim().lowercase().ifEmpty { null } }
 
     private fun isAreaCached(area: String, areas: Set<String>, workEverywhere: Boolean): Boolean =
         workEverywhere || area in areas

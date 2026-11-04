@@ -68,7 +68,11 @@ class DisplayItem(
 
 /** An item with and without the model of the Hypixel resource pack, which is only loaded while you are on Hypixel. */
 class BuiltItem(private val plain: ItemStack, private val model: Identifier?) {
-    private val withModel = model?.let { id -> plain.copy().also { it.set(DataComponents.ITEM_MODEL, id) } }
+    private val withModel = model?.let { id ->
+        plain.copy().apply {
+            set(DataComponents.ITEM_MODEL, id)
+        }
+    }
 
     fun stack(): ItemStack = if (withModel != null && DisplayItemStacks.hasModel(model!!)) withModel else plain
 }
@@ -140,7 +144,7 @@ data class PlayerItems(
  *
  * Where the looks come from: SBO ships no item textures. Minecraft draws every item with the resource packs the player
  * has loaded. Items, names, lore and head skins come from the Hypixel API, the item models (`hypixel_skyblock:item/...`)
- * from Hypixel's item list and they only show with Hypixel's own resource pack, which Hypixel loads when you join.
+ * from Hypixel's item list, and they only show with Hypixel's own resource pack, which Hypixel loads when you join.
  * Pet heads come from the NotEnoughUpdates repo (github.com/NotEnoughUpdates/NotEnoughUpdates-REPO, MIT).
  */
 object DisplayItemStacks {
@@ -162,7 +166,7 @@ object DisplayItemStacks {
     /**
      * Builds the stacks off the render thread, the first data fixer run takes a moment. Needs a world. The groups are
      * built in order and a new call drops what earlier calls still had waiting, so the player shown right now never
-     * waits behind the storage of players opened before. onBuilt runs every now and then while building, for the
+     * waits behind the storage of players opened before. onBuilt runs sometimes while building, for the
      * progress, and when a group is done.
      */
     fun prepare(vararg groups: List<DisplayItem>, onBuilt: () -> Unit) {
@@ -195,8 +199,8 @@ object DisplayItemStacks {
         val current = SharedConstants.getCurrentVersion().dataVersion().version()
         val fixed = DataFixers.getDataFixer().update(References.ITEM_STACK, Dynamic<Tag>(NbtOps.INSTANCE, legacyTag(item)), LEGACY_VERSION, current)
         val stack = ItemStack.CODEC.parse(registries.createSerializationContext(NbtOps.INSTANCE), fixed.value).result().orElse(null) ?: return null
-        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compound(item.extraAttributes)))
-        stack.set(DataComponents.TOOLTIP_DISPLAY, HIDDEN)
+        stack[DataComponents.CUSTOM_DATA] = CustomData.of(compound(item.extraAttributes))
+        stack[DataComponents.TOOLTIP_DISPLAY] = HIDDEN
         if (item.glint) stack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
         return BuiltItem(stack, item.itemModel?.let(Identifier::tryParse))
     }

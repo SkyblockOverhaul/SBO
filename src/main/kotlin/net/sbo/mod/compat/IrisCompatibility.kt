@@ -6,8 +6,6 @@ import net.sbo.mod.utils.render.SboRenderPipelines
 
 object IrisCompatibility {
     fun init() {
-        IrisApi.getInstance().apply {
-            assignPipeline(SboRenderPipelines.LINES_THROUGH_WALLS, IrisProgram.LINES)
-        }
+        IrisApi.getInstance().assignPipeline(SboRenderPipelines.LINES_THROUGH_WALLS, IrisProgram.LINES)
     }
 }

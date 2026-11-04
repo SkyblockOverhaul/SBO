@@ -28,6 +28,7 @@ data class PfError(
         const val RATE_LIMITED = "RATE_LIMITED"
         const val REPORT_NOT_ALLOWED = "REPORT_NOT_ALLOWED"
         const val INTERNAL_ERROR = "INTERNAL_ERROR"
+        const val MOD_OUTDATED = "MOD_OUTDATED"
         const val KEY_NOT_YOURS = MojangAuth.KEY_NOT_YOURS
         const val MOJANG_BUSY = MojangAuth.MOJANG_BUSY
     }
@@ -384,11 +385,17 @@ enum class ReportReason(val id: String, val label: String) {
     }
 }
 
+/** Running totals of the Diana mayor tracker. */
 @Serializable
 data class BphReport(
-    val value: Double,
-    /** current or lastEvent */
-    val scope: String,
-    val hours: Double,
-    val burrows: Long
+    val burrows: Long,
+    val playtimeMs: Long,
+    val mayorYear: Int,
+    /** Goes up with every reset and restore of the tracker. */
+    val resetCount: Int,
+    /** Another mod hooks into the Diana tracker. */
+    val modified: Boolean,
+    /** The tracker file was changed outside of SBO. */
+    val edited: Boolean,
+    val mods: List<String> = emptyList()
 )

@@ -18,17 +18,17 @@ internal fun getInactivityLimitNanos(): Long {
 }
 
 object SboTimerManager {
-    internal val activeTimers = mutableSetOf<SBOTimer>()
+    private val activeTimers = mutableSetOf<SBOTimer>()
     // The trackers are read on every use, DataManager can swap them (alpha data)
-    val timerMayor = SBOTimer({ DataManager.dianaTrackerMayorData })
-    val timerTotal = SBOTimer({ DataManager.dianaTrackerTotalData })
-    val timerSession = SBOTimer({ DataManager.dianaTrackerSessionData })
+    internal val timerMayor = SBOTimer({ DataManager.dianaTrackerMayorData })
+    internal val timerTotal = SBOTimer({ DataManager.dianaTrackerTotalData })
+    internal val timerSession = SBOTimer({ DataManager.dianaTrackerSessionData })
     // The CoA tracker's own playtime, so its rates start over when only the CoA tracker is reset
-    val timerCoaMayor = SBOTimer({ DataManager.dianaTrackerMayorData }, DianaItemsData::coaTime)
-    val timerCoaTotal = SBOTimer({ DataManager.dianaTrackerTotalData }, DianaItemsData::coaTime)
-    val timerCoaSession = SBOTimer({ DataManager.dianaTrackerSessionData }, DianaItemsData::coaTime)
+    internal val timerCoaMayor = SBOTimer({ DataManager.dianaTrackerMayorData }, DianaItemsData::coaTime)
+    internal val timerCoaTotal = SBOTimer({ DataManager.dianaTrackerTotalData }, DianaItemsData::coaTime)
+    internal val timerCoaSession = SBOTimer({ DataManager.dianaTrackerSessionData }, DianaItemsData::coaTime)
 
-    fun init() {
+    internal fun init() {
         Register.onTick(1) {
             val iterator = activeTimers.iterator()
             while (iterator.hasNext()) {
@@ -50,7 +50,7 @@ object SboTimerManager {
         pauseAllActiveTimers()
     }
 
-    fun pauseAllActiveTimers() {
+    internal fun pauseAllActiveTimers() {
         val iterator = activeTimers.iterator()
         while (iterator.hasNext()) {
             iterator.next().pauseWithoutRemoving()
@@ -59,23 +59,23 @@ object SboTimerManager {
     }
 
     /** Before DataManager swaps the trackers: the playtime so far goes into the old ones. */
-    fun beforeTrackerSwap() {
+    internal fun beforeTrackerSwap() {
         pauseAllActiveTimers()
     }
 
     /** After DataManager swapped the trackers: the timers continue from the new ones. */
-    fun afterTrackerSwap() {
+    internal fun afterTrackerSwap() {
         SBOTimer.timerList.forEach { it.reload() }
     }
 
-    fun updateAllActivity() {
+    internal fun updateAllActivity() {
         SBOTimer.timerList.forEach { it.updateActivity() }
     }
 
-    private sealed class TimerState {
-        object Idle : TimerState()
-        object Running : TimerState()
-        object Paused : TimerState()
+    private enum class TimerState {
+        IDLE,
+        RUNNING,
+        PAUSED
     }
 
     class SBOTimer(
@@ -90,12 +90,12 @@ object SboTimerManager {
             set(value) = time.set(tracker.items, value)
 
         companion object {
-            val timerList = mutableListOf<SBOTimer>()
+            internal val timerList = mutableListOf<SBOTimer>()
         }
 
         private var startNanoTime: Long = 0L
         private var elapsedNanoTime: Long = 0L
-        private var state: TimerState = TimerState.Idle
+        private var state: TimerState = TimerState.IDLE
         private var lastActivityNanoTime: Long = System.nanoTime()
 
         init {
@@ -106,17 +106,17 @@ object SboTimerManager {
             timerList.add(this)
         }
 
-        fun isRunning(): Boolean = state == TimerState.Running
+        internal fun isRunning(): Boolean = state == TimerState.RUNNING
 
         // Starts over from the stored time of the (new) tracker
         internal fun reload() {
-            state = TimerState.Idle
+            state = TimerState.IDLE
             startNanoTime = 0L
             elapsedNanoTime = TimeUnit.MILLISECONDS.toNanos(storedTimeMs.coerceAtLeast(0L))
         }
 
         private fun start() {
-            if (state == TimerState.Running || elapsedNanoTime > 0L) return
+            if (state == TimerState.RUNNING || elapsedNanoTime > 0L) return
 
             if (storedTimeMs > 0L) {
                 elapsedNanoTime = TimeUnit.MILLISECONDS.toNanos(storedTimeMs)
@@ -125,13 +125,13 @@ object SboTimerManager {
             startNanoTime = System.nanoTime()
             lastActivityNanoTime = startNanoTime
 
-            state = TimerState.Running
+            state = TimerState.RUNNING
 
             startInactivityCheck()
         }
 
-        fun tick(): Boolean {
-            if (state != TimerState.Running) return false
+        internal fun tick(): Boolean {
+            if (state != TimerState.RUNNING) return false
 
             val now = System.nanoTime()
             val inactivityLimit = getInactivityLimitNanos()
@@ -158,7 +158,7 @@ object SboTimerManager {
         }
 
         private fun updateElapsedTime(now: Long = System.nanoTime()) {
-            if (state != TimerState.Running) return
+            if (state != TimerState.RUNNING) return
 
             elapsedNanoTime += now - startNanoTime
             startNanoTime = now
@@ -166,34 +166,34 @@ object SboTimerManager {
             storedTimeMs = TimeUnit.NANOSECONDS.toMillis(elapsedNanoTime)
         }
 
-        fun pause() {
+        internal fun pause() {
             pauseWithoutRemoving()
             removeTimer(this)
         }
 
         internal fun pauseWithoutRemoving() {
-            if (state != TimerState.Running) return
+            if (state != TimerState.RUNNING) return
 
             updateElapsedTime()
 
-            state = TimerState.Paused
+            state = TimerState.PAUSED
 
             // The manager removes this timer after the current iterator step.
         }
 
         private fun continueTimer() {
-            if (state == TimerState.Running) return
+            if (state == TimerState.RUNNING) return
 
             startNanoTime = System.nanoTime()
             lastActivityNanoTime = startNanoTime
 
-            state = TimerState.Running
+            state = TimerState.RUNNING
 
             startInactivityCheck()
         }
 
-        fun reset() {
-            state = TimerState.Idle
+        internal fun reset() {
+            state = TimerState.IDLE
 
             elapsedNanoTime = 0L
             startNanoTime = 0L
@@ -205,7 +205,7 @@ object SboTimerManager {
         }
 
         private fun getElapsedNanos(): Long {
-            return if (state == TimerState.Running) {
+            return if (state == TimerState.RUNNING) {
                 elapsedNanoTime + (System.nanoTime() - startNanoTime)
             } else {
                 elapsedNanoTime
@@ -214,7 +214,9 @@ object SboTimerManager {
 
         internal fun getHourTime(): Double = getElapsedNanos() / TimeUnit.HOURS.toNanos(1L).toDouble()
 
-        fun updateActivity() {
+        internal fun getElapsedMillis(): Long = TimeUnit.NANOSECONDS.toMillis(getElapsedNanos())
+
+        internal fun updateActivity() {
             start()
             continueTimer()
 

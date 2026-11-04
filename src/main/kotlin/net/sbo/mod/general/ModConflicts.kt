@@ -86,11 +86,13 @@ object ModConflicts {
         val suspects = MixinHealth.watchedTargets().mapNotNull { target ->
             val type = runCatching { Class.forName(target) }.getOrNull() ?: return@mapNotNull null
             val mods = type.declaredMethods
+                .asSequence()
                 .mapNotNull { it.getAnnotation(MixinMerged::class.java)?.mixin }
                 .filterNot { it.startsWith("net.sbo.mod.") }
                 .map(::modOf)
                 .distinct()
                 .take(MAX_SUSPECTS)
+                .toList()
             Suspects(target, mods)
         }
         val failed = MixinHealth.failedHooks().map { FailedHook(it.feature(), it.targetClass(), it.handler()) }
@@ -107,7 +109,7 @@ object ModConflicts {
     }
 
     // Mixin package of every mod, read from the mixin configs its fabric.mod.json lists
-    private fun mixinPackages(): Map<String, ModContainer> = buildMap {
+    internal fun mixinPackages(): Map<String, ModContainer> = buildMap {
         for (mod in FabricLoader.getInstance().allMods) {
             val meta = mod.findPath("fabric.mod.json").orElse(null)?.let(::readJson) ?: continue
             val configs = meta.getAsJsonArray("mixins") ?: continue
@@ -139,8 +141,8 @@ object ModConflicts {
             if (!byHand) return
             Chat.chat("§6[SBO] §aNo SBO feature is broken by another mod.")
         } else {
-            val features = report.failed.map { it.feature }.distinct().joinToString("§c, §e")
-            val likely = report.suspects.flatMap { it.mods }.distinct()
+            val features = report.failed.asSequence().map { it.feature }.distinct().joinToString("§c, §e")
+            val likely = report.suspects.asSequence().flatMap { it.mods }.distinct()
                 .joinToString("§c, §e") { "${it.id} ${it.version}" }
                 .ifEmpty { "unknown" }
             Chat.chat("§6[SBO] §cAnother mod breaks: §e$features§c. Likely: §e$likely§c.")

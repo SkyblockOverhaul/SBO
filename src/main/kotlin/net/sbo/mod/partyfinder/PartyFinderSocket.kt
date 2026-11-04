@@ -183,7 +183,7 @@ object PartyFinderSocket {
         val type = message["type"]?.jsonPrimitive?.contentOrNull
         if (type == "party_removed") {
             val error = (message["error"] as? JsonObject)?.let { runCatching { json.decodeFromJsonElement<PfError>(it) }.getOrNull() }
-                ?: PfError(PfError.PARTY_NOT_FOUND, "")
+                ?: PfError(PfError.PARTY_NOT_FOUND)
             return SBOKotlin.mc.execute { PartyFinderManager.onPartyRemoved(error) }
         }
         val requestId = message["requestId"]?.jsonPrimitive?.contentOrNull ?: return
@@ -193,7 +193,7 @@ object PartyFinderSocket {
                 val uuid = message["uuid"]?.jsonPrimitive?.contentOrNull ?: return
                 // The name ends up in /p invite
                 if (!Helper.isPlayerName(name)) return answer(requestId, invited = false)
-                val role = message["role"]?.takeIf { it !is JsonNull }?.jsonPrimitive?.contentOrNull
+                val role = message["role"]?.takeIf { it !== JsonNull }?.jsonPrimitive?.contentOrNull
                 SBOKotlin.mc.execute { PartyFinderManager.onSocketJoinRequest(requestId, uuid, name, role) }
             }
             "join_result" -> {

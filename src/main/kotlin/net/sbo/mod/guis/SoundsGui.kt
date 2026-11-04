@@ -53,10 +53,10 @@ object SoundsGui {
             SoundSetting("Burrow Found", SoundSettingsData::burrowFoundSound, SoundSettingsData::burrowVolume),
         ),
         "Low HPs" to listOf(
-            SoundSetting("Inquisitor Low HP", SoundSettingsData::lowInqHpSound, SoundSettingsData::lowInqHpVoume),
-            SoundSetting("Sphinx Low HP", SoundSettingsData::lowSphinxHpSound, SoundSettingsData::lowSphinxHpVoume),
-            SoundSetting("King Minos Low HP", SoundSettingsData::lowKingHpSound, SoundSettingsData::lowKingHpVoume),
-            SoundSetting("Manticore Low HP", SoundSettingsData::lowMantiHpSound, SoundSettingsData::lowMantiHpVoume),
+            SoundSetting("Inquisitor Low HP", SoundSettingsData::lowInqHpSound, SoundSettingsData::lowInqHpVolume),
+            SoundSetting("Sphinx Low HP", SoundSettingsData::lowSphinxHpSound, SoundSettingsData::lowSphinxHpVolume),
+            SoundSetting("King Minos Low HP", SoundSettingsData::lowKingHpSound, SoundSettingsData::lowKingHpVolume),
+            SoundSetting("Manticore Low HP", SoundSettingsData::lowMantiHpSound, SoundSettingsData::lowMantiHpVolume),
         ),
         "Drops" to listOf(
             SoundSetting("Chimera Drop", SoundSettingsData::chimSound, SoundSettingsData::chimVolume),
@@ -91,7 +91,7 @@ object SoundsGui {
         var master by useState(percent(settings.masterVolume))
         var uiScale by useState(UiScale.own(settings.uiScale))
         useSboScale(uiScale)
-        useSboTheme()
+        useSboTheme("sounds")
 
         // Changes are saved right away, this catches a slider still being dragged when the window closes
         useEffect { onCleanup { settings.save() } }

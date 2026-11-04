@@ -22,7 +22,7 @@ fun search(config: Config, query: String): List<SearchHit> {
 
     fun visit(path: List<Category>) {
         val category = path.last()
-        val names = path.drop(1).joinToString(" ") { it.name }
+        val names = path.asSequence().drop(1).joinToString(" ") { it.name }
         var sub: Sub? = null
         for (element in category.elements) {
             if (element is Sub) {

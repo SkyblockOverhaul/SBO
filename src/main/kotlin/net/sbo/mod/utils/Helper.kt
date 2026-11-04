@@ -1,12 +1,11 @@
 package net.sbo.mod.utils
 
-import net.minecraft.client.gui.screens.Screen
 import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
 import net.minecraft.world.item.ItemStack
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.diana.DianaTracker
+import net.sbo.mod.diana.tracker.Tracker
 import net.sbo.mod.diana.LootshareDisplay
 import net.sbo.mod.diana.RareMobKillTime
 import net.sbo.mod.overlays.DianaLoot
@@ -18,7 +17,6 @@ import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.entity.DianaMobDeathEvent
 import net.sbo.mod.utils.events.impl.game.WorldChangeEvent
-import net.sbo.mod.utils.events.impl.guis.GuiCloseEvent
 import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
 import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.utils.game.ScoreBoard
@@ -89,7 +87,7 @@ object Helper {
     }
 
     fun init() {
-        Register.onChatMessageCancelable(Pattern.compile("^§e§lLOOT SHARE §fYou received .*? for assisting .*?!?$", Pattern.DOTALL)) { message, matchResult ->
+        Register.onChatMessageCancelable(Pattern.compile("^§e§lLOOT SHARE §fYou received .*? for assisting .*?!?$", Pattern.DOTALL)) { _, _ ->
             onLootShare()
             true
         }
@@ -116,27 +114,27 @@ object Helper {
 
         /*Register.command("sbotestlschimdrop") {
             handleDianaMobDeath("Minos Inquisitor", 30.0f)
-            DianaTracker.trackChatRngDrop("Enchanted Book (Chimera 1) §b(+§b566 ✯ Magic Find)")
+            RareDrops.onChatDrop("Enchanted Book (Chimera 1) §b(+§b566 ✯ Magic Find)")
         }
 
         Register.command("sbotestdrops") {
-            DianaTracker.trackChatRngDrop("Daedalus Stick §b(+§b483 ✯ Magic Find)")
-            DianaTracker.trackChatRngDrop("Minos Relic §b(+§b483 ✯ Magic Find)")
-            DianaTracker.trackChatRngDrop("Crown of Greed")
-            DianaTracker.trackChatRngDrop("Myth the Fish")
-            DianaTracker.trackChatRngDrop("Daedalus Stick")
-            DianaTracker.trackChatRngDrop("Shimmering Wool §b(+§b483 ✯ Magic Find)")
+            RareDrops.onChatDrop("Daedalus Stick §b(+§b483 ✯ Magic Find)")
+            RareDrops.onChatDrop("Minos Relic §b(+§b483 ✯ Magic Find)")
+            RareDrops.onChatDrop("Crown of Greed")
+            RareDrops.onChatDrop("Myth the Fish")
+            RareDrops.onChatDrop("Daedalus Stick")
+            RareDrops.onChatDrop("Shimmering Wool §b(+§b483 ✯ Magic Find)")
         }
 
         Register.command("sbotestbraideddrop") {
-            DianaTracker.onBraidedDrop()
+            RareDrops.onBraidedFeather()
         }
 
         Register.command("sbotestchimdrop") {
-            DianaTracker.trackChatRngDrop("Enchanted Book (Chimera 1) §b(+§b566 ✯ Magic Find)")
+            RareDrops.onChatDrop("Enchanted Book (Chimera 1) §b(+§b566 ✯ Magic Find)")
         }*/
 
-        // Workaround to not timeout on the first requests since there is lot of work being done that steals CPU time from our HTTP threads during game startup. Wait after at least 1 second of virtual thread carrier threads being available, and runAsync's ForkJoinPool task queue to become empty to be able to run our task.
+        // Workaround to not timeout on the first requests since there is a lot of work being done that steals CPU time from our HTTP threads during game startup. Wait after at least 1 second of virtual thread carrier threads being available, and runAsync's ForkJoinPool task queue to become empty to be able to run our task.
         sleep(1000) {
             CompletableFuture.runAsync {
                 updateItemPriceInfo()
@@ -158,7 +156,7 @@ object Helper {
 
     private fun handleDianaMobDeath(name: String, dist: Float, pos: SboVec) {
         val nearby = dist <= 30
-        val last = DianaTracker.lastSpawnedMob
+        val last = Tracker.lastSpawnedMob
         val lsOverride = Trackers.assumeAllLS && nearby && (last == null || !name.contains(last)) // we need to check if dying mob is not spawned by user by comparing to last spawned mob to avoid counting self-mob as lootshare
         when {
             name.contains("Minos Inquisitor") -> {
@@ -168,7 +166,7 @@ object Helper {
                 if (gotLootShareRecently() && !hasTrackedInq) {
                     hasTrackedInq = true
                     notifyUserOfLs("Minos Inquisitor")
-                    DianaTracker.trackItem("MINOS_INQUISITOR_LS", 1)
+                    Tracker.trackItem("MINOS_INQUISITOR_LS", 1)
                     sleep(2000) {
                         hasTrackedInq = false
                     }
@@ -182,7 +180,7 @@ object Helper {
                 if (gotLootShareRecently() && !hasTrackedKing) {
                     hasTrackedKing = true
                     notifyUserOfLs("King Minos")
-                    DianaTracker.trackItem("KING_MINOS_LS", 1)
+                    Tracker.trackItem("KING_MINOS_LS", 1)
                     sleep(2000) {
                         hasTrackedKing = false
                     }
@@ -195,7 +193,7 @@ object Helper {
                 if (gotLootShareRecently() && !hasTrackedSphinx) {
                     hasTrackedSphinx = true
                     notifyUserOfLs("Sphinx")
-                    DianaTracker.trackItem("SPHINX_LS", 1)
+                    Tracker.trackItem("SPHINX_LS", 1)
                     sleep(2000) {
                         hasTrackedSphinx = false
                     }
@@ -209,7 +207,7 @@ object Helper {
                 if (gotLootShareRecently() && !hasTrackedManti) {
                     hasTrackedManti = true
                     notifyUserOfLs("Manticore")
-                    DianaTracker.trackItem("MANTICORE_LS", 1)
+                    Tracker.trackItem("MANTICORE_LS", 1)
                     sleep(2000) {
                         hasTrackedManti = false
                     }
@@ -241,7 +239,7 @@ object Helper {
     fun sleep(milliseconds: Long, callback: () -> Unit) {
         SBO_CALLBACK_THREAD.execute {
             Thread.sleep(milliseconds)
-            mc.execute {
+            mc.schedule {
                 callback()
             }
         }
@@ -279,12 +277,12 @@ object Helper {
 
     private fun getItemCount(items: DianaItemsData, propertyName: String): Int =
         ITEM_COUNT_GETTERS[propertyName]?.invoke(items)
-            ?: (ITEM_PROPERTIES[propertyName]?.call(items) as? Int)
+            ?: ITEM_PROPERTIES[propertyName]?.call(items) as? Int
             ?: 0
 
     private fun getMobCount(mobs: DianaMobsData, propertyName: String): Int =
         MOB_COUNT_GETTERS[propertyName]?.invoke(mobs)
-            ?: (MOB_PROPERTIES[propertyName]?.call(mobs) as? Int)
+            ?: MOB_PROPERTIES[propertyName]?.call(mobs) as? Int
             ?: 0
 
     private val ITEM_PROPERTIES = DianaItemsData::class.memberProperties.associateBy { it.name }
@@ -503,11 +501,9 @@ object Helper {
 
         for ((slot, stack) in inventory.withIndex()) {
             if (slot == 8) continue // Skip SB Star
-            val stack: ItemStack = inventory[slot]
-
             if (!stack.isEmpty) {
-                var id: String
-                var item: Item
+                val id: String
+                val item: Item
                 val lookup = ItemLookup(stack)
                 val sbId = lookup.sbId
                 var isChimera = false
@@ -596,7 +592,7 @@ object Helper {
 
         val resultText = info.template
             .replace("{amount}", (amountOverride ?: info.totalAmount).toString())
-            .replace("{percentage}", "%.2f".format(info.percentage) + "%")
+            .replace("{percentage}", "%.2f".format(Locale.ROOT, info.percentage) + "%")
             .replace("{mf}", if (magicFind > 0) "$magicFind" else "")
             .replace("{lstext}", if (isLootshare) " (LS)" else "")
             .replace("{price}", getItemPriceFormatted(info.itemId))
@@ -621,7 +617,7 @@ object Helper {
 
     /** A message setting's lines as one chat message: the lines joined with spaces, blank lines skipped. */
     fun joinLines(lines: Array<out String>): String =
-        lines.map { it.trim() }.filter { it.isNotEmpty() }.joinToString(" ")
+        lines.asSequence().map { it.trim() }.filter { it.isNotEmpty() }.joinToString(" ")
 
     private fun getCustomMessage(message: Array<out String>): String = joinLines(message)
 
@@ -636,7 +632,7 @@ object Helper {
             else -> "ErrorGettingSince"
         }
     }
-  
+
     private fun getDropInfo(dropName: String): DropInfo? {
         val tracker = DataManager.dianaTrackerMayorData
         val items = tracker.items
@@ -674,7 +670,6 @@ object Helper {
 
     fun getSpawnMessage(message: String, mob: String): String {
         val mobs = DataManager.dianaTrackerMayorData.mobs
-        val items = DataManager.dianaTrackerMayorData.items
         val sboData = DataManager.sboData
 
         val kingPercent = calcPercentOne(mobs.KING_MINOS, mobs.TOTAL_MOBS)
@@ -748,7 +743,7 @@ object Helper {
         lastAhFetch = System.currentTimeMillis()
         SboApi.ahItems()
             .toJson<List<Map<String, Map<String, Long>>>>(true) { json ->
-                priceDataAh = json.flatMap { it.entries }.associate { it.key to it.value["price"]!! }
+                priceDataAh = json.asSequence().flatMap { it.entries }.associate { it.key to it.value["price"]!! }
                 DianaLoot.updateLines()
             }.error { error ->
                 SBOKotlin.logger.error("Unexpected error while fetching AH item prices", error)
@@ -830,7 +825,7 @@ object Helper {
     // TODO: When the Alpha Network update is pushed to main by Hypixel, remove getChance() and rename getChanceNew() to getChance().
     fun getChance(mf: Int, looting: Int, rarity: String, lootshare: Boolean = false): Map<String, Double> {
         val baseChances = BASE_CHANCES_PERCENT[rarity.lowercase().trim()]
-            ?: emptyMap()
+            .orEmpty()
 
         val mfMultiplier = 1.0 + mf / 100.0
         val factor = if (lootshare) mfMultiplier / 5.0 else mfMultiplier * (1.0 + looting * 0.15)
@@ -840,7 +835,7 @@ object Helper {
     // TODO: When the Alpha Network update is pushed to main by Hypixel, this becomes getChance().
     fun getChanceNew(mf: Int, rarity: String, lootshare: Boolean = false): Map<String, Double> {
         val baseChances = BASE_CHANCES_PERCENT_NEW[rarity.lowercase().trim()]
-            ?: emptyMap()
+            .orEmpty()
 
         return calculateDropChances(baseChances, mf, lootshare)
     }
@@ -853,7 +848,7 @@ object Helper {
     }
 
     fun formatChances(chance: Double, label: String): String {
-        val percent = String.format("%.2f", chance * 100)
+        val percent = String.format(Locale.ROOT, "%.2f", chance * 100)
         val fraction = " §7(§b1/${(1 / chance).roundToInt()}§7)"
         return "§eChance: §b$percent%$fraction $label"
     }
@@ -865,7 +860,9 @@ object Helper {
     fun getKillsFromLore(stack: ItemStack?): Int {
         if (stack == null || stack.isEmpty) return 0
 
-        val linesList: List<Component> = stack.get(DataComponents.LORE)?.lines ?: listOf()
+        val linesList: List<Component> = stack.get(DataComponents.LORE)?.lines ?: return 0
+
+        if (linesList.isEmpty()) return 0
 
         for (lineText in linesList) {
             val line = lineText.string

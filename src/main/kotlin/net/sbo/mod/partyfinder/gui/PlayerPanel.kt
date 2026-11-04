@@ -29,13 +29,13 @@ internal fun NodeBuilder.playerPanel(inspected: InspectedPlayer, target: PartyTa
             button(className = "pf-close", title = "Close", onClick = { onClose() }) { +"✕" }
         }
         div(className = "pf-panel-sub") {
-            +(if (member.uuid == party.id) "Leader, ${target.label}" else target.label)
+            +if (member.uuid == party.id) "Leader, ${target.label}" else target.label
         }
         scroll(className = "pf-panel-stats guilib-autohide") {
             (target.reqs.map { it.stat } + target.display).distinct().forEach { id ->
                 val value = member.stats[id]
                 val def = target.req(id)
-                val need = party.reqs[id]?.takeIf { it !is JsonNull }
+                val need = party.reqs[id]?.takeIf { it !== JsonNull }
                 div(className = "pf-panel-row", key = id) {
                     statLabel(id, own)
                     tooltip(content = { statInfo(id, own) }, className = "pf-tip") {
@@ -43,7 +43,7 @@ internal fun NodeBuilder.playerPanel(inspected: InspectedPlayer, target: PartyTa
                         span(className = classNames(
                             "pf-panel-value",
                             "estimated" to StatView.estimated(id),
-                            "missing" to (value == null || value is JsonNull)
+                            "missing" to (value == null || value === JsonNull)
                         )) {
                             pieces(StatView.valuePieces(id, value))
                         }

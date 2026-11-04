@@ -26,14 +26,15 @@ class OverlayEditScreen : Screen(Component.literal("SBO_Overlay_Editor")) {
         val button = click.buttonInfo().button
         if (button == 0) {
             selectedOverlay = OverlayManager.overlays.firstOrNull { it.isOverOverlay(mouseX, mouseY) }
+            val selected = selectedOverlay
 
-            if (selectedOverlay != null) {
+            if (selected != null) {
                 isDragging = true
                 lastMouseX = mouseX
                 lastMouseY = mouseY
 
                 OverlayManager.overlays.forEach {
-                    it.selected = it == selectedOverlay
+                    it.selected = it == selected
                 }
             } else {
                 OverlayManager.overlays.forEach { it.selected = false }

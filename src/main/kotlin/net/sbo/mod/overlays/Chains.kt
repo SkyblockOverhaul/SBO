@@ -64,12 +64,12 @@ object Chains : DianaOverlay<Chains.View>("Diana Chains", Trackers.TrackerLook.C
     private fun state(): State {
         val chains = BurrowDetector.chains
 
-        val burrowWayps = WaypointManager.getWaypointsOfType("burrow")
+        val burrowWaypoints = WaypointManager.getWaypointsOfType("burrow")
 
-        val knownW = burrowWayps.filter { !it.hidden && it.text != "Start" }.size
-        val knownWStart = burrowWayps.filter { it.text == "Start" }.size
+        val knownW = burrowWaypoints.count { !it.hidden && it.text != "Start" }
+        val knownWStart = burrowWaypoints.count { it.text == "Start" }
 
-        val arrowW = WaypointManager.getWaypointsOfType("arrow").filter { !it.hidden }.size
+        val arrowW = WaypointManager.getWaypointsOfType("arrow").count { !it.hidden }
 
         val arrows = ArrowGuessBurrow.allGuesses.size
         val known = BurrowDetector.burrows.filter { it.value.type != "Start" }.size
@@ -98,7 +98,7 @@ object Chains : DianaOverlay<Chains.View>("Diana Chains", Trackers.TrackerLook.C
         var showStatus = false
         // TODO: probably remove the issue and mismatch detection entirely at some point after we're fully sure the mod works all properly
         if (!Burrows.simpleChainsOverlayMode) {
-            if (issue || debug) { // hide for less verbosity unless theres an issue
+            if (issue || debug) { // hide for less verbosity unless there's an issue
                 failureTimes++
 
                 // Only start showing for consistent issues lasting more than 4 seconds, otherwise this can flicker at times when a new burrow is being detected

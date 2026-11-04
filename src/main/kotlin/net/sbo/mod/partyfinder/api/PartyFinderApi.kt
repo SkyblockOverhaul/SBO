@@ -99,12 +99,12 @@ object PartyFinderApi {
             val result = try {
                 parse<T>(response.body?.string().orEmpty(), response.code)
             } catch (e: Exception) {
-                Result.failure<T>(PfException(PfError(PfError.BAD_RESPONSE, e.message ?: "Unreadable answer")))
+                Result.failure(PfException(PfError(PfError.BAD_RESPONSE, e.message ?: "Unreadable answer")))
             }
             result.fold(
                 onSuccess = { onSuccess(it) },
                 onFailure = {
-                    val error = (it as? PfException)?.error ?: PfError(PfError.BAD_RESPONSE, it.message ?: "")
+                    val error = (it as? PfException)?.error ?: PfError(PfError.BAD_RESPONSE, it.message.orEmpty())
                     BanNotice.check(error)
                     onError(error)
                 }

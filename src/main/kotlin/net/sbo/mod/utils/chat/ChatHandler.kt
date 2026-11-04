@@ -1,6 +1,7 @@
 package net.sbo.mod.utils.chat
 
 import net.minecraft.network.chat.Component
+import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.chat.ChatUtils.formattedString
@@ -65,7 +66,7 @@ object ChatHandler {
         var plain: String? = null
 
         if (Debug.debugOnlyMessages && "❈ Defense" !in messageString) {
-            println("Processing chat message: $messageString")
+            logger.info("Processing chat message: $messageString")
         }
 
         var allowMessage = true

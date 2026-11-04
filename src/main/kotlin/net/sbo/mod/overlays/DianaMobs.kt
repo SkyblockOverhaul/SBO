@@ -96,26 +96,30 @@ object DianaMobs : DianaOverlay<DianaMobs.View>("Diana Mobs", Trackers.TrackerLo
     private fun mobsPerHour(tracker: DianaTracker): Double {
         val playTimeHrs = tracker.items.TIME.toDouble() / TimeUnit.HOURS.toMillis(1)
         return if (playTimeHrs > 0) {
-            BigDecimal(tracker.mobs.TOTAL_MOBS.toDouble() / playTimeHrs).setScale(2, RoundingMode.HALF_UP).toDouble()
+            BigDecimal.valueOf(tracker.mobs.TOTAL_MOBS.toDouble() / playTimeHrs)
+                .setScale(2, RoundingMode.HALF_UP)
+                .toDouble()
         } else 0.0
     }
 
-    // The mobs of the new look: hide key, name, color, kills and lootshare kills (null for mobs without lootshare)
+    // The mobs of the new look: hide key, name, color, kills and lootshare kills (null for mobs without lootshare),
+    // the name in the compact look (null: counted in "Other")
     private class Mob(
         val key: String,
         val name: String,
         val color: ChatFormatting,
         val kills: (DianaMobsData) -> Int,
-        val lsKills: ((DianaMobsData) -> Int)? = null
+        val lsKills: ((DianaMobsData) -> Int)? = null,
+        val short: String? = null
     )
 
     private val MOBS = listOf(
-        Mob("KING_MINOS", "King Minos", RED, { it.KING_MINOS }, { it.KING_MINOS_LS }),
-        Mob("MANTICORE", "Manticore", RED, { it.MANTICORE }, { it.MANTICORE_LS }),
-        Mob("INQUISITOR", "Inquisitor", LIGHT_PURPLE, { it.MINOS_INQUISITOR }, { it.MINOS_INQUISITOR_LS }),
-        Mob("SPHINX", "Sphinx", LIGHT_PURPLE, { it.SPHINX }, { it.SPHINX_LS }),
-        Mob("CHAMPION", "Champion", DARK_PURPLE, { it.MINOS_CHAMPION }),
-        Mob("MINOTAUR", "Minotaur", GOLD, { it.MINOTAUR }),
+        Mob("KING_MINOS", "King Minos", RED, { it.KING_MINOS }, { it.KING_MINOS_LS }, "King"),
+        Mob("MANTICORE", "Manticore", RED, { it.MANTICORE }, { it.MANTICORE_LS }, "Manti"),
+        Mob("INQUISITOR", "Inquisitor", LIGHT_PURPLE, { it.MINOS_INQUISITOR }, { it.MINOS_INQUISITOR_LS }, "Inq"),
+        Mob("SPHINX", "Sphinx", LIGHT_PURPLE, { it.SPHINX }, { it.SPHINX_LS }, "Sphinx"),
+        Mob("CHAMPION", "Champion", DARK_PURPLE, { it.MINOS_CHAMPION }, short = "Champ"),
+        Mob("MINOTAUR", "Minotaur", GOLD, { it.MINOTAUR }, short = "Mino"),
         Mob("GAIA_CONSTRUCT", "Gaia Construct", GREEN, { it.GAIA_CONSTRUCT }),
         Mob("HARPY", "Harpy", GREEN, { it.HARPY }),
         Mob("CRETAN_BULL", "Cretan Bull", GREEN, { it.CRETAN_BULL }),
@@ -190,6 +194,27 @@ object DianaMobs : DianaOverlay<DianaMobs.View>("Diana Mobs", Trackers.TrackerLo
             if (view.reorder) hint("Click a mob to hide it, the arrows to move it")
             else if (view.inventory) hint("Click a mob to hide it, the badges to change them")
         }
+    }
+
+    override fun compactLines(): List<CompactLine>? {
+        if (!Trackers.isCompact(Trackers.CompactTracker.MOBS)) return null
+        val tracker = tracker(Trackers.mobTracker) ?: return emptyList()
+        val mobs = tracker.mobs
+        val hidden = DataManager.sboData.hideTrackerLines
+        val shown = sortedMobs(mobs).filter { it.key !in hidden }
+        val entries = shown.mapNotNull { mob ->
+            val short = mob.short ?: return@mapNotNull null
+            val kills = mob.kills(mobs)
+            val lsKills = mob.lsKills?.invoke(mobs)?.takeIf { it > 0 && !Trackers.hideLsStats }
+            if (kills + (lsKills ?: 0) <= 0 && Trackers.hideUnobtainedItems) return@mapNotNull null
+            val ls = lsKills?.let { "+${Helper.formatNumber(it, withCommas = true)}" }.orEmpty()
+            Entry(short, mob.color, Helper.formatNumber(kills, withCommas = true) + ls)
+        }.toMutableList()
+        // The common mobs in one entry
+        val others = shown.filter { it.short == null }.sumOf { it.kills(mobs) }
+        if (others > 0 || !Trackers.hideUnobtainedItems) entries += Entry("Other", GREEN, Helper.formatNumber(others, withCommas = true))
+        val head = CompactLine("Mobs", listOf(Entry(null, null, Helper.formatNumber(mobs.TOTAL_MOBS, withCommas = true)), Entry(null, null, "${mobsPerHour(tracker)}/h")))
+        return listOf(head) + packed(entries)
     }
 
     override fun elementClicked(id: String) {
@@ -297,7 +322,7 @@ object DianaMobs : DianaOverlay<DianaMobs.View>("Diana Mobs", Trackers.TrackerLo
                 withCommas = true
             )} $GRAY($AQUA$hunterPercent%$GRAY)", tracker.mobs.MINOS_HUNTER)
         )
-        lines.addAll(sortedMobs(tracker.mobs).map { mobLines[MOBS.indexOf(it)] })
+        sortedMobs(tracker.mobs).mapTo(lines) { mobLines[MOBS.indexOf(it)] }
         lines.add(OverlayTextLine("$GRAY - ${GRAY}Total Mobs: $AQUA${Helper.formatNumber(tracker.mobs.TOTAL_MOBS,
             withCommas = true
         )} $GRAY[$AQUA$mobsPerHr$GRAY/${AQUA}hr$GRAY]"))

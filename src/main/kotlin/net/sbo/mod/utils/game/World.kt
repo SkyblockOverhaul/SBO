@@ -41,7 +41,5 @@ object World {
      * This is determined by checking if the scoreboard title contains "SKYBLOCK".
      * @return true if the player is in Skyblock, false otherwise.
      */
-    fun isInSkyblock(): Boolean {
-        return isInSkyblock
-    }
+    fun isInSkyblock(): Boolean = isInSkyblock
 }

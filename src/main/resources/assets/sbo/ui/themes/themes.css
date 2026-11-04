@@ -496,3 +496,16 @@ body.pf-hypixel .pf-heading.pf-type-custom { color: var(--type-custom); }
 body.pf-marks .pf-req.bad { border-style: dashed; }
 .pf-mark { display: none; }
 body.pf-marks .pf-mark { display: inline; font-weight: bold; color: var(--bad); }
+
+/* Popup with the mistakes in the player's own CSS (user.css or a .css theme), in every SBO window */
+.sbo-css-problems { width: min(92vw, 300px); padding: 8px; background-color: var(--bg); border: 1px solid var(--bad-border); border-radius: 6px; }
+.sbo-css-problems-title { font-weight: bold; color: var(--bad); margin-bottom: 3px; }
+.sbo-css-problems-text { color: var(--subtle); margin-bottom: 5px; }
+.sbo-css-problems-log {
+    max-height: min(40vh, 120px); padding: 3px 4px; margin-bottom: 6px;
+    background-color: var(--input-bg); border: 1px solid var(--input-border); border-radius: 4px;
+}
+.sbo-css-problems-line { color: var(--text-soft); font-size: 6px; margin-bottom: 1px; }
+.sbo-css-problems-buttons { display: flex; justify-content: flex-end; gap: 4px; }
+.sbo-css-problems-close { background-color: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.sbo-css-problems-close:hover { background-color: var(--accent-hover); border-color: var(--accent-hover); }

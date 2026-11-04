@@ -17,7 +17,7 @@ final class MinecraftMixin {
     @Inject(method = "setScreen", at = @At("HEAD"))
     private final void sbo$onSetScreen(@Nullable final Screen screen, @NonNull final CallbackInfo ci) {
         if (screen != null) {
-            SBOEvent.INSTANCE.emit(new GuiOpenEvent(screen, ci));
+            SBOEvent.INSTANCE.emit(new GuiOpenEvent(screen));
         }
     }
     //#endif

@@ -1,8 +1,5 @@
 package net.sbo.mod.diana.achievements
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.core.component.DataComponents
 import net.minecraft.nbt.CompoundTag
@@ -29,11 +26,15 @@ import net.sbo.mod.utils.data.DataManager.pastDianaEventsData
 import net.sbo.mod.utils.data.DataManager.sboData
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
-import net.sbo.mod.utils.events.impl.entity.EntitiyHitEvent
+import net.sbo.mod.utils.events.impl.entity.EntityHitEvent
 import net.sbo.mod.utils.events.impl.game.WorldChangeEvent
 import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
 import net.sbo.mod.utils.game.ItemLookup
-import java.lang.Thread.sleep
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.regex.Pattern
@@ -78,7 +79,7 @@ object AchievementManager {
             backTrackAchievements()
         }
         addAllAchievements()
-        
+
         kingSoul()
         Register.onTick(20) { trackCOA() }
 
@@ -87,8 +88,8 @@ object AchievementManager {
     }
 
     private fun addAchievement(id: Int, name: String, description: String, rarity: String, previousId: Int? = null, hidden: Boolean = false, repeatable: Boolean = true, chatOnly: Boolean = false) {
-        if (achievements.containsKey(id)) {
-            throw RuntimeException("Duplicate achievement ID detected: $id. Achievement with this ID already exists: ${achievements[id]?.name}")
+        require(!achievements.containsKey(id)) {
+            "Duplicate achievement ID detected: $id. Achievement with this ID already exists: ${achievements[id]?.name}"
         }
         val achievement = Achievement(id, name, description, rarity, previousId, hidden, repeatable, chatOnly)
         achievements[id] = achievement
@@ -109,20 +110,29 @@ object AchievementManager {
     private fun processQueue() {
         if (isProcessingQueue.compareAndSet(false, true)) {
             coroutineScope.launch {
-                while (achievementQueue.isNotEmpty()) {
-                    val id = achievementQueue.poll()
-                    val achievement = getAchievement(id)
-                    if (achievement != null && achievement.canBeUnlocked()) {
-                        if (achievement.previousId != null && !getAchievement(achievement.previousId)?.isUnlocked()!!) {
-                            achievementQueue.add(achievement.previousId)
-                            achievementQueue.add(id)
-                        } else {
-                            achievement.unlock()
-                            sleep(1000L)
+                try {
+                    while (achievementQueue.isNotEmpty()) {
+                        val id = achievementQueue.poll()
+                        val achievement = getAchievement(id)
+
+                        if (achievement != null && achievement.canBeUnlocked()) {
+                            if (achievement.previousId != null &&
+                                !getAchievement(achievement.previousId)?.isUnlocked()!!
+                            ) {
+                                achievementQueue.add(achievement.previousId)
+                                achievementQueue.add(id)
+                            } else {
+                                achievement.unlock()
+                                delay(1L.seconds)
+                            }
                         }
                     }
+                } finally {
+                    isProcessingQueue.set(false)
+                    if (achievementQueue.isNotEmpty()) {
+                        processQueue()
+                    }
                 }
-                isProcessingQueue.set(false)
             }
         }
     }
@@ -136,7 +146,7 @@ object AchievementManager {
     }
 
     @SboEvent
-    fun onEntityHit(event: EntitiyHitEvent) {
+    fun onEntityHit(event: EntityHitEvent) {
         if (event.entity !is Player) return
         val isRareMob = RareMob.entries.any { event.entity.name.string.contains(it.display, ignoreCase = true) } && event.entity.uuid.version() != 4
         if (!isRareMob) return
@@ -147,7 +157,7 @@ object AchievementManager {
     }
 
 
-    fun trackAchievementsItem(tracker: DianaTrackerMayorData) {
+    internal fun trackAchievementsItem(tracker: DianaTrackerMayorData) {
         if (!isOnHypixel) return
         val itemsData = tracker.items
         val mobsData = tracker.mobs
@@ -347,7 +357,7 @@ object AchievementManager {
                 105, 106 -> kills >= 50 // manti & kings
                 45, 46, 47, 104 -> kills >= 500 // inq, minotaur, champ, sphinx
                 50, 103 -> kills >= 750 // gaia, harpy
-                48, 49, 101, 102,-> kills >= 1000 // hunter, lynx, nymph, bull
+                48, 49, 101, 102 -> kills >= 1000 // hunter, lynx, nymph, bull
                 else -> false
             }
             if (isMaxed) unlockAchievement(id)
@@ -489,8 +499,8 @@ object AchievementManager {
                 if (enchants.getInt("ultimate_chimera").orElse(0) == 5) chimV = true
                 if (enchants.getInt("looting").orElse(0) == 5) lootingV = true
                 if (enchants.getInt("divine_gift").orElse(0) == 3) divineGift3 = true
-                break
             }
+
             if (chimV) unlockAchievement(52)
             if (lootingV) unlockAchievement(53)
             if (divineGift3) unlockAchievement(54)
@@ -499,7 +509,7 @@ object AchievementManager {
     }
 
     private fun kingSoul() {
-        Register.onChatMessage(Regex("^§aYou added a §2Empyrean King Minos §7Lv1750 §asoul to your §9Summoning Ring§a!$")) { message, matchResult ->
+        Register.onChatMessage(Regex("^§aYou added a §2Empyrean King Minos §7Lv1750 §asoul to your §9Summoning Ring§a!$")) { _, matchResult ->
             if ("King Minos" in matchResult.groupValues[0]) unlockAchievement(118)
         }
     }

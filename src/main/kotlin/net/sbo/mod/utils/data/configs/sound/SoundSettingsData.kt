@@ -1,16 +1,22 @@
 package net.sbo.mod.utils.data.configs.sound
 
+import com.google.gson.annotations.SerializedName
 import net.sbo.mod.utils.data.DataManager
 
+// TODO: remove the voume typo compatibility from @SerializedName alternate once most people have upgraded to 0.7.2-beta.3 or higher, as the typo in source code still flags typo detection tools
 data class SoundSettingsData(
     var lowInqHpSound: String = "",
-    var lowInqHpVoume: Float = 1.0f,
+    @SerializedName(value = "lowInqHpVolume", alternate = ["lowInqHpVoume"])
+    var lowInqHpVolume: Float = 1.0f,
     var lowSphinxHpSound: String = "",
-    var lowSphinxHpVoume: Float = 1.0f,
+    @SerializedName(value = "lowSphinxHpVolume", alternate = ["lowSphinxHpVoume"])
+    var lowSphinxHpVolume: Float = 1.0f,
     var lowKingHpSound: String = "",
-    var lowKingHpVoume: Float = 1.0f,
+    @SerializedName(value = "lowKingHpVolume", alternate = ["lowKingHpVoume"])
+    var lowKingHpVolume: Float = 1.0f,
     var lowMantiHpSound: String = "",
-    var lowMantiHpVoume: Float = 1.0f,
+    @SerializedName(value = "lowMantiHpVolume", alternate = ["lowMantiHpVoume"])
+    var lowMantiHpVolume: Float = 1.0f,
     var inqSound: String = "",
     var inqVolume: Float = 1.0f,
     var sphinxSound: String = "",

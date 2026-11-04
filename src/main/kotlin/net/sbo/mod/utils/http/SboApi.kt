@@ -26,7 +26,7 @@ import java.nio.charset.StandardCharsets
  */
 object SboApi {
     private val json = Json { encodeDefaults = false }
-    
+
     private val VERSION_PATTERN = Regex("[A-Za-z0-9][A-Za-z0-9.+_-]{0,31}")
 
     private var cachedVersion: String? = null
@@ -54,7 +54,7 @@ object SboApi {
     internal fun authedPost(path: String, body: String = "{}"): HttpRequestHandle =
         authed { headers -> Http.sendPostRequest("$API_URL$path", body, headers) }
 
-    internal fun authedGet(path: String): HttpRequestHandle =
+    private fun authedGet(path: String): HttpRequestHandle =
         authed { headers -> Http.sendGetRequest("$API_URL$path", headers) }
 
     /**
@@ -69,7 +69,8 @@ object SboApi {
                     .result { response ->
                         val text = response.body?.string().orEmpty()
                         val (code, message) = errorOf(text)
-                        val wrongKey = code == MojangAuth.KEY_NOT_YOURS || (code == "INVALID_KEY" && message?.startsWith("Key is banned") != true)
+                        val wrongKey =
+                            code == MojangAuth.KEY_NOT_YOURS || code == "INVALID_KEY" && message?.startsWith("Key is banned") != true
                         when {
                             !retried && wrongKey -> {
                                 SboKey.clear()
@@ -120,7 +121,7 @@ object SboApi {
     fun ahItems(): HttpRequestHandle = get("/ahItems")
 
     fun badges(knownVersion: String?): HttpRequestHandle =
-        get("/badges" + (knownVersion?.let { "?v=${encode(it)}" } ?: ""))
+        get("/badges" + knownVersion?.let { "?v=${encode(it)}" }.orEmpty())
 
     // format=2: hex colors, gradients and team tags; without it the backend answers like for 0.7.0
     fun ownBadge(): HttpRequestHandle = authedGet("/badge?format=2")

@@ -23,13 +23,13 @@ object Backups {
     data class Backup(val file: File, val createdAt: Long, val size: Long)
 
     // Newest first
-    fun list(): List<Backup> = DataManager.backupDir().listFiles().orEmpty().mapNotNull { file ->
+    fun list(): List<Backup> = DataManager.backupDir().listFiles().asSequence().mapNotNull { file ->
         val stamp = NAME.matchEntire(file.name)?.groupValues?.get(1) ?: return@mapNotNull null
         val createdAt = runCatching {
             LocalDateTime.parse(stamp, STAMP).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
         }.getOrDefault(file.lastModified())
         Backup(file, createdAt, file.length())
-    }.sortedByDescending { it.createdAt }
+    }.sortedByDescending { it.createdAt }.toList()
 
     // Client thread. The current data is backed up first (DataManager.importAll)
     fun load(backup: Backup) {

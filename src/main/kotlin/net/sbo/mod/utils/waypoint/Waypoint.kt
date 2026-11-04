@@ -7,12 +7,10 @@ import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.RareMob
 import net.sbo.mod.diana.burrows.ChainTracker
 import net.sbo.mod.settings.categories.Burrows
-import net.sbo.mod.settings.categories.RareMobs
 import net.sbo.mod.settings.categories.Warps
 import net.sbo.mod.settings.categories.Waypoints
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Player
-import net.sbo.mod.utils.chat.ChatUtils
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.render.RenderUtils3D
@@ -44,6 +42,8 @@ internal fun calculateDynamicOpacity(distance: Double): Float = when {
  * @param type The type of the waypoint for customization.
  * @param ttl The time to live for the waypoint in seconds (0 for infinite).
  * @param line Whether to draw a line to the waypoint.
+ * @param rareMobType The type of the rare mob, null if this not a rare mob waypoint.
+ * @param rareMobSentBy The name of the player that sent or owns the rare mob, null if this not a rare mob waypoint or if the player is unknown.
  */
 class Waypoint(
     var text: String,
@@ -69,6 +69,7 @@ class Waypoint(
             hasText = value.isNotEmpty()
 
             component = Component.nullToEmpty(value)
+
             visualOrderText = component.visualOrderText
             textWidth = mc.font.width(visualOrderText)
         }
@@ -139,8 +140,10 @@ class Waypoint(
         val component = Component.nullToEmpty(distanceText.trim())
 
         secondaryText = component
-        secondaryTextWidth = mc.font.width(component)
-        secondaryVisualOrderText = component.visualOrderText
+        val visualOrderText = component.visualOrderText
+
+        secondaryTextWidth = mc.font.width(visualOrderText)
+        secondaryVisualOrderText = visualOrderText
     }
 
     private fun clearSecondaryText() {
@@ -190,7 +193,7 @@ class Waypoint(
 
     /** Which burrow of the chain a spade or arrow guess is, like " (3/10)", on the main line with and without Look Alike. */
     private fun getChainStepText(): String {
-        if (!Burrows.showChainStep || (this.type != "guess" && this.type != "arrow")) return ""
+        if (!Burrows.showChainStep || this.type != "guess" && this.type != "arrow") return ""
         val step = ChainTracker.stepAt(this.pos) ?: return ""
         return " §7${step.step}/${step.max}"
     }
@@ -319,12 +322,20 @@ class Waypoint(
         RenderUtils3D.renderWaypoint(
             context,
             this.hasText,
+            //#if MC < 26.2
             this.component,
+            //#endif
             this.textWidth,
-            this.visualOrderText,
+            //#if MC > 26.1
+            //$$ visualOrderText,
+            //#endif
+            //#if MC < 26.2
             this.secondaryText,
+            //#endif
             this.secondaryTextWidth,
-            this.secondaryVisualOrderText,
+            //#if MC > 26.1
+            //$$ secondaryVisualOrderText,
+            //#endif
             this.pos,
             rgbAndHex.rgb,
             applyAlpha(rgbAndHex.hex, waypointTextOpacity),

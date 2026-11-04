@@ -77,7 +77,7 @@ object EventsGui {
         var sort by useState(DataManager.sboData.eventsSort.takeIf { it in SORTS } ?: "year")
         var uiScale by useState(UiScale.own(DataManager.sboData.eventsUiScale))
         useSboScale(uiScale)
-        useSboTheme()
+        useSboTheme("events")
         // The running event keeps counting while the window is open
         var tick by useState(0)
         useInterval(1000) { tick++ }
@@ -98,7 +98,7 @@ object EventsGui {
 
         // Best values among the past events, only worth a badge with more than one event
         fun best(of: (Entry) -> Double?): Entry? =
-            pastEntries.takeIf { it.size > 1 }?.maxByOrNull { of(it) ?: -1.0 }?.takeIf { (of(it) ?: 0.0) > 0.0 }
+            pastEntries.takeIf { it.size > 1 }?.maxByOrNull { of(it) ?: -1.0 }?.takeIf { of(it) ?: 0.0 > 0.0 }
         val bestProfit = best { it.profit.toDouble() }
         val bestPerHour = best { it.profitPerHour }
         val bestChimeras = best { it.chimeras.toDouble() }
@@ -342,7 +342,7 @@ object EventsGui {
                 div(className = classNames("ev-row", "zero" to (s.number == 0.0))) {
                     span(className = "ev-row-label") { +s.label }
                     span(className = "ev-row-value") { +s.value }
-                    span(className = "ev-row-percent") { +(s.rate ?: "") }
+                    span(className = "ev-row-percent") { +s.rate.orEmpty() }
                     val avg = averages?.getOrNull(n)
                     val diff = if (avg == null) 0.0 else s.compared - avg
                     when {
@@ -350,7 +350,7 @@ object EventsGui {
                         else -> span(
                             className = classNames("ev-trend", if (diff > 0) "up" else "down"),
                             title = "Average: " + if (s.rateNumber != null) String.format(Locale.ROOT, "%.2f%%", avg) else Helper.formatNumber(avg),
-                        ) { +(if (diff > 0) "▲" else "▼") }
+                        ) { +if (diff > 0) "▲" else "▼" }
                     }
                 }
             }

@@ -12,7 +12,7 @@ import java.io.InputStream
  * The .string() method reads the body as text.
  */
 class ResponseBody(private val inputStream: InputStream?) {
-    fun string(): String = inputStream?.bufferedReader(Charsets.UTF_8)?.use { it.readText() } ?: ""
+    fun string(): String = inputStream?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }.orEmpty()
 }
 
 /**
@@ -93,6 +93,7 @@ class HttpRequestHandle {
      * The `onSuccess` block only runs for 2xx responses with a valid JSON body.
      * Any error (network, HTTP error code, or parsing failure) is routed to the .error() block.
      *
+     * @param T The type to deserialize the JSON response body into.
      * @param ignoreUnknownKeys If true, the JSON parser will ignore properties in the JSON
      * that do not exist in the target data class. Defaults to false (strict parsing).
      * @param onSuccess The callback to execute with the parsed data object.
@@ -182,3 +183,4 @@ class HttpRequestHandle {
         error?.let { failure?.invoke(it) }
     }
 }
+

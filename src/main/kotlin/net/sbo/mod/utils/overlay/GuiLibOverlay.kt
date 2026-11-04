@@ -9,6 +9,7 @@ import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.render.RenderUtils2D
 import java.awt.Color
+import java.util.Locale
 import kotlin.math.ceil
 
 /**
@@ -107,7 +108,7 @@ class GuiLibOverlay(
         if (isOverOverlay(mouseX, mouseY)) drawContext.fill(left, top, left + width, top + height, Color(0, 0, 0, 100).rgb)
         if (selected) {
             drawContext.outline(left, top, width, height, Color(255, 0, 0, 170).rgb)
-            drawContext.text(mc.font, "X: $left Y: $top Scale: ${String.format("%.1f", scale)}", left, top - mc.font.lineHeight - 1, Color(255, 255, 255, 200).rgb, true)
+            drawContext.text(mc.font, "X: $left Y: $top Scale: ${String.format(Locale.ROOT, "%.1f", scale)}", left, top - mc.font.lineHeight - 1, Color(255, 255, 255, 200).rgb, true)
         }
     }
 

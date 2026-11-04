@@ -2,16 +2,14 @@ package net.sbo.mod.utils.waypoint
 
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents
-import net.minecraft.client.player.RemotePlayer
 import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.core.BlockPos
-import net.minecraft.world.entity.decoration.ArmorStand
 import net.minecraft.world.phys.Vec3
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.state.BlockState
 import net.sbo.mod.diana.RareMob
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.diana.DianaTracker
+import net.sbo.mod.diana.tracker.Tracker
 import net.sbo.mod.diana.DianaMobDetect
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.diana.guesses.ArrowGuessBurrow
@@ -43,7 +41,7 @@ private const val RARE_MOB_VALIDATION_DISTANCE = 25.0
 
 object WaypointManager {
     private val waypoints = mutableMapOf<String, MutableList<Waypoint>>()
-    private data class PreparedLine(
+    private class PreparedLine(
         val start: Vec3,
         val end: Vec3,
         val rgb: FloatArray,
@@ -79,15 +77,15 @@ object WaypointManager {
             val world = mc.level ?: return@onChatMessage
 
             val x = match.groups["x"]?.value?.toIntOrNull() ?: 0
-            var y = match.groups["y"]?.value?.toIntOrNull() ?: 0
+            val y = match.groups["y"]?.value?.toIntOrNull() ?: 0
             val z = match.groups["z"]?.value?.toIntOrNull() ?: 0
 
             val sentPos = SboVec(x.toDouble(), y.toDouble(), z.toDouble())
             val pos = floorToGround(world, sentPos)
 
-            val trailing = match.groups["trailing"]?.value ?: ""
+            val trailing = match.groups["trailing"]?.value.orEmpty()
             val mob = trailing.replace("|", "").trim()
-            val selfName = Player.getName() ?: ""
+            val selfName = Player.getName().orEmpty()
             if (!channel.contains("Guild")) {
                 val mobType: RareMob? = when (mob) {
                     "Minos Inquisitor" -> RareMob.INQ
@@ -372,7 +370,7 @@ object WaypointManager {
             // The self-spawn message always shows the title and plays the custom sound to let user know they spawned a rare mob.
             // For other's mobs, the title and sound does not play unless the mob was selected in "Mobs to Receive".
             if (!fromSelfSpawnMessage && mobType !in RareMobs.ReceiveMobs) return mobData.mobName
-    
+
             Helper.showTitle(
                 mobData.title,
                 player.ifEmpty { null },
@@ -387,9 +385,7 @@ object WaypointManager {
         return mobData.mobName
     }
 
-    fun floorToGround(pos: SboVec): SboVec {
-        return floorToGround(mc.level!!, pos)
-    }
+    fun floorToGround(pos: SboVec): SboVec = floorToGround(mc.level!!, pos)
 
     private fun floorToGround(level: ClientLevel, pos: SboVec): SboVec {
         val x = pos.x.roundToInt()
@@ -525,8 +521,8 @@ object WaypointManager {
             val mobName = mobType.display
 
             val isOwnSpawn =
-                DianaTracker.lastSpawnedMob == mobName &&
-                now - DianaTracker.lastSpawnedMobTime <= TimeUnit.SECONDS.toNanos(5)
+                Tracker.lastSpawnedMob == mobName &&
+                now - Tracker.lastSpawnedMobTime <= TimeUnit.SECONDS.toNanos(5)
 
             addRareMobWaypoint(
                 player = "",
@@ -611,7 +607,7 @@ object WaypointManager {
             ?: return
 
         removeWaypoint(waypoint)
-        Chat.chat("§6[SBO] §eRemoved the $mobName waypoint by $cleanPlayer since the mob died.")
+        Chat.chat("§6[SBO] §eRemoved the $mobName waypoint by §r$player§e since the mob died.")
     }
 
     /**
@@ -667,7 +663,7 @@ object WaypointManager {
             val color = Color(Waypoints.OptimalOrderLineColor)
             val rgb = floatArrayOf(color.red / 255f, color.green / 255f, color.blue / 255f)
             val width = (lineWidth / 1.6f).coerceIn(1.0f, 20.0f)
-            chain.zipWithNext().mapIndexedNotNull { index, (a, b) ->
+            chain.asSequence().zipWithNext().mapIndexedNotNull { index, (a, b) ->
                 val bDistance = playerPos.distanceTo(b.pos)
                 // Always show the first line; show the next two only when their destination is nearby.
                 if (index > 0 && (index > 2 || bDistance > 50)) return@mapIndexedNotNull null
@@ -678,7 +674,7 @@ object WaypointManager {
                     b.pos.toVec3d().add(0.5, 1.0, 0.5),
                     rgb, width, opacity
                 )
-            }
+            }.toList()
         }
     }
 
@@ -721,6 +717,7 @@ object WaypointManager {
     /**
      * Adds a waypoint to the management system.
      * @param waypoint The waypoint to add.
+     * @param playSound Whether or not to play the burrow found sound, only if the waypoint's type is "burrow".
      */
     fun addWaypoint(waypoint: Waypoint, playSound: Boolean = true) {
         val type = waypoint.type
@@ -786,7 +783,10 @@ object WaypointManager {
 
     /**
      * Removes limit number of waypoints of a specific type that are within a certain distance from the given position.
+     * @param pos The position where [distance] amount of radius around it is eligible for removal.
      * @param type The type of waypoints to remove.
+     * @param distance The amount of blocks around [pos] for waypoints to be removed.
+     * @param limit The limit of the waypoints that can be removed.
      */
     private fun removeWithinDistanceFrom(pos: SboVec, type: String, distance: Int, limit: Int) {
         if (limit <= 0) return
@@ -811,17 +811,14 @@ object WaypointManager {
      * Adds a spade guess waypoint.
      * @param pos The position for the spade guess waypoint.
      */
-    fun addSpadeGuess(pos: SboVec?) {
-        if (pos == null) return
-
+    fun addSpadeGuess(pos: SboVec) {
         if (!waypointExists("burrow", pos).first && !waypointExists("guess", pos).first && !BurrowDetector.wasRecentlyRemoved(pos)) {
             val waypoint = Waypoint("Spade Guess", pos.x, pos.y, pos.z, type = "guess")
             addWaypoint(waypoint)
         }
     }
 
-    fun addArrowGuess(pos: SboVec?) {
-        if (pos == null) return
+    fun addArrowGuess(pos: SboVec) {
         val exists = getWaypointsOfType("arrow").any { it.pos.roundLocationToBlock() == pos.roundLocationToBlock() }
         if (exists) return
         addWaypoint(
@@ -835,9 +832,7 @@ object WaypointManager {
         )
     }
 
-    fun addArrowSubGuess(pos: SboVec?) {
-        if (pos == null) return
-
+    fun addArrowSubGuess(pos: SboVec) {
         val exists = getWaypointsOfType("subGuess")
             .any { it.pos.roundLocationToBlock() == pos.roundLocationToBlock() }
 
@@ -886,7 +881,7 @@ object WaypointManager {
      * @param type The type of waypoints to retrieve.
      * @return The waypoints of the specified type, or an empty list if none exist.
      */
-    fun getWaypointsOfType(type: String): List<Waypoint> = waypoints[type] ?: emptyList()
+    fun getWaypointsOfType(type: String): List<Waypoint> = waypoints[type].orEmpty()
 
     private fun getWarpPoint(name: String): WarpPoint? = hubWarps[name] ?: additionalHubWarps[name]
 
@@ -897,7 +892,7 @@ object WaypointManager {
         val arrow = getWaypointsOfType("arrow")
         val spade = getWaypointsOfType("guess")
 
-        // Avoids calling CollectionsKt#plus which calls ArrayList#addAll which calls EmptyList#toArray if all of the lists are already empty, small performance optimization.
+        // Avoids calling CollectionsKt#plus which calls ArrayList#addAll which calls EmptyList#toArray if all the lists are already empty, small performance optimization.
         if (known.isEmpty() && arrow.isEmpty() && spade.isEmpty()) return emptyList()
 
         return known + arrow + spade

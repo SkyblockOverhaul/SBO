@@ -37,7 +37,7 @@ object ScoreBoard {
         linesDirty = true
     }
 
-    fun markTitleDirty() {
+    private fun markTitleDirty() {
         titleDirty = true
     }
 
@@ -52,9 +52,7 @@ object ScoreBoard {
      * Each entry is stripped of any formatting codes.
      * @return A list of formatted strings representing the scoreboard entries.
      */
-    fun getLines(): List<String> {
-        return lastLines
-    }
+    fun getLines(): List<String> = lastLines
 
     private fun fetchLines(): List<String> {
         val scoreboard = SBOKotlin.mc.level?.scoreboard ?: return emptyList()
@@ -75,9 +73,7 @@ object ScoreBoard {
             .asReversed()
     }
 
-    fun getTitle(): String {
-        return lastTitle
-    }
+    fun getTitle(): String = lastTitle
 
     private fun fetchTitle(): String {
         val scoreboard = SBOKotlin.mc.level?.scoreboard ?: return "Unknown Scoreboard"

@@ -5,9 +5,9 @@ import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.game.World
 import java.awt.Color
+import java.util.Locale
 
 fun isCraftingScreenOpen(): Boolean = CRAFTING_PLAYER_INVENTORY_FILTER(mc.screen)
 
@@ -19,11 +19,12 @@ val CRAFTING_PLAYER_INVENTORY_FILTER = fun(screen: Screen?): Boolean = screen is
  * Represents an overlay that can display text lines on the screen.
  * Overlays can be customized with position, scale, and render conditions.
  * They can also be clicked to trigger actions on the text lines.
- * @property name The name of the overlay.
- * @property x The x-coordinate of the overlay.
- * @property y The y-coordinate of the overlay.
- * @property scale The scale of the overlay, default is 1.0f.
- * @property allowedScreens The list of screens where the overlay is allowed to render.
+ * @param name The name of the overlay.
+ * @param x The x-coordinate of the overlay.
+ * @param y The y-coordinate of the overlay.
+ * @param scale The scale of the overlay, default is 1.0f.
+ * @param allowedScreens The list of screens where the overlay is allowed to render.
+ * @property exampleView The list of lines that will be rendered when the overlay renders in the overlay move/edit screen.
  */
 class Overlay(
     name: String,
@@ -70,7 +71,7 @@ class Overlay(
     }
 
     fun clearLines() {
-        lines = mutableListOf()
+        lines.clear()
     }
 
     private fun getLines(): List<OverlayTextLine> {
@@ -83,7 +84,6 @@ class Overlay(
     override fun overlayClicked(mouseX: Double, mouseY: Double) {
         if (!World.isInSkyblock()) return
         if (!allowedScreens.any { it(mc.screen) }) return
-        val textRenderer = mc.font
         if (!isOverOverlay(mouseX, mouseY)) return
 
         var currentY = renderY / scale
@@ -91,7 +91,7 @@ class Overlay(
 
         for (line in getLines()) {
             if (!line.checkCondition()) continue
-            line.lineClicked(mouseX, mouseY, currentX * scale, currentY * scale, textRenderer, scale)
+            line.lineClicked(mouseX, mouseY, currentX * scale, currentY * scale, scale)
 
             if (line.linebreak) {
                 currentY += line.height
@@ -156,13 +156,11 @@ class Overlay(
 
         if (selected) {
             drawDebugBox(drawContext, currentX.toInt(), currentY.toInt(), totalWidth, totalHeight)
-            drawContext.text(textRenderer, "X: ${renderX.toInt()} Y: ${renderY.toInt()} Scale: ${String.format("%.1f", scale)}", currentX.toInt(), (currentY - textRenderer.lineHeight - 1).toInt(), Color(255, 255, 255, 200).rgb, true)
+            drawContext.text(textRenderer, "X: ${renderX.toInt()} Y: ${renderY.toInt()} Scale: ${String.format(Locale.ROOT, "%.1f", scale)}", currentX.toInt(), (currentY - textRenderer.lineHeight - 1).toInt(), Color(255, 255, 255, 200).rgb, true)
         }
 
-        if (inEditingScreen()) {
-            if (isOverOverlay(mouseX, mouseY, totalWidth, totalHeight)) {
-                drawContext.fill(currentX.toInt(), currentY.toInt(), (currentX + totalWidth).toInt(), (currentY + totalHeight).toInt(), Color(0, 0, 0, 100).rgb)
-            }
+        if (inEditingScreen() && isOverOverlay(mouseX, mouseY, totalWidth, totalHeight)) {
+            drawContext.fill(currentX.toInt(), currentY.toInt(), (currentX + totalWidth).toInt(), (currentY + totalHeight).toInt(), Color(0, 0, 0, 100).rgb)
         }
 
         val lines = getLines()

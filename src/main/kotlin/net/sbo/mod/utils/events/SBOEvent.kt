@@ -11,7 +11,7 @@ import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback
 import net.minecraft.world.InteractionResult
 import net.sbo.mod.utils.events.annotations.SboEvent
-import net.sbo.mod.utils.events.impl.entity.EntitiyHitEvent
+import net.sbo.mod.utils.events.impl.entity.EntityHitEvent
 import net.sbo.mod.utils.events.impl.entity.EntityLoadEvent
 import net.sbo.mod.utils.events.impl.entity.EntityUnloadEvent
 import net.sbo.mod.utils.events.impl.game.*
@@ -48,8 +48,8 @@ object SBOEvent {
          * Disconnect Event
          * Fired when the client disconnects from a server.
          */
-        ClientPlayConnectionEvents.DISCONNECT.register { handler, client ->
-            emit(DisconnectEvent(handler, client))
+        ClientPlayConnectionEvents.DISCONNECT.register { _, client ->
+            emit(DisconnectEvent(client))
         }
         /**
          * Game Close Event
@@ -90,20 +90,20 @@ object SBOEvent {
         }
 
 
-        ScreenEvents.AFTER_INIT.register { client, screen, scaledWidth, scaledHeight ->
+        ScreenEvents.AFTER_INIT.register { client, screen, _, _ ->
             /**
              * GUI Close Event
              * Fired when a GUI screen is closed.
              */
             ScreenEvents.remove(screen).register {
-                emit(GuiCloseEvent(client, screen, scaledWidth, scaledHeight))
+                emit(GuiCloseEvent(client, screen))
             }
 
             /** GUI Post Render Event
              * Fired after a GUI screen is rendered.
              */
-            ScreenEvents.afterExtract(screen).register { renderScreen, drawContext, mouseX, mouseY, tickDelta ->
-                emit(GuiPostRenderEvent(renderScreen, drawContext, mouseX, mouseY, tickDelta))
+            ScreenEvents.afterExtract(screen).register { renderScreen, drawContext, mouseX, mouseY, _ ->
+                emit(GuiPostRenderEvent(renderScreen, drawContext, mouseX, mouseY))
             }
 
             /** GUI Mouse Click Event
@@ -132,15 +132,15 @@ object SBOEvent {
          * Entity Hit Event
          * Fired when a player hits an entity.
          */
-        AttackEntityCallback.EVENT.register { player, world, hand, entity, hitResult ->
-            emit(EntitiyHitEvent(player, world, hand, entity, hitResult))
+        AttackEntityCallback.EVENT.register { player, world, _, entity, _ ->
+            emit(EntityHitEvent(player, world, entity))
             InteractionResult.PASS
         }
     }
 
     /** Register a listener for a specific event type. Returns an unregister function. */
     fun <T : Any> on(eventType: KClass<T>, priority: Int = SboEvent.Priority.NORMAL, callback: (T) -> Unit): () -> Unit {
-        val callbacks = listeners.get(eventType.java)
+        val callbacks = listeners[eventType.java]
         @Suppress("UNCHECKED_CAST")
         val listener = Listener(callback as (Any) -> Unit, priority)
         callbacks.add(listener)
@@ -153,8 +153,8 @@ object SBOEvent {
     /** Emit an event to all registered listeners. */
     fun emit(event: Any) {
         // Avoids Iterator allocation and forEach lambda wrapping, small performance optimization.
-        val callbacks = listeners.get(event.javaClass)
-        for (i in 0 until callbacks.size) {
+        val callbacks = listeners[event.javaClass]
+        for (i in 0..<callbacks.size) {
             callbacks[i].callback(event)
         }
     }

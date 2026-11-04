@@ -70,7 +70,7 @@ object LootshareParty : DianaOverlay<LootshareParty.View>("lootshareParty", Trac
             val now = System.nanoTime()
             when {
                 lootsharedRegex.matches(text) -> lootshared[sender] = now
-                RareMob.fromName(spawnShareRegex.find(text)?.groupValues?.get(1) ?: "") != null -> spawners[sender] = now
+                RareMob.fromName(spawnShareRegex.find(text)?.groupValues?.get(1).orEmpty()) != null -> spawners[sender] = now
             }
         }
 
@@ -103,8 +103,8 @@ object LootshareParty : DianaOverlay<LootshareParty.View>("lootshareParty", Trac
         val key = name.lowercase()
         val isSelf = key == Player.getName()?.lowercase()
         return when {
-            (isSelf && LootshareDisplay.ownMobAround) || spawners.isRecent(key, now) -> Status.SPAWNED
-            (isSelf && LootshareDisplay.lootsharedAny) || lootshared.isRecent(key, now) -> Status.SHARED
+            isSelf && LootshareDisplay.ownMobAround || spawners.isRecent(key, now) -> Status.SPAWNED
+            isSelf && LootshareDisplay.lootsharedAny || lootshared.isRecent(key, now) -> Status.SHARED
             else -> Status.MISSING
         }
     }

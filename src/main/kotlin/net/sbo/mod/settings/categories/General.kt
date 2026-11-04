@@ -23,8 +23,8 @@ object General : Category("General") {
     }
 
     var disableNewSettings by boolean(false) {
-        this.name = Literal("Disable All New Settings")
-        this.description = Literal("New features that would be on right after an update start switched off instead. What's New at the top of the settings lists them, with what they do, so you can turn on the ones you want.")
+        this.name = literal("Disable All New Settings")
+        this.description = literal("New features that would be on right after an update start switched off instead. What's New at the top of the settings lists them, with what they do, so you can turn on the ones you want.")
     }
 
     init {
@@ -34,18 +34,18 @@ object General : Category("General") {
     }
 
     var bobberOverlay by boolean(false) {
-        this.name = Literal("Bobber Overlay")
-        this.description = Literal("Tracks the number of bobbers near you /sboguis to move the overlay.")
+        this.name = literal("Bobber Overlay")
+        this.description = literal("Tracks the number of bobbers near you /sboguis to move the overlay.")
     }
 
     var legionOverlay by boolean(false) {
-        this.name = Literal("Legion Overlay")
-        this.description = Literal("Tracks the players near you for legion buff /sboguis to move the overlay.")
+        this.name = literal("Legion Overlay")
+        this.description = literal("Tracks the players near you for legion buff /sboguis to move the overlay.")
     }
 
     var pickuplogOverlay by boolean(false) {
-        this.name = Literal("Pickup Log Overlay")
-        this.description = Literal("Displays a pickup log in an overlay like sba. /sboguis to move the overlay.")
+        this.name = literal("Pickup Log Overlay")
+        this.description = literal("Displays a pickup log in an overlay like sba. /sboguis to move the overlay.")
     }
 
     init {
@@ -67,19 +67,19 @@ object General : Category("General") {
 
     // Was one Hide ... Messages switch each
     var hideMessages by options<HiddenMessage> {
-        this.name = Literal("Hide Messages")
+        this.name = literal("Hide Messages")
         this.since = "0.7.2-beta.2"
-        this.description = Literal("Chat messages to hide, hover an option for which ones.")
+        this.description = literal("Chat messages to hide, hover an option for which ones.")
     }
 
     var assumeMuted by boolean(false) {
-        this.name = Literal("Assume Muted")
-        this.description = Literal("Assumes you are muted and instead of running /pc to send mod messages always prefers to send them client-side to yourself only.")
+        this.name = literal("Assume Muted")
+        this.description = literal("Assumes you are muted and instead of running /pc to send mod messages always prefers to send them client-side to yourself only.")
     }
 
     var phoenixAnnouncer by boolean(true) {
-        this.name = Literal("Phoenix Announcer")
-        this.description = Literal("Announces on screen when you drop a phoenix pet.")
+        this.name = literal("Phoenix Announcer")
+        this.description = literal("Announces on screen when you drop a phoenix pet.")
     }
 
     init {
@@ -89,13 +89,13 @@ object General : Category("General") {
     }
 
     var disableAchievements by boolean(false) {
-        this.name = Literal("Disable Achievements")
-        this.description = Literal("Disables the SBO Achievements. Note that, internally your achievements will still be tracked and unlocked, just that you won't be notified in chat, via a title, and a sound, when one unlocks, if this option is enabled.")
+        this.name = literal("Disable Achievements")
+        this.description = literal("Disables the SBO Achievements. Note that, internally your achievements will still be tracked and unlocked, just that you won't be notified in chat, via a title, and a sound, when one unlocks, if this option is enabled.")
     }
 
     var achievementsButton by boolean(true) {
-        this.name = Literal("Achievements Button")
-        this.description = Literal("Shows the SBO Achievements button in the pause menu.")
+        this.name = literal("Achievements Button")
+        this.description = literal("Shows the SBO Achievements button in the pause menu.")
     }
 
     init {
@@ -118,37 +118,37 @@ object General : Category("General") {
     }
 
     var hubChunkCache by boolean(true) {
-        this.name = Literal("Chunk Cache")
-        this.description = Literal("Keeps chunks after the server unloads them and keeps rendering them up to your render distance, so each chunk only loads once per session and arrow guesses see far away. Only in the areas below. Paused while Bobby is enabled, turn Bobby off to use this instead (starts from your next lobby).")
+        this.name = literal("Chunk Cache")
+        this.description = literal("Keeps chunks after the server unloads them and keeps rendering them up to your render distance, so each chunk only loads once per session and arrow guesses see far away. Only in the areas below. Paused while Bobby is enabled, turn Bobby off to use this instead (starts from your next lobby).")
     }
 
     var chunkCacheAreas by strings("Hub") {
-        this.name = Literal("Chunk Cache Areas")
+        this.name = literal("Chunk Cache Areas")
         depends(::hubChunkCache)
-        this.description = Literal("Areas to cache, one per line (or separated by commas). Write the name exactly as it shows after \"Area:\" in the tab list, e.g. Hub, The Park or Dwarven Mines; upper/lower case doesn't matter. Each area needs memory for every chunk you saw, until you disconnect.")
+        this.description = literal("Areas to cache, one per line (or separated by commas). Write the name exactly as it shows after \"Area:\" in the tab list, e.g. Hub, The Park or Dwarven Mines; upper/lower case doesn't matter. Each area needs memory for every chunk you saw, until you disconnect.")
     }
 
     var chunkCacheWorkEverywhere by boolean(false) {
-        this.name = Literal("Chunk Cache Work Everywhere")
+        this.name = literal("Chunk Cache Work Everywhere")
         depends(::hubChunkCache)
-        this.description = Literal("Caches chunks in every SkyBlock area without listing each area above. Chunk Cache Areas is ineffective while this is enabled, since the cache works everywhere.")
+        this.description = literal("Caches chunks in every SkyBlock area without listing each area above. Chunk Cache Areas is ineffective while this is enabled, since the cache works everywhere.")
     }
 
     var chunkCacheHubIslandOnly by boolean(true) {
-        this.name = Literal("Cache Hub Island Only")
+        this.name = literal("Cache Hub Island Only")
         depends(::hubChunkCache)
-        this.description = Literal("Only limits caching while in the Hub: caches chunks of the Hub island itself, not the islands visible from it (The Park, Spider's Den, The Barn...). Other areas are unaffected and cache all chunks. Less memory and better performance in the Hub, but other islands stop rendering beyond the server's view distance. Within server view distance, they still render.")
+        this.description = literal("Only limits caching while in the Hub: caches chunks of the Hub island itself, not the islands visible from it (The Park, Spider's Den, The Barn...). Other areas are unaffected and cache all chunks. Less memory and better performance in the Hub, but other islands stop rendering beyond the server's view distance. Within server view distance, they still render.")
     }
 
     var chunkCacheRenderHubIslandOnly by boolean(false) {
-        this.name = Literal("Render Hub Island Only")
+        this.name = literal("Render Hub Island Only")
         depends(::chunkCacheHubIslandOnly)
-        this.description = Literal("Only affects rendering while in the Hub: only renders chunks of the Hub island itself or overlapping chunks with parts connected to Hub. Other areas are unaffected. Will make large parts of other islands such as The Park, Spider's Den, The Barn etc. not render, improving performance. This is an addition on top of Cache Hub Island Only (needs it enabled), making it not render these chunks at all, even if the server sent them and you are in server view distance.")
+        this.description = literal("Only affects rendering while in the Hub: only renders chunks of the Hub island itself or overlapping chunks with parts connected to Hub. Other areas are unaffected. Will make large parts of other islands such as The Park, Spider's Den, The Barn etc. not render, improving performance. This is an addition on top of Cache Hub Island Only (needs it enabled), making it not render these chunks at all, even if the server sent them and you are in server view distance.")
     }
 
     var chunkCacheAboveServerOnly by boolean(false) {
-        this.name = Literal("Only Above Server Render Distance")
+        this.name = literal("Only Above Server Render Distance")
         depends(::hubChunkCache)
-        this.description = Literal("Only runs the Chunk Cache while your render distance is higher than the server's (Hypixel: 8). Below that it only helps right after switching lobbies, so this saves a bit of performance.")
+        this.description = literal("Only runs the Chunk Cache while your render distance is higher than the server's (Hypixel: 8). Below that it only helps right after switching lobbies, so this saves a bit of performance.")
     }
 }

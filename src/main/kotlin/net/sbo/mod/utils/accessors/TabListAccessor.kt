@@ -11,4 +11,4 @@ internal interface TabListAccessor {
 
 // Whether the game drew the tab list last frame, also when a mod keeps it open without the key (VanillaHUD's toggle mode)
 val PlayerTabOverlay.isSboVisible: Boolean
-    get() = (this as? TabListAccessor)?.`sbo$isVisible`() ?: false
+    get() = (this as? TabListAccessor)?.`sbo$isVisible`() == true

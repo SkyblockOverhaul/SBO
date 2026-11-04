@@ -6,7 +6,6 @@ import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.guilib.core.dsl.div
 import net.sbo.guilib.core.dsl.item
 import net.sbo.guilib.core.dsl.span
-import net.sbo.guilib.core.dsl.tooltip
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.config.nextOption
 import net.sbo.mod.settings.categories.Trackers
@@ -73,7 +72,7 @@ object CrownOfAvarice {
     private var icon: ItemStack? = null
     var primaryCoaUuid: String? = null
     private var cachedCoaCoins: Long = -1L // Coins of the PRIMARY CoA only. -1 means that primary CoA isn't equipped
-    private var tracker: DianaTracker? = null
+    private val tracker: DianaTracker?
         get() = when (Trackers.coaTracker) {
             Trackers.TrackerMode.TOTAL -> DataManager.dianaTrackerTotalData
             Trackers.TrackerMode.EVENT -> DataManager.dianaTrackerMayorData
@@ -317,8 +316,9 @@ object CrownOfAvarice {
     private data class View(
         val icon: ItemStack?,
         val mode: String,
-        val inter: Boolean,
-        val background: Boolean,
+        // The look settings, see Trackers.lookClasses
+        val lookClasses: String,
+        val boxStyle: String?,
         val fillWidth: String,
         val percent: String,
         val maxed: Boolean,
@@ -347,8 +347,8 @@ object CrownOfAvarice {
         return View(
             icon = icon,
             mode = Helper.toTitleCase(Trackers.coaTracker.name),
-            inter = Trackers.trackerFont == Trackers.TrackerFont.INTER,
-            background = Trackers.hasBackground(Trackers.TrackerLook.COA),
+            lookClasses = Trackers.lookClasses(Trackers.TrackerLook.COA),
+            boxStyle = Trackers.boxStyle(Trackers.TrackerLook.COA),
             // Whole tenths of a percent are finer than a pixel of the bar
             fillWidth = percent,
             percent = if (coins >= 0L) "$percent%" else "-",
@@ -389,11 +389,9 @@ object CrownOfAvarice {
 
     private fun NodeBuilder.content(view: View) {
         val classes = buildString {
-            append("coa")
-            if (view.inter) append(" inter")
-            if (!view.background) append(" no-bg")
+            append("coa").append(view.lookClasses)
         }
-        div(className = classes) {
+        div(className = classes, style = view.boxStyle) {
             div(className = "coa-head") {
                 view.icon?.let { item(it, className = "coa-icon", decorations = false) }
                 span(className = "coa-title") { +"Crown of Avarice" }
@@ -452,14 +450,10 @@ object CrownOfAvarice {
     }
 
     /** Total coins made from leveling COAs with this tracker */
-    private fun getTotalCoins(): Long {
-        return tracker?.items?.COA_COINS ?: 0L
-    }
+    private fun getTotalCoins(): Long = tracker?.items?.COA_COINS ?: 0L
 
     // Infinite while nothing was earned yet
-    private fun maxedIn(coins: Long): Double {
-        return (MAX_COINS - coins.coerceAtLeast(0L)) / getCoinsPerHour()
-    }
+    private fun maxedIn(coins: Long): Double = (MAX_COINS - coins.coerceAtLeast(0L)) / getCoinsPerHour()
 
     /** Current COA's coins, or -1 if the item isn't a CoA */
     private fun getCurrentCoins(item: ItemStack? = null): Long {
@@ -480,14 +474,15 @@ object CrownOfAvarice {
     }
 
     fun ItemStack?.isCoA(): Boolean {
-        if (this == null) return false
+        if (this == null || this.isEmpty()) return false
 
-        return "CROWN_OF_AVARICE" in ItemLookup(this).sbId ||"CROWN_OF_AVARICE_CELEBRATION" in ItemLookup(this).sbId
+        val lookup = ItemLookup(this)
+        return "CROWN_OF_AVARICE" in lookup.sbId || "CROWN_OF_AVARICE_CELEBRATION" in lookup.sbId
     }
 
     private fun updateCoaPrice() {
-        cleanCOAPrice = Helper.getItemPrice("CROWN_OF_AVARICE", 1)
-        maxCOAPrice = Helper.getItemPrice("CROWN_OF_AVARICE_MAXED", 1)
+        cleanCOAPrice = Helper.getItemPrice("CROWN_OF_AVARICE")
+        maxCOAPrice = Helper.getItemPrice("CROWN_OF_AVARICE_MAXED")
     }
 
     // The click hint only shows in the inventory

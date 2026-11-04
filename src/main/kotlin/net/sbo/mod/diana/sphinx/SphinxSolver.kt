@@ -42,7 +42,7 @@ object SphinxSolver {
     private fun detectQuestion() {
         Register.onChatMessageCancelable(
             Pattern.compile("^(.*?)$", Pattern.DOTALL)
-        ) { message, matchResult ->
+        ) { _, matchResult ->
             if (!RareMobs.sphinxSolver) return@onChatMessageCancelable true
             val questionText = matchResult.group(1).trim()
             var clean: String? = null

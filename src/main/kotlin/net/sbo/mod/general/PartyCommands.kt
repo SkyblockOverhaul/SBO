@@ -20,7 +20,6 @@ import net.sbo.mod.utils.data.DataManager.dianaTrackerMayorData
 import net.sbo.mod.utils.data.DataManager.sboData
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.game.ServerStats
-import net.sbo.mod.utils.version.UpdateChecker
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.text.SimpleDateFormat
@@ -126,7 +125,8 @@ object PartyCommands {
         PartyCommand(listOf("!burrows", "!burrow"), { settings.dianaPartyCommands }) {
             val burrows = dianaTrackerMayorData.items.TOTAL_BURROWS
             val perHr = Helper.getBurrowsPerHr(dianaTrackerMayorData, SboTimerManager.timerMayor)
-            "Burrows: ${formatNumber(burrows, withCommas = true)} ($perHr/h)"
+            val edited = if (dianaTrackerMayorData.edited) " (edited)" else ""
+            "Burrows: ${formatNumber(burrows, withCommas = true)} ($perHr/h)$edited"
         },
         PartyCommand(listOf("!relic", "!relics"), { settings.dianaPartyCommands }) {
             fmt("Relics", dianaTrackerMayorData.items.MINOS_RELIC, dianaTrackerMayorData.mobs.MINOS_CHAMPION)
@@ -234,7 +234,7 @@ object PartyCommands {
 
     private fun registerPartyChatListeners() {
         DianaStats.registerReplaceStatsMessage()
-        Register.onChatMessage(commandRegex) { message, matchResult ->
+        Register.onChatMessage(commandRegex) { _, matchResult ->
             val unformattedPlayerName = matchResult.groupValues[1]
             val fullMessage = matchResult.groupValues[2]
             val messageParts = fullMessage.trim().split(Regex("\\s+"))

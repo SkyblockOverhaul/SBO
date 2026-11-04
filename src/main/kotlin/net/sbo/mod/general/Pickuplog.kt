@@ -2,7 +2,7 @@ package net.sbo.mod.general
 
 import net.minecraft.network.chat.HoverEvent
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.diana.DianaTracker
+import net.sbo.mod.diana.tracker.Tracker
 import net.sbo.mod.settings.categories.General
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.data.Item
@@ -25,8 +25,8 @@ object Pickuplog {
     private var newPurse: Long = 0L
     private var inventoryDirty = false
 
-    private var oldInventory = mapOf<String, Item>()
-    private var newInventory = mapOf<String, Item>()
+    private var oldInventory = emptyMap<String, Item>()
+    private var newInventory = emptyMap<String, Item>()
 
     private val regex = Regex("""\+([\d,]+) ([^(]+)""")
 
@@ -50,8 +50,8 @@ object Pickuplog {
         }
 
         Register.onChatMessageCancelable(
-            Pattern.compile("^.*Sacks.*\\s+(?:§.)?\\+\\d+ items\\..*\\(Last \\d+s\\.\\)(?:§.)*$")
-        ) { message, matchResult ->
+            Pattern.compile("""^.*Sacks.*\s+(?:§.)?\+\d+ items\..*\(Last \d+s\.\)(?:§.)*$""")
+        ) { message, _ ->
             var cancel = true
             if (World.isInSkyblock()) {
                 message.siblings.forEach { part ->
@@ -62,7 +62,7 @@ object Pickuplog {
                             regex.findAll(plain).forEach { match ->
                                 val amount = match.groupValues[1].replace(",", "")
                                 val item = match.groupValues[2].trim()
-                                DianaTracker.trackWithSacksMessage(item, amount.toInt())
+                                Tracker.trackWithSacksMessage(item, amount.toInt())
                             }
                         }
                         cancel = General.HiddenMessage.SACKS !in General.hideMessages
@@ -78,8 +78,15 @@ object Pickuplog {
         inventoryDirty = true
     }
 
+    // Hilt of Revelations & Crown of Greed (Before MF Rework), Enchanted Ancient Claw & Ancient Claw and Enchanted Gold (When not having relevant sacks) needs it, so still track if has a diana spade and is in the hub, even if the pickup log feature itself is disabled.
+    private fun shouldTrackInventoryChanges(): Boolean = General.pickuplogOverlay || Helper.hasSpade && World.isInHub()
+
     private fun updateInventorySnapshot() {
-        if (mc.player == null || !World.isInSkyblock() || World.isNone()) return
+        if (mc.player == null || !World.isInSkyblock() || World.isNone() || !shouldTrackInventoryChanges()) {
+            oldInventory = emptyMap()
+            return
+        }
+
         newInventory = Helper.readPlayerInv()
         newPurse = Helper.getPurse()
         if (oldInventory.isEmpty()) {
@@ -113,7 +120,7 @@ object Pickuplog {
     private fun compareInventory() {
         val purseChange = newPurse - oldPurse
         if (purseChange != 0L) {
-            DianaTracker.trackScavengerCoins(purseChange)
+            Tracker.trackScavengerCoins(purseChange)
         }
 
         val newItems = mutableListOf<Item>()
@@ -139,16 +146,16 @@ object Pickuplog {
         for (item in newItems) {
             refreshOverlay(item.itemId, item.name, item.count)
             if (item.itemUUID != "") {
-                DianaTracker.trackWithPickuplog(item)
+                Tracker.trackWithPickuplog(item)
             } else {
-                DianaTracker.trackWithPickuplogStackable(item, item.count)
+                Tracker.trackWithPickuplogStackable(item, item.count)
             }
         }
 
         for ((item, countChange) in changedItemCounts) {
             refreshOverlay(item.itemId, item.name, countChange)
             if (countChange > 0) {
-                DianaTracker.trackWithPickuplogStackable(item, countChange)
+                Tracker.trackWithPickuplogStackable(item, countChange)
             }
         }
 

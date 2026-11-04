@@ -13,6 +13,8 @@ data class SboData(
     var whatsNewOpenedVersion: String = "",
     var whatsNewChatVersion: String = "",
     var downloadMsg: Boolean = false,
+    /** Set once the Diana trackers were saved with a seal, from then on a missing seal means an edited file. */
+    internal var trackersSealed: Boolean = false,
     var mobsSinceInq: Int = 0,
     var inqsSinceChim: Int = 0,
     var minotaursSinceStick: Int = 0,
