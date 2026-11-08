@@ -1,4 +1,5 @@
 import net.fabricmc.loom.task.RemapJarTask
+import com.replaymod.gradle.preprocess.PreprocessTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import java.lang.module.ModuleDescriptor.Version
@@ -58,10 +59,17 @@ abstract class ReplaceMinecraftSources : DefaultTask() {
 plugins {
     java
     kotlin("jvm")
-    kotlin("plugin.serialization") version "2.4.21"
+    kotlin("plugin.serialization")
     alias(libs.plugins.loom)
-    id("dev.deftu.gradle.multiversion")
     alias(libs.plugins.ksp)
+    id("com.replaymod.preprocess")
+}
+
+afterEvaluate {
+    tasks.withType<PreprocessTask>().configureEach {
+        sourceMappings = null
+        destinationMappings = null
+    }
 }
 
 private val projectVersion = project.property("mod.version")?.toString() ?: throw AssertionError("missing mod version property")
@@ -160,6 +168,7 @@ tasks.named<JavaCompile>("compileJava") {
     dependsOn(replaceJavaSources)
     setSource(replaceJavaSources.map { it.outputDirectory })
 }
+
 tasks.named<KotlinJvmCompile>("compileKotlin") {
     dependsOn(replaceKotlinSources)
     setSource(replaceKotlinSources.map { it.outputDirectory })
@@ -236,6 +245,8 @@ repositories {
             includeModule("maven.modrinth", "sodium")
         }
     }
+
+    maven("https://jitpack.io")
 }
 
 val jarName = project.property("mod.name").toString() + "-" + project.property("mod.version").toString() + "+" + mcProject
