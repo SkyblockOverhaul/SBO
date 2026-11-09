@@ -230,6 +230,7 @@ object PreciseGuessBurrow {
         val guess = guessPosition.down(0.5).roundLocationToBlock()
         WaypointManager.addSpadeGuess(guess)
         ChainTracker.onSpadeGuess(guess)
+        throwEye?.let { SpadeGuessOptimizer.onSpadeGuess(it, guess) }
     }
 
     /**

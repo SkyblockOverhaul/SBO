@@ -71,8 +71,12 @@ object SpadeGuessOptimizer {
     private const val STARTUP_REPEATS = 3
     /** A spade guess this close to a burrow known before the spade use points at it, arrow guesses are up to ~10 off. */
     private const val KNOWN_BURROW_DISTANCE = 10.0
+    /** The same for the old spade guess, it is less precise and merged with burrows this close. */
+    private const val OLD_GUESS_KNOWN_BURROW_DISTANCE = 30.0
     /** A spade use with no spade guess this long after it found nothing, the first guess comes within ~350 ms almost always. */
     private val NO_GUESS_NANOS = TimeUnit.MILLISECONDS.toNanos(500)
+    /** The same for the old spade guess, it needs 4 particles (~420 ms) for its first guess. */
+    private val OLD_GUESS_NO_GUESS_NANOS = TimeUnit.MILLISECONDS.toNanos(800)
 
     private var spotX = IntArray(0)
     private var spotY = IntArray(0)
@@ -111,7 +115,7 @@ object SpadeGuessOptimizer {
     private var chainEnd: SboVec? = null
     /** Whether the spade was not used yet where the last chain was finished, no place is shown till it finds nothing new there. */
     private var waitingForSpade = false
-    /** When the spade was last used, 0 when it was not since the last chain was finished. */
+    /** When the spade was last used, 0 once it got a spade guess or none in time. */
     private var spadeUseTime = 0L
     /** Whether a spade use settled since the last update, only then the shown place can move. */
     private var spadeUsed = false
@@ -178,6 +182,7 @@ object SpadeGuessOptimizer {
     fun onSpadeGuess(from: SboVec, guess: SboVec) {
         if (throwFrom != null && throwFrom != from) searchThrow()
         if (throwFrom != from) knownBeforeThrow = lastKnownBurrows
+        spadeUseTime = 0L
         throwFrom = from
         throwGuess = guess
         throwGuessTime = System.nanoTime()
@@ -199,9 +204,12 @@ object SpadeGuessOptimizer {
         val player = mc.player ?: return
 
         if (throwFrom != null && System.nanoTime() - throwGuessTime > THROW_SETTLE_NANOS) searchThrow()
-        // No guess from the spade use at the chain end: nothing new there either
-        if (waitingForSpade && spadeUseTime != 0L && throwFrom == null && System.nanoTime() - spadeUseTime > NO_GUESS_NANOS) {
+        // No guess from a spade use: nothing new at the chain end, and the shown place is used
+        val noGuessNanos = if (Burrows.curveSpadeGuess) NO_GUESS_NANOS else OLD_GUESS_NO_GUESS_NANOS
+        if (spadeUseTime != 0L && throwFrom == null && System.nanoTime() - spadeUseTime > noGuessNanos) {
+            spadeUseTime = 0L
             waitingForSpade = false
+            spadeUsed = true
         }
 
         heldSpadeTicks = if (isHoldingSpade()) heldSpadeTicks + 1 else 0
@@ -247,7 +255,8 @@ object SpadeGuessOptimizer {
         if (!pointsAtNearest) return
         val radius = from.distanceTo(SboVec(guess.x + 0.5, guess.y + 1.0, guess.z + 0.5)) - THROW_DISTANCE_MARGIN
         if (radius > 0) search(from, radius)
-        val known = knownBeforeThrow.any { it.distanceTo(guess) <= KNOWN_BURROW_DISTANCE }
+        val knownDistance = if (Burrows.curveSpadeGuess) KNOWN_BURROW_DISTANCE else OLD_GUESS_KNOWN_BURROW_DISTANCE
+        val known = knownBeforeThrow.any { it.distanceTo(guess) <= knownDistance }
         if (startup) {
             startupRepeats = if (known) startupRepeats + 1 else 0
             if (startupRepeats >= STARTUP_REPEATS) startup = false
