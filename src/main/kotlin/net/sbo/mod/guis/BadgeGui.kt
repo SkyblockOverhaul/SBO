@@ -181,14 +181,14 @@ object BadgeGui {
         var motion by useState(DataManager.sboData.badgeMotionOfOthers)
         var tabAnimations by useState(DataManager.sboData.badgeAnimationsInTab)
         div(className = "bd-section-title") { +"Badges of Others" }
-        setting("In the tab list", "The SBO logo behind their name and the name in their color. The SBO team always shows.") {
+        setting("In the tab list", "The SBO logo behind their name and the name in their color. The SBO team and your own badge always show.") {
             switch(checked = inTab, onChange = {
                 inTab = it.checked
                 DataManager.sboData.badgesInTab = it.checked
                 DataManager.sboData.save()
             })
         }
-        setting("In chat", "The SBO logo behind their name and the name in their color, for new messages. The SBO team always shows.") {
+        setting("In chat", "The SBO logo behind their name and the name in their color, for new messages. The SBO team and your own badge always show.") {
             switch(checked = inChat, onChange = {
                 inChat = it.checked
                 DataManager.sboData.badgesInChat = it.checked

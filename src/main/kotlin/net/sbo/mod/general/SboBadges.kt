@@ -42,7 +42,7 @@ object SboBadges {
     const val COMMAND = "sbobadge"
 
     // Switches for other players' badges in the tab list and chat in /sbobadge; false hides them and always shows badges.
-    // They only hide supporters and contributors, the team (moderators and above) always shows; above heads always shows
+    // They only hide other supporters and contributors, the team (moderators and above) and your own badge always show; above heads always shows
     private val showInTab: Boolean get() = DataManager.sboData.badgesInTab
     private val showInChat: Boolean get() = DataManager.sboData.badgesInChat
 
@@ -244,8 +244,9 @@ object SboBadges {
 
     fun own(): SboBadge? = uuidOf(Player.accountUuid())?.let { byUuid[it] }
 
-    /** The viewer's switch for a place hides supporters and contributors, never the team. */
-    private fun shown(enabled: Boolean, player: String) = enabled || player.lowercase() in teamNames
+    /** The viewer's switch for a place hides other supporters and contributors, never the team or your own badge. */
+    private fun shown(enabled: Boolean, player: String) =
+        enabled || player.lowercase() in teamNames || player.equals(own()?.name, ignoreCase = true)
 
     fun nameTagLine(uuid: UUID): Component? = safe(null) { nameTagLineOf(uuid) }
 
@@ -306,7 +307,7 @@ object SboBadges {
     fun decorateTab(info: PlayerInfo, line: Component): Component = safe(line) { decorateTabOf(info, line) }
 
     private fun decorateTabOf(info: PlayerInfo, line: Component): Component {
-        if (compactReading || !showInTab && team.isEmpty() || byUuid.isEmpty() && tabTags.isEmpty()) return line
+        if (compactReading || !showInTab && team.isEmpty() && own() == null || byUuid.isEmpty() && tabTags.isEmpty()) return line
         val player = tabPlayerOf(info)?.takeIf { shown(showInTab, it) } ?: return line
         return decorateTab(line, player)
     }
@@ -334,7 +335,7 @@ object SboBadges {
     fun decorateSkyHanniTab(line: Component?): Component? = safe(null) { decorateSkyHanniTabOf(line) }
 
     private fun decorateSkyHanniTabOf(line: Component?): Component? {
-        if (line == null || !showInTab && team.isEmpty() || byName.isEmpty() && tabTags.isEmpty()) return null
+        if (line == null || !showInTab && team.isEmpty() && own() == null || byName.isEmpty() && tabTags.isEmpty()) return null
         val plain = ChatFormatting.stripFormatting(line.string) ?: return null
         val player = tabPlayerIn(plain)?.takeIf { shown(showInTab, it) } ?: return null
         return decorateTab(line, player).takeIf { it !== line }
@@ -357,7 +358,7 @@ object SboBadges {
 
     private fun decorateChatOf(line: Component): Component {
         val mentions = DataManager.sboData.badgeNamesInChat
-        if (mentions != NAMES_OWN && !showInChat && team.isEmpty() || byName.isEmpty() && chatTags.isEmpty()) return line
+        if (mentions != NAMES_OWN && !showInChat && team.isEmpty() && own() == null || byName.isEmpty() && chatTags.isEmpty()) return line
         val plain = ChatFormatting.stripFormatting(line.string) ?: return line
         if (LOGO in plain) return line
         val colon = plain.indexOf(": ").takeIf { it in 1..MAX_SENDER_LENGTH }
