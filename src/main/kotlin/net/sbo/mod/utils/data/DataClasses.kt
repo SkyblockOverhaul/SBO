@@ -32,7 +32,7 @@ data class SboBadge(
     val color: String,
     val to: String? = null,
     val level: Boolean? = null,
-    val plainName: Boolean? = null,
+    private val plainName: Boolean? = null,
     val label: String? = null,
     val value: String? = null,
     /** Places and colors per part; backends before it only send the fields above. */
@@ -202,8 +202,8 @@ data class TeamMember(
     val name: String,
     val rank: String,
     /** Shows the team tag somewhere; `tagIn` says where, backends before it only send this. */
-    val nameTag: Boolean = false,
-    val tagIn: List<String>? = null,
+    private val nameTag: Boolean = false,
+    private val tagIn: List<String>? = null,
 ) {
     val tagPlaces: Set<String> get() = tagIn?.toSet() ?: if (nameTag) TeamTagPlace.ALL else emptySet()
 }
@@ -225,12 +225,12 @@ data class BadgeSettings(
     val stat: String,
     val color: String,
     /** Second gradient color, only for ranks that may pick a gradient. */
-    val colorTo: String? = null,
-    val colorName: Boolean = true,
-    val colorLevel: Boolean = false,
-    val teamTag: Boolean = true,
+    private val colorTo: String? = null,
+    private val colorName: Boolean = true,
+    private val colorLevel: Boolean = false,
+    private val teamTag: Boolean = true,
     /** Places of the team tag (TeamTagPlace); null on backends without it, then `teamTag` means everywhere. */
-    val teamTagIn: List<String>? = null,
+    private val teamTagIn: List<String>? = null,
     /** Places and colors per part; null on backends without them, then the single fields above apply everywhere. */
     @SerialName("in")
     val places: BadgePlaces? = null,

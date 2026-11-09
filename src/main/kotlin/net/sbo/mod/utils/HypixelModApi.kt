@@ -81,7 +81,7 @@ object HypixelModApi {
         this.isInParty = packet.inParty
         partyRoles = packet.members?.entries?.associate { (uuid, role) -> uuid.toString().replace("-", "") to role.toString() }.orEmpty()
 
-        val membersList = packet.members?.map { it.key.toString() }?.toMutableList() ?: mutableListOf()
+        val membersList = packet.members?.asSequence()?.map { it.key.toString() }?.toMutableList() ?: mutableListOf()
         if (isInParty) {
             val leaderUUID = packet.members?.entries?.find { it.value.toString() == "LEADER" }?.key.toString()
 
@@ -103,7 +103,7 @@ object HypixelModApi {
     /** LEADER, MODERATOR or MEMBER from the last party packet, null when unknown. */
     fun partyRole(uuid: String): String? = partyRoles[uuid.replace("-", "")]
 
-    /** After a promote or demote, until the next party packet confirms it. */
+    /** After a promotion or demotion, until the next party packet confirms it. */
     fun markRole(uuid: String, role: String) {
         partyRoles = partyRoles + (uuid.replace("-", "") to role)
     }

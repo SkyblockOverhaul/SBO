@@ -30,13 +30,13 @@ import net.sbo.mod.utils.data.BadgeChoice
 import net.sbo.mod.utils.data.BadgeEffect
 import net.sbo.mod.utils.data.BadgeMotion
 import net.sbo.mod.utils.data.BadgePart
-import net.sbo.mod.utils.data.BadgeRank
 import net.sbo.mod.utils.data.BadgeSettings
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.OwnBadgeResponse
 import net.sbo.mod.utils.data.PartColor
 import net.sbo.mod.utils.data.TeamTagPlace
 import net.sbo.mod.utils.http.SboApi
+import java.util.Locale
 
 object BadgeGui {
     private val STYLES = listOf("sbo:ui/badge/badge.css", SboLook.STYLE)
@@ -75,7 +75,7 @@ object BadgeGui {
         // The dialog asking before leaving unsaved changes
         var leaving by useState(false)
         useSboScale()
-        useSboTheme()
+        useSboTheme("badge")
 
         fun loaded(response: OwnBadgeResponse) {
             if (response.success && response.settings != null) {
@@ -137,11 +137,11 @@ object BadgeGui {
                 when (val state = load) {
                     Load.Loading -> {
                         div(className = "bd-center") { +"Loading your badge..." }
-                        if (SboBadges.VIEWER_TOGGLES) ViewSettings()
+                        ViewSettings()
                     }
                     is Load.Failed -> div(className = "bd-columns") {
                         div(className = "bd-col-left") { failed(state) }
-                        div(className = "bd-col-right") { if (SboBadges.VIEWER_TOGGLES) ViewSettings() }
+                        div(className = "bd-col-right") { ViewSettings() }
                     }
                     is Load.Ready -> {
                         val settings = draft ?: state.badge.settings!!
@@ -176,18 +176,19 @@ object BadgeGui {
         var inChat by useState(DataManager.sboData.badgesInChat)
         var namesInChat by useState(DataManager.sboData.badgeNamesInChat)
         var namesTag by useState(DataManager.sboData.badgeNamesTag)
+        var replaceEverywhere by useState(DataManager.sboData.badgeReplaceEverywhere)
         var animations by useState(DataManager.sboData.badgeAnimationsOfOthers)
         var motion by useState(DataManager.sboData.badgeMotionOfOthers)
         var tabAnimations by useState(DataManager.sboData.badgeAnimationsInTab)
         div(className = "bd-section-title") { +"Badges of Others" }
-        setting("In the tab list", "The SBO logo behind their name and the name in their color. The SBO team always shows.") {
+        setting("In the tab list", "The SBO logo behind their name and the name in their color. The SBO team and your own badge always show.") {
             switch(checked = inTab, onChange = {
                 inTab = it.checked
                 DataManager.sboData.badgesInTab = it.checked
                 DataManager.sboData.save()
             })
         }
-        setting("In chat", "The SBO logo behind their name and the name in their color, for new messages. The SBO team always shows.") {
+        setting("In chat", "The SBO logo behind their name and the name in their color, for new messages. The SBO team and your own badge always show.") {
             switch(checked = inChat, onChange = {
                 inChat = it.checked
                 DataManager.sboData.badgesInChat = it.checked
@@ -214,6 +215,15 @@ object BadgeGui {
                 switch(checked = namesTag, onChange = {
                     namesTag = it.checked
                     DataManager.sboData.badgeNamesTag = it.checked
+                    DataManager.sboData.save()
+                })
+            }
+        }
+        if (namesInChat != SboBadges.NAMES_OFF) {
+            setting("Names everywhere", "The names from \"Names in messages\" with their level and rank in their badge colors in all text: menus, titles, scoreboard, signs.") {
+                switch(checked = replaceEverywhere, onChange = {
+                    replaceEverywhere = it.checked
+                    DataManager.sboData.badgeReplaceEverywhere = it.checked
                     DataManager.sboData.save()
                 })
             }
@@ -315,7 +325,7 @@ object BadgeGui {
                 TAB_STAT -> statTab(badge, settings, onChange)
                 else -> {
                     OwnView()
-                    if (SboBadges.VIEWER_TOGGLES) ViewSettings()
+                    ViewSettings()
                 }
             }
         }
@@ -368,9 +378,9 @@ object BadgeGui {
     /** The part the Colors and Effects tabs change: the whole line while it flows as one. */
     private fun targetOf(settings: BadgeSettings, picked: String): String {
         val flows = flowsAsLine(settings)
-        return when {
-            picked == LINE -> if (flows) LINE else BadgePart.NAME
-            picked in BadgePart.CHAINS && flows -> LINE
+        return when (picked) {
+            LINE -> if (flows) LINE else BadgePart.NAME
+            in BadgePart.CHAINS if flows -> LINE
             else -> picked
         }
     }
@@ -693,7 +703,7 @@ object BadgeGui {
             val segments = ArrayList<SboBadges.Segment>()
             var pos = 0
             fun add(part: String, length: Int, colored: Boolean, color: PartColor? = settings.colorOf(part), space: Int = 0) {
-                if (colored && color != null) segments += SboBadges.Segment(part, color, pos until pos + length)
+                if (colored && color != null) segments += SboBadges.Segment(part, color, pos..<pos + length)
                 pos += length + space
             }
             // "[SBO Dev]" without its space, like the tag in game
@@ -784,7 +794,7 @@ object BadgeGui {
         val now: Long,
     ) {
         /** The whole name line shows as picked while it flows as one. */
-        fun isPicked(part: String): Boolean = picked == part || (picked == LINE && part in BadgePart.CHAINS)
+        fun isPicked(part: String): Boolean = picked == part || picked == LINE && part in BadgePart.CHAINS
 
         fun colored(builder: NodeBuilder, part: String, text: String) = with(builder) {
             val color = settings.colorOf(part)
@@ -799,7 +809,7 @@ object BadgeGui {
         fun bracketed(builder: NodeBuilder, part: String, text: String, painted: Painted?) = with(builder) {
             if (text.isEmpty()) return@with
             if (painted == null) {
-                span(className = "bd-tag-level") { +"[$text] " }
+                span(className = "bd-tag-level") { +"[$text]\u00A0" }
                 return@with
             }
             val color = settings.colorOf(part)
@@ -811,17 +821,17 @@ object BadgeGui {
                 span(className = "bd-tag-text") {
                     "[$text]".forEachIndexed { i, char ->
                         // Like in game: brackets and plus without their own color take the chain's color at their place
-                        val own = when {
-                            char == '[' -> color.open
-                            char == ']' -> color.close
-                            char == '+' && part == BadgePart.RANK -> color.plus
+                        val own = when (char) {
+                            '[' -> color.open
+                            ']' -> color.close
+                            '+' if part == BadgePart.RANK -> color.plus
                             else -> null
                         }
                         glyph(i, char, own?.let(SboBadges::parseHex) ?: painted.at(i, now), painted, now)
                     }
                 }
             }
-            span(className = "bd-tag-plain") { +" " }
+            span(className = "bd-tag-plain") { +"\u00A0" }
         }
 
         /** The part in its chain's colors where it is colored, plain otherwise. */
@@ -867,7 +877,7 @@ object BadgeGui {
                     }
                 }
             }
-            span(className = "bd-tag-plain") { +" " }
+            span(className = "bd-tag-plain") { +"\u00A0" }
         }
     }
 
@@ -895,14 +905,14 @@ object BadgeGui {
         val shown = if (glitch && plain) SCRAMBLE[((now / SCRAMBLE_MS + i * 7) % SCRAMBLE.length).toInt()] else char
         // A lower baseline, which keeps the line's height
         val lower = if (plain && drop > 0) "; vertical-align: -${drop}px" else ""
-        span(key = "c$i", style = "color: #%06X$lower".format(rgb)) { +shown.toString() }
+        span(key = "c$i", style = "color: #%06X$lower".format(Locale.ROOT, rgb)) { +shown.toString() }
     }
 
     /** A bracket as it looks in game: its own color, else gray for the team tag and the part's color (gradient start or end) otherwise. */
     private fun bracketOf(part: String, color: PartColor, close: Boolean): String = (if (close) color.close else color.open)
         ?: if (part == BadgePart.TAG && color.chain != true) TAG_BRACKETS else if (close) color.to ?: color.color else color.color
 
-    private fun hex(color: Int): String = "#%06X".format(color and 0xFFFFFF)
+    private fun hex(color: Int): String = "#%06X".format(Locale.ROOT, color and 0xFFFFFF)
 
     // The picker works with ARGB, badge colors have no alpha
     private fun argb(hex: String): Int = SboBadges.parseHex(hex) or 0xFF000000.toInt()

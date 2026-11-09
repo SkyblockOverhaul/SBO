@@ -84,7 +84,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
     var search by useState("")
     var filtersOpen by useState(false)
     var filterVersion by useState(0)
-    var hidden by useState(setOf<String>())
+    var hidden by useState(emptySet<String>())
     // Bumped after blocking someone, their parties drop out of the list
     var blockedVersion by useState(0)
     var expanded by useState<String?>(null)
@@ -151,8 +151,10 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
         }
     }
 
-    // filterVersion makes the page read the saved filter again after a change
-    val filter = filterVersion.let { config.listFilters[target.key] ?: PartyListFilter() }
+    // accessing filterVersion makes the page read the saved filter again after a change
+    filterVersion
+    val filter = config.listFilters[target.key] ?: PartyListFilter()
+
     fun setFilter(block: PartyListFilter.() -> Unit) {
         val next = filter.edited(block)
         if (next == PartyListFilter()) config.listFilters.remove(target.key) else config.listFilters[target.key] = next
@@ -165,35 +167,36 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
 
     // Parties with another slayer tier (or other fields stats depend on) need own stats for it
     val ownVersion = useRef(0)
-    var ownLoaded by useState(0)
-    val ownLoading = useRef(setOf<String>())
+    val ownStatsRefresh = useState(0)
+    val ownLoading = useRef(emptySet<String>())
     // Stats that failed to load are retried after 2 minutes
-    val ownFailed = useRef(mapOf<String, Long>())
+    val ownFailed = useRef(emptyMap<String, Long>())
     fun meFor(party: PartyView, partyTarget: PartyTarget): MemberView? =
         if (OwnStats.statOptions(partyTarget, party.options) == OwnStats.statOptions(partyTarget)) props.ownFor(partyTarget)
         else OwnStats.cached(partyTarget, party.options)
     useEffect(parties) {
         val now = System.currentTimeMillis()
         fun keyOf(partyTarget: PartyTarget, options: Map<String, String>) = "${partyTarget.key}?$options"
-        val wanted = parties.orEmpty().mapNotNull { party ->
+        val wanted = parties.orEmpty().asSequence().mapNotNull { party ->
             val partyTarget = target.forParty(party)
             val options = OwnStats.statOptions(partyTarget, party.options)
             val key = keyOf(partyTarget, options)
             val failedAt = ownFailed.current[key]
-            val skip = options == OwnStats.statOptions(partyTarget) || OwnStats.cached(partyTarget, options) != null
-                || key in ownLoading.current || (failedAt != null && now - failedAt < 2 * 60_000)
+            val skip = (options == OwnStats.statOptions(partyTarget) || OwnStats.cached(partyTarget, options) != null
+                || key in ownLoading.current) || failedAt != null && now - failedAt < 2 * 60_000
             if (skip) null else partyTarget to options
         }.distinctBy { (partyTarget, options) -> keyOf(partyTarget, options) }
+        .toList()
         if (wanted.isEmpty()) return@useEffect
         ownLoading.current = ownLoading.current + wanted.map { (partyTarget, options) -> keyOf(partyTarget, options) }
         OwnStats.getMany(wanted, onError = { partyTarget, options, _ ->
             val key = keyOf(partyTarget, options)
             ownLoading.current = ownLoading.current - key
-            ownFailed.current = ownFailed.current + (key to System.currentTimeMillis())
+            ownFailed.current += key to System.currentTimeMillis()
         }) { partyTarget, options, _ ->
             ownLoading.current = ownLoading.current - keyOf(partyTarget, options)
             ownVersion.current++
-            ownLoaded = ownVersion.current
+            ownStatsRefresh.set(ownVersion.current)
         }
     }
     val all = parties.orEmpty().filter { party ->
@@ -233,7 +236,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
             onClick = { filtersOpen = true }
         ) {
             img(src = "${StatView.ICONS}/filter.svg", className = "pf-icon")
-            +(if (count > 0) "Filters ($count)" else "Filters")
+            +if (count > 0) "Filters ($count)" else "Filters"
         }
         input(
             type = "text",
@@ -289,7 +292,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
                     expanded = party.id == expanded,
                     onToggle = { expanded = if (expanded == party.id) null else party.id },
                     onJoin = { join(party) },
-                    onHide = { hidden = hidden + party.id },
+                    onHide = { hidden += party.id },
                     onReport = { reporting = party },
                     onBlock = { name, uuid ->
                         BlockedPlayers.block(name, uuid)
@@ -350,7 +353,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
         val self = member.uuid == myId
         // The leader's place moves with their role, only the role limit can block one
         val leaderSelf = self && member.uuid == party.id
-        h3 { +(if (self) "Change your role" else "Change the role of ${member.name}") }
+        h3 { +if (self) "Change your role" else "Change the role of ${member.name}" }
         val open = party.openRoles
         // Without wanted roles the leader can still note what someone plays
         val choices = if (leaderSelf) partyTarget.roles.map { it.id } else party.roles.wanted.distinct().ifEmpty { partyTarget.roles.map { it.id } }
@@ -369,7 +372,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
         }
         div(className = "pf-dialog-buttons") {
             button(onClick = { changingRole = null }) { +"Cancel" }
-            button(className = "primary", disabled = newRole == member.role || (self && !leaderSelf && newRole == null), onClick = {
+            button(className = "primary", disabled = newRole == member.role || self && !leaderSelf && newRole == null, onClick = {
                 val picked = newRole
                 if (leaderSelf) {
                     PartyFinderManager.setOwnRole(picked)
@@ -664,7 +667,7 @@ private fun NodeBuilder.partyCard(
                 if (!mine && !joined) joinButton(full, party.rolesTaken, problems, target, onJoin)
             }
             // Party fields get their own row that wraps, long ones would push the join button out of the window; text to info
-            val tags = buildList<Pair<String, String>> {
+            val tags = buildList {
                 target.opensAt?.takeIf { !target.open }?.let { add("Event starts in ${until(it)}" to "") }
                 target.options.forEach { option ->
                     val value = party.options[option.id] ?: return@forEach
@@ -672,7 +675,7 @@ private fun NodeBuilder.partyCard(
                     val label = if (option.multiple) {
                         val picks = option.picks(value)
                         if (picks.size == option.values.size) "All"
-                        else picks.mapNotNull { id -> option.values.firstOrNull { it.id == id }?.label }.joinToString(", ")
+                        else picks.asSequence().mapNotNull { id -> option.values.firstOrNull { it.id == id }?.label }.joinToString(", ")
                     } else {
                         option.values.firstOrNull { it.id == value }?.label ?: value
                     }
@@ -690,7 +693,7 @@ private fun NodeBuilder.partyCard(
                 var any = false
                 target.reqs.forEach { def ->
                     val need = party.reqs[def.stat] ?: return@forEach
-                    if (need is JsonNull) return@forEach
+                    if (need === JsonNull) return@forEach
                     any = true
                     val meets = if (mine) null else StatView.meets(def, need, me)
                     tooltip(content = { statInfo(def.stat, me) }, className = "pf-tip") {
@@ -706,7 +709,7 @@ private fun NodeBuilder.partyCard(
                 div(className = "pf-roles") {
                     +"Looking for: "
                     // One slot per wanted place, members fill them in order
-                    val takers = party.members.filter { it.role != null }.toMutableList()
+                    val takers = party.members.asSequence().filter { it.role != null }.toMutableList()
                     party.roles.wanted.forEachIndexed { i, id ->
                         val taker = takers.firstOrNull { it.role == id }?.also { takers.remove(it) }
                         if (taker == null) {
@@ -727,8 +730,9 @@ private fun NodeBuilder.partyCard(
                 // Clicks on players keep the card open
                 div(className = "pf-members", onClick = { e -> e.stopPropagation() }) {
                     // Only plain values here, item lists and the all tiers breakdown stay in the player panel
-                    val statIds = (target.reqs.map { it.stat }.filter { party.reqs[it] != null } + target.display).distinct()
-                        .filter { PartyCategories.stat(it)?.kind !in setOf("items", "breakdown") }
+                    val statIds = (target.reqs.asSequence().map { it.stat }.filter { party.reqs[it] != null }.toList() + target.display).asSequence()
+                        .distinct()
+                        .filter { PartyCategories.stat(it)?.kind !in setOf("items", "breakdown") }.toList()
                     party.members.forEach { member ->
                         memberRow(
                             member, party, target, statIds, member.uuid == inspected, { onInspect(InspectedPlayer(member, party)) },
@@ -823,7 +827,7 @@ private fun NodeBuilder.memberRow(
                     val value = member.stats[id]
                     val lastEvent = member.reported[id]?.scope == "lastEvent"
                     tooltip(content = { statInfo(id) }, className = "pf-tip", key = id) {
-                        span(className = classNames("pf-stat", "estimated" to StatView.estimated(id), "missing" to (value == null || value is JsonNull))) {
+                        span(className = classNames("pf-stat", "estimated" to StatView.estimated(id), "missing" to (value == null || value === JsonNull))) {
                             span(className = "pf-stat-name") { +"${StatView.label(id)} " }
                             pieces(StatView.valuePieces(id, value))
                             if (lastEvent) span(className = "pf-muted") { +" (last event)" }

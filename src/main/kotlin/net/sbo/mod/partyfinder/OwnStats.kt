@@ -17,7 +17,7 @@ object OwnStats {
 
     /** Party fields the stats depend on (e.g. the slayer tier), missing ones at their default. Empty for most targets. */
     fun statOptions(target: PartyTarget, options: Map<String, String> = emptyMap()): Map<String, String> =
-        target.options.filter { it.affectsStats }.associate { it.id to (options[it.id] ?: it.default) }
+        target.options.asSequence().filter { it.affectsStats }.associate { it.id to (options[it.id] ?: it.default) }
 
     fun cached(target: PartyTarget, options: Map<String, String> = emptyMap()): MemberView? =
         PlayerStatsCache.cached(uuid())?.member(target.partyType, target.subType, statOptions(target, options))

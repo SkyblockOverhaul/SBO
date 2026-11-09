@@ -1,5 +1,5 @@
 [versions]
-ksp = "2.3.12"
+ksp = "2.3.13"
 loom = "1.19-SNAPSHOT"
 junit = "6.1.3"
 

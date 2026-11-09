@@ -31,9 +31,10 @@ open class Category(val id: String) : EntriesBuilder() {
 
     // Missing, unknown or invalid values leave the entry as it is
     open fun load(json: JsonObject) {
-        // Before the entries, so their change listeners already see the right sub state
+        // Before the entries, so their change listeners already see the right substate
         (json.get(DISABLED_SUBS_KEY) as? JsonArray)?.let { array ->
-            val disabled = array.mapNotNull { (it as? JsonPrimitive)?.takeIf { p -> p.isString }?.asString }.toSet()
+            val disabled = array.asSequence().mapNotNull { (it as? JsonPrimitive)?.takeIf { p -> p.isString }?.asString }
+                .toSet()
             subs.forEach { it.setEnabled(it.title !in disabled) }
         }
         for (entry in entries) {
@@ -51,7 +52,7 @@ open class Category(val id: String) : EntriesBuilder() {
         categories.values.forEach { it.linkRequirements() }
     }
 
-    fun resetAll() {
+    private fun resetAll() {
         subs.forEach { it.setEnabled(true) }
         entries.forEach { it.reset() }
         categories.values.forEach { it.resetAll() }
@@ -84,7 +85,7 @@ open class Config(val file: String) : Category(file) {
 
     private val backup: Path get() = path.resolveSibling("${path.fileName}.bak")
 
-    /** Whether the file was there when it was last loaded, false for a new install. */
+    /** Whether the file was there when it was last loaded, false for a new installation. */
     var existed: Boolean = false
         private set
 

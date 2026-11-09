@@ -20,7 +20,7 @@ final class ScreenMixin {
     private final void sbo$onRender(@NonNull final GuiGraphicsExtractor context, final int mouseX, final int mouseY, final float delta, @NonNull final CallbackInfo ci) {
         final Minecraft client = Minecraft.getInstance();
         final Screen screen = (Screen)(Object)this;
-        SBOEvent.INSTANCE.emit(new GuiRenderEvent(client, screen, context, mouseX, mouseY, delta));
+        SBOEvent.INSTANCE.emit(new GuiRenderEvent(client, screen, context, mouseX, mouseY));
     }
 
     @Inject(method = "keyPressed", at = @At("HEAD"), cancellable = true)
@@ -28,6 +28,6 @@ final class ScreenMixin {
         final Minecraft client = Minecraft.getInstance();
         final Screen screen = (Screen)(Object)this;
         final int keyCode = input.key();
-        SBOEvent.INSTANCE.emit(new GuiKeyEvent(client, screen, keyCode, cir));
+        SBOEvent.INSTANCE.emit(new GuiKeyEvent(client, screen, keyCode));
     }
 }

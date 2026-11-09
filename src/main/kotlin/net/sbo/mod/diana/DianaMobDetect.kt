@@ -5,7 +5,6 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.decoration.ArmorStand
 import net.minecraft.world.entity.player.Player
-import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.tracker.Tracker
 import net.sbo.mod.settings.categories.RareMobs
@@ -131,47 +130,37 @@ object DianaMobDetect {
             val cleanName = name.removeFormatting()
 
             val rare = RareMob.fromName(cleanName)
+            val isRare = rare != null
             val displayName =
                 rare?.display ?: fallbackRemovePrefix(cleanName) // rare.display returns already without prefix; otherwise the fallback would remove the prefix
 
-            // Check if cocooned mob is a diana mob by checking if it's either a rare mob or has the diana mob prefix like empyrean
-            if (rare != null || prefixes.any { cleanName.startsWith("$it ") }) {
-                // We need this check otherwise it could track a mob that you cocooned but someone else spawned.
-                if (Tracker.lastSpawnedMob == displayName) {
-                    if (rare != null) RareMobKillTime.onCocoonCaught(displayName)
-                    // Count as a new spawned mob, exactly as if it was received as spawned by a regular burrow, so that achievements and mob tracking work.
-                    // This will give an error in chat if we pass a string that matches no mob name in the tracker handler code.
-                    Tracker.trackMobOnSpawnAndSave(displayName, fromCocoon = true)
+            // Check if cocooned mob is a diana mob by checking if it's either a rare mob or has the diana mob prefix like empyrean, then check if it is same as the last spawned mob of the player. The check is needed because otherwise we could track a rare mob someone else spawned and the player cocooned.
+            if ((isRare || prefixes.any { cleanName.startsWith("$it ") }) && Tracker.lastSpawnedMob == displayName) {
+                if (isRare) {
+                    // Rare mob kill time hook
+                    RareMobKillTime.onCocoonCaught(displayName)
                 }
+
+                // Count as a new spawned mob, exactly as if it was received as spawned by a regular burrow, so that achievements and mob tracking work.
+                // This will give an error in chat if we pass a string that matches no mob name in the tracker handler code.
+                Tracker.trackMobOnSpawnAndSave(displayName, fromCocoon = true)
             }
 
-            if (rare != null) {
-                // Cocooned a rare mob if rare != null
+            if (isRare) {
+                // Cocooned a rare mob, so announce it
                 announceCocoon(displayName)
             }
         }
 
         Register.onTick(1) {
-            if (!World.isInHub()) {
-                if (wasInHub) {
-                    wasInHub = false
-                    unconfirmed.clear()
-                    tracked.clear()
-                    defeated.clear()
-                    warned.clear()
-                    mobHpOverlay.clearLines()
-                    noShurikenOverlay.clearLines()
-                }
-
+            val world = mc.level
+            if (world == null) {
+                unconfirmed.clear()
                 return@onTick
             }
 
-            wasInHub = true
-
-            val world = mc.level ?: return@onTick
-            val player = mc.player ?: return@onTick
-            val overlayLines = mutableListOf<OverlayTextLine>()
-
+            // Runs in every world: onEntityLoad adds armor stands everywhere, and entities can load before the tab list says Hub
+            val inHub = World.isInHub()
             val unconfirmedIterator = unconfirmed.int2ObjectEntrySet().fastIterator()
             val now = System.nanoTime()
 
@@ -188,13 +177,32 @@ object DianaMobDetect {
                     continue
                 }
 
-                val name = entity.customName?.formattedString() ?: continue
-                if (hasMythoMobTypeChar(name) || isKingHitPhase(name)) {
+                val name = entity.customName?.formattedString()
+                if (inHub && name != null && (hasMythoMobTypeChar(name) || isKingHitPhase(name))) {
                     tracked[id] = entity
                     unconfirmedIterator.remove()
+                } else if (now - spawnTime > NAME_CHECK_TIMEOUT_NS) {
+                    unconfirmedIterator.remove()
                 }
-                else if (now - spawnTime > NAME_CHECK_TIMEOUT_NS) unconfirmedIterator.remove()
             }
+
+            if (!inHub) {
+                if (wasInHub) {
+                    wasInHub = false
+                    tracked.clear()
+                    defeated.clear()
+                    warned.clear()
+                    mobHpOverlay.clearLines()
+                    noShurikenOverlay.clearLines()
+                }
+
+                return@onTick
+            }
+
+            wasInHub = true
+
+            val player = mc.player ?: return@onTick
+            val overlayLines = mutableListOf<OverlayTextLine>()
 
             var closestStarlessMob: ArmorStand? = null
             var closestDistanceSq = Double.MAX_VALUE
@@ -208,6 +216,7 @@ object DianaMobDetect {
                 val entityWorld = armorStand.level()
                 if (entityWorld != world || armorStand.dead || !armorStand.isAlive) {
                     trackedIterator.remove()
+                    warned.remove(id)
                     defeated.remove(id)
                     continue
                 }
@@ -245,7 +254,9 @@ object DianaMobDetect {
     @SboEvent
     fun onEntityUnload(event: EntityUnloadEvent) {
         if (event.entity is ArmorStand) {
+            unconfirmed.remove(event.entity.id)
             tracked.remove(event.entity.id)
+            warned.remove(event.entity.id)
             defeated.remove(event.entity.id)
         }
     }
@@ -262,13 +273,17 @@ object DianaMobDetect {
         if (!hasMythoMobTypeChar(name)) return null
 
         val health = parseHealthFromName(name)
-        maybeTriggerHealthAlert(name, id, health)
 
-        if (health != null && health <= 0.0 && id !in defeated) {
-            defeated.add(id)
-            warned.remove(id)
-            SBOEvent.emit(DianaMobDeathEvent(name, entity))
+        if (health != null) {
+            maybeTriggerHealthAlert(name, id, health)
+
+            if (health <= 0.0 && id !in defeated) {
+                defeated.add(id)
+                warned.remove(id)
+                SBOEvent.emit(DianaMobDeathEvent(name, entity))
+            }
         }
+
         return OverlayTextLine(name, centered = true)
     }
 
@@ -310,8 +325,7 @@ object DianaMobDetect {
         }
     }
 
-    private fun maybeTriggerHealthAlert(name: String, id: Int, health: Double?) {
-        if (health == null) return
+    private fun maybeTriggerHealthAlert(name: String, id: Int, health: Double) {
         if (id in defeated || id in warned) return
         if (!shouldAlertForMob(name)) return
         val hpThreshold = if (RareMobs.hpAlert > 0.0) RareMobs.hpAlert * 1_000_000 else 0.0
@@ -319,10 +333,10 @@ object DianaMobDetect {
 
         if (health <= soundHpThreshold && soundHpThreshold > 0.0) {
             when (RareMob.fromName(name)) {
-                RareMob.INQ -> playCustomSound(DataManager.soundSettingsData.lowInqHpSound, DataManager.soundSettingsData.lowInqHpVoume)
-                RareMob.KING ->  playCustomSound(DataManager.soundSettingsData.lowKingHpSound, DataManager.soundSettingsData.lowKingHpVoume)
-                RareMob.SPHINX -> playCustomSound(DataManager.soundSettingsData.lowSphinxHpSound, DataManager.soundSettingsData.lowSphinxHpVoume)
-                RareMob.MANTICORE -> playCustomSound(DataManager.soundSettingsData.lowMantiHpSound, DataManager.soundSettingsData.lowMantiHpVoume)
+                RareMob.INQ -> playCustomSound(DataManager.soundSettingsData.lowInqHpSound, DataManager.soundSettingsData.lowInqHpVolume)
+                RareMob.KING ->  playCustomSound(DataManager.soundSettingsData.lowKingHpSound, DataManager.soundSettingsData.lowKingHpVolume)
+                RareMob.SPHINX -> playCustomSound(DataManager.soundSettingsData.lowSphinxHpSound, DataManager.soundSettingsData.lowSphinxHpVolume)
+                RareMob.MANTICORE -> playCustomSound(DataManager.soundSettingsData.lowMantiHpSound, DataManager.soundSettingsData.lowMantiHpVolume)
                 else -> {}
             }
 
@@ -345,12 +359,14 @@ object DianaMobDetect {
         } ?: return
 
         val mobDisplayName = WaypointManager.notifyRareMob("", mobType, true, true)
-        val playerPos = SboPlayer.getLastPosition()
 
-        val waypoint = WaypointManager.addRareMobWaypoint("", WaypointManager.floorToGround(playerPos), mobType, mobDisplayName, true)
+        val playerPos = SboPlayer.getLastPosition()
+        val groundedPos = WaypointManager.floorToGround(playerPos)
+
+        val waypoint = WaypointManager.addRareMobWaypoint("", groundedPos, mobType, mobDisplayName, true)
 
         if (mobType == RareMob.SPHINX && waypoint != null) {
-            // After spawning, the stale removal can remove Sphinx waypoint for a self spawn, because it's pending question answer. It would then proceed to re-add it from world-scan, which triggered double rare mob title and custom sound. This fixes it by adding the rare mob here earlier and persisting the rare mob waypoint thru the question phase, which makes the world-scan's existing.any check return early, and stale mob removal to not remove this waypoint, preventing duplicate title and sounds.
+            // After spawning, the stale removal can remove Sphinx waypoint for a self spawn, because it's pending question answer. It would then proceed to re-add it from world-scan, which triggered double rare mob title and custom sound. This fixes it by adding the rare mob here earlier and persisting the rare mob waypoint through the question phase, which makes the world-scan's existing.any check return early, and stale mob removal to not remove this waypoint, preventing duplicate title and sounds.
             waypoint.preventStaleRareMobRemoval = true
         }
 
@@ -368,7 +384,7 @@ object DianaMobDetect {
             if (mobType !in RareMobs.ShareMobs) return
 
             // TODO Once majority of people are on 0.7.2 or above, change it to send with [SBO] prefix in front.
-            val message = "x: ${playerPos.x.roundToInt()}, y: ${playerPos.y.roundToInt() - 1}, z: ${playerPos.z.roundToInt()} | $mob"
+            val message = "x: ${groundedPos.x.roundToInt()}, y: ${groundedPos.y.roundToInt()}, z: ${groundedPos.z.roundToInt()} | $mob"
             if (RareMobs.shareRareMobInPublicChat) Chat.allChat(message) else Chat.pc(message)
         }
 
@@ -396,9 +412,7 @@ object DianaMobDetect {
             val name = stand.customName?.formattedString() ?: return@mapNotNull null
             val mobType = RareMob.fromName(name) ?: return@mapNotNull null
 
-            val receiveType = mobType
-
-            if (receiveType !in RareMobs.ReceiveMobs) return@mapNotNull null
+            if (mobType !in RareMobs.ReceiveMobs) return@mapNotNull null
 
             stand to mobType
         }

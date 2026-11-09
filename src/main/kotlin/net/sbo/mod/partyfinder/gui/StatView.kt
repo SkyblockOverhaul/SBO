@@ -35,7 +35,7 @@ internal object StatView {
 
     /** [value] in pieces, colored by themes with Hypixel colors. */
     fun valuePieces(statId: String, value: JsonElement?): List<Piece> {
-        if (value == null || value is JsonNull) return listOf(Piece(ProblemText.value(statId, value)))
+        if (value == null || value === JsonNull) return listOf(Piece(ProblemText.value(statId, value)))
         val pieces = when {
             value is JsonArray && value.isNotEmpty() -> value.flatMapIndexed { i, item ->
                 val id = (item as? JsonObject)?.get("id")?.text() ?: item.text() ?: "?"
@@ -80,7 +80,7 @@ internal object StatView {
             val color = choice?.rarity?.let(::itemRarityClass) ?: (minRarity ?: choice?.rarities?.firstOrNull())?.let(::rarityColor)
             // The tier note in brackets stays uncolored
             val bracket = text.indexOf(" (")
-            val pieces = if (bracket > 0) listOf(Piece(text.substring(0, bracket), color), Piece(text.substring(bracket))) else listOf(Piece(text, color))
+            val pieces = if (bracket > 0) listOf(Piece(text.take(bracket), color), Piece(text.substring(bracket))) else listOf(Piece(text, color))
             if (i == 0) pieces else listOf(Piece(if (ReqMatcher.matchesAll(need)) " and " else " or ")) + pieces
         }
         else -> {
@@ -170,7 +170,7 @@ internal object StatView {
         }
     }
 
-    private fun JsonElement.text(): String? = (this as? JsonPrimitive)?.takeUnless { it is JsonNull }?.contentOrNull
+    private fun JsonElement.text(): String? = (this as? JsonPrimitive)?.takeUnless { it === JsonNull }?.contentOrNull
 
     /** True or false when [own] stats are known, null otherwise. */
     fun meets(def: ReqDef, need: JsonElement, own: MemberView?): Boolean? {

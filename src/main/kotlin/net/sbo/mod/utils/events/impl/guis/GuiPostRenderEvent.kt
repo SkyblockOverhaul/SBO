@@ -9,12 +9,10 @@ import net.minecraft.client.gui.screens.Screen
  * @param context The drawing context used for rendering.
  * @param mouseX The current X position of the mouse.
  * @param mouseY The current Y position of the mouse.
- * @param delta The partial tick time.
  */
 class GuiPostRenderEvent(
     val screen: Screen,
     val context: GuiGraphicsExtractor,
     val mouseX: Int,
     val mouseY: Int,
-    private val delta: Float
 )

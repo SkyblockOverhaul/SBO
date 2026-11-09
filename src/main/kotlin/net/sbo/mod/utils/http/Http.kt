@@ -7,13 +7,20 @@ import kotlinx.serialization.json.jsonPrimitive
 import net.minecraft.SharedConstants
 import net.sbo.mod.SBOKotlin
 import java.io.IOException
+import java.io.InputStream
+import java.io.PushbackInputStream
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse.BodyHandlers
 import java.time.Duration
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
+import java.util.zip.GZIPInputStream
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import kotlin.math.abs
 
 object Http {
     private const val CONNECT_TIMEOUT = 30_000L
@@ -22,7 +29,7 @@ object Http {
     private val USER_AGENT =
         "SBO-Kotlin-Mod/${SBOKotlin.version}+${SharedConstants.getCurrentVersion().name()}"
 
-    private val EXECUTOR: ExecutorService = Executors.newCachedThreadPool() { runnable ->
+    private val EXECUTOR: ExecutorService = Executors.newCachedThreadPool { runnable ->
         Thread(runnable, "SBO Http Request Thread").apply {
             isDaemon = true
         }
@@ -45,6 +52,34 @@ object Http {
         .connectTimeout(Duration.ofMillis(CONNECT_TIMEOUT))
         .followRedirects(HttpClient.Redirect.NEVER)
         .build()
+
+    // Their Date header sets the server time, both run on synced clocks and get called every few minutes anyway
+    private val TIME_HOSTS = setOf("api.hypixel.net", URI.create(SBOKotlin.API_URL).host)
+
+    /** How far the PC clock is behind Hypixel and the SBO backend, from the Date header of their last response. */
+    @Volatile
+    private var clockOffsetMillis = 0L
+
+    /** The real time even when the PC clock is wrong, the PC clock until the first response from one of the [TIME_HOSTS]. */
+    fun serverTimeMillis(): Long = System.currentTimeMillis() + clockOffsetMillis
+
+    private fun updateClockOffset(host: String?, date: String?) {
+        if (host !in TIME_HOSTS || date == null) return
+        val server = try {
+            // RFC_1123_DATE_TIME has fixed English names, a formatter from a pattern would follow the locale
+            ZonedDateTime.parse(date, DateTimeFormatter.RFC_1123_DATE_TIME).toInstant().toEpochMilli()
+        } catch (_: Exception) {
+            return
+        }
+        val offset = (server - System.currentTimeMillis()).let {
+            // The header has whole seconds and the request takes a moment, a clock this close is left as it is
+            if (abs(it) < 5_000) 0L else it
+        }
+        if (abs(offset - clockOffsetMillis) > 60_000) {
+            SBOKotlin.logger.warn("PC clock is ${-offset / 1000}s off $host, using the server time for SkyBlock dates")
+        }
+        clockOffsetMillis = offset
+    }
 
     private fun http3WithFallback(): HttpClient.Version {
         return try {
@@ -82,6 +117,31 @@ object Http {
         it.POST(HttpRequest.BodyPublishers.ofString(body, Charsets.UTF_8))
     }
 
+    private fun decompress(
+        body: InputStream,
+        contentEncoding: String?
+    ): InputStream {
+        if (contentEncoding == null) return body
+
+        val peek = PushbackInputStream(body)
+        val first = peek.read()
+        if (first == -1) return peek
+        peek.unread(first)
+
+        var decoded: InputStream = peek
+
+        // Content codings are applied in order, so decode them in reverse order.
+        for (encoding in contentEncoding.split(',').asReversed()) {
+            decoded = when (encoding.trim().lowercase(Locale.ROOT)) {
+                "identity" -> decoded
+                "gzip", "x-gzip" -> GZIPInputStream(decoded)
+                else -> throw IOException("Unsupported content encoding: $encoding")
+            }
+        }
+
+        return decoded
+    }
+
     private fun send(
         urlString: String,
         headers: Map<String, String>,
@@ -92,7 +152,7 @@ object Http {
         try {
             val uri = URI.create(urlString)
             val httpVersion = when {
-                // Without TLS the JDK asks for an h2c upgrade, which a local backend answers with 400
+                // Without TLS the JDK asks for a h2c upgrade, which a local backend answers with 400
                 uri.scheme == "http" -> HttpClient.Version.HTTP_1_1
                 else -> HTTP_3_OR_2
             }
@@ -105,6 +165,7 @@ object Http {
                     .uri(uri)
                     .timeout(Duration.ofMillis(REQUEST_TIMEOUT))
                     .header("User-Agent", USER_AGENT)
+                    .header("Accept-Encoding", "gzip")
 
                 headers.forEach { (name, value) -> builder.header(name, value) }
                 return method(builder).build()
@@ -126,7 +187,12 @@ object Http {
                 .thenAccept { response ->
                     try {
                         val code = response.statusCode()
-                        val body = response.body().use { it.readNBytes(MAX_BODY_BYTES + 1) }
+                        updateClockOffset(uri.host, response.headers().firstValue("Date").orElse(null))
+                        val encoding = response.headers().allValues("Content-Encoding").joinToString(",").ifEmpty { null }
+                        // The outer use closes the raw body when decompress() throws before returning a stream
+                        val body = response.body().use { raw ->
+                            decompress(raw, encoding).use { it.readNBytes(MAX_BODY_BYTES + 1) }
+                        }
                         if (body.size > MAX_BODY_BYTES) throw IOException("Response from ${uri.host} is larger than ${MAX_BODY_BYTES / 1024 / 1024} MB")
 
                         val status = statusMessage(code)
@@ -157,7 +223,7 @@ object Http {
     /**
      * Small matcher to turn HTTP status code to text, since HTTP/2+ and the new HttpClient API does not provide this.
      *
-     * Not RFC-perfect by any means and will return a generic message for lot of uncommon/rare/joke HTTP codes, let's hope
+     * Not RFC-perfect by any means and will return a generic message for a lot of uncommon/rare/joke HTTP codes, let's hope
      * the backend is not going to return 418 (The "I'm a teapot" HTTP response code)
      */
     private fun statusMessage(code: Int): String {
@@ -179,7 +245,7 @@ object Http {
         }
     }
 
-    fun JsonObject.getBoolean(key: String): Boolean = this[key]?.jsonPrimitive?.booleanOrNull ?: false
+    fun JsonObject.getBoolean(key: String): Boolean = this[key]?.jsonPrimitive?.booleanOrNull == true
 
     fun JsonObject.getString(key: String): String? = this[key]?.jsonPrimitive?.contentOrNull
 

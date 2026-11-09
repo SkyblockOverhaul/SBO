@@ -19,7 +19,7 @@ import net.sbo.mod.utils.data.DataManager
 object SettingsChanges {
     private val current: ModVersion? by lazy { ModVersion.parse(SBOKotlin.version) }
 
-    // Settings with a since after this one are listed, null when there is nothing to list (a new install)
+    // Settings with a "since" after this one are listed, null when there is nothing to list (a new installation)
     private var after: ModVersion? = null
 
     /** After the config and SboData are loaded, before the features read their settings. */
@@ -40,17 +40,19 @@ object SettingsChanges {
             data.save()
         }
         val previous = ModVersion.parse(data.settingsPreviousVersion)
-        after = when {
-            previous == current -> null
-            previous == null -> current.lineStart
+        after = when (previous) {
+            current -> null
+            null -> current.lineStart
             else -> minOf(previous, current.lineStart)
         }
     }
 
     private fun turnOffNew(after: ModVersion, upTo: ModVersion) {
         val turnedOff = newSettings(Settings, after, upTo)
+            .asSequence()
             .map { it.element as ConfigEntry<*> }
             .filter { switchable(it) && isOn(it) && it.value == it.default }
+            .toList()
         if (turnedOff.isEmpty()) return
         turnedOff.forEach { switchTo(it, false) }
         Settings.save()

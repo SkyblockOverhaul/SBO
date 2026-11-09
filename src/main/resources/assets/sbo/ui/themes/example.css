@@ -1,0 +1,36 @@
+/*
+name: Example (CSS)
+description: An example CSS theme: rounder, softer windows with an orange accent. Copy this file and edit it to make your own, the README explains how.
+base: midnight
+hypixelColors: false
+marks: false
+*/
+
+/* The comment above is read by SBO: name, description, base, hypixelColors and marks work like in a .json theme.
+   Everything below is normal CSS. It is added after SBO's own CSS, so at the same specificity your rule wins.
+   Changes show up in open windows right away, mistakes are written to the Minecraft log with the line number. */
+
+/* Colors: the same variables as in a .json theme (see the README). Write them on body.sbo, so they beat the base theme. */
+body.sbo {
+    --accent: #ff8a3d;
+    --accent-hover: #ffa366;
+    --accent-text: #1a1206;
+    --accent-soft: rgba(255, 138, 61, 0.3);
+    --accent-faint: rgba(255, 138, 61, 0.16);
+    --title: #ffb380;
+}
+
+/* Every SBO window: body.sbo-window-<name> is only there in that window */
+body.sbo button {
+    border-radius: 6px;
+}
+
+/* Only the hub: the title gets a shadow in the accent color */
+body.sbo-window-hub .hub-title {
+    text-shadow: 1px 1px 0 var(--accent);
+}
+
+/* Only the party finder: rounder window corners */
+body.sbo-window-partyfinder .pf-window {
+    border-radius: 8px;
+}

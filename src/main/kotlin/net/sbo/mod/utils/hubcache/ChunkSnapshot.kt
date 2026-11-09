@@ -68,7 +68,7 @@ class ChunkSnapshot private constructor(
                 compact(blockListener.getDataLayerData(SectionPos.of(pos, minLightSection + i))) ?: DARK
             }
             val skyLight = arrayOfNulls<DataLayer>(lightCount)
-            for (i in 0 until lightCount) {
+            for (i in 0..<lightCount) {
                 skyLight[i] = compact(skyListener.getDataLayerData(SectionPos.of(pos, minLightSection + i)))
             }
 
@@ -92,7 +92,7 @@ class ChunkSnapshot private constructor(
 
             val data = layer.data
             val first = data[0]
-            if ((first.toInt() and 15) == (first.toInt() shr 4 and 15) && data.all { it == first }) {
+            if (first.toInt() and 15 == first.toInt() shr 4 and 15 && data.all { it == first }) {
                 return when (val value = first.toInt() and 15) {
                     0 -> DARK
                     15 -> LIT
@@ -103,7 +103,7 @@ class ChunkSnapshot private constructor(
         }
 
         /**
-         * The server leaves out sky light sections that equal the one above. Fill them in from the top:
+         * The server leaves out skylight sections that equal the one above. Fill them in from the top:
          * fully lit above the highest section, otherwise the bottom layer of the section above.
          */
         private fun fillSkyLight(skyLight: Array<DataLayer?>): Array<DataLayer> {
@@ -125,7 +125,7 @@ class ChunkSnapshot private constructor(
             val aboveData = above.data
             val below = ByteArray(DataLayer.SIZE)
             // The bottom y layer of a section is its first 128 bytes, repeat it for all 16 layers.
-            for (y in 0 until 16) System.arraycopy(aboveData, 0, below, y * 128, 128)
+            for (y in 0..<16) System.arraycopy(aboveData, 0, below, y * 128, 128)
             return compact(DataLayer(below)) ?: DARK
         }
     }

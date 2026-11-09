@@ -55,7 +55,7 @@ object CloudSyncGui {
         useEscapeBack(page != Page.MAIN) { page = Page.MAIN }
         var uiScale by useState(UiScale.own(DataManager.sboData.cloudSyncUiScale))
         useSboScale(uiScale)
-        useSboTheme()
+        useSboTheme("cloud")
         val size = WindowSize(uiScale) { scale ->
             uiScale = scale
             DataManager.sboData.cloudSyncUiScale = scale
@@ -229,7 +229,9 @@ object CloudSyncGui {
         useEffect { CloudSync.compare { result = it } }
 
         fun side(id: String): CloudSide = choices[id] ?: CloudSide.PC
-        fun pick(id: String, side: CloudSide) { choices = choices + (id to side) }
+        fun pick(id: String, side: CloudSide) {
+            choices += id to side
+        }
 
         div(className = "cs-window cs-wide") {
             windowHeader("Compare", size, onBack)

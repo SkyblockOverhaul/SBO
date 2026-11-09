@@ -25,8 +25,8 @@ object Pickuplog {
     private var newPurse: Long = 0L
     private var inventoryDirty = false
 
-    private var oldInventory = mapOf<String, Item>()
-    private var newInventory = mapOf<String, Item>()
+    private var oldInventory = emptyMap<String, Item>()
+    private var newInventory = emptyMap<String, Item>()
 
     private val regex = Regex("""\+([\d,]+) ([^(]+)""")
 
@@ -50,7 +50,7 @@ object Pickuplog {
         }
 
         Register.onChatMessageCancelable(
-            Pattern.compile("^.*Sacks.*\\s+(?:§.)?\\+\\d+ items\\..*\\(Last \\d+s\\.\\)(?:§.)*$")
+            Pattern.compile("""^.*Sacks.*\s+(?:§.)?\+\d+ items\..*\(Last \d+s\.\)(?:§.)*$""")
         ) { message, _ ->
             var cancel = true
             if (World.isInSkyblock()) {
@@ -78,8 +78,15 @@ object Pickuplog {
         inventoryDirty = true
     }
 
+    // Hilt of Revelations & Crown of Greed (Before MF Rework), Enchanted Ancient Claw & Ancient Claw and Enchanted Gold (When not having relevant sacks) needs it, so still track if has a diana spade and is in the hub, even if the pickup log feature itself is disabled.
+    private fun shouldTrackInventoryChanges(): Boolean = General.pickuplogOverlay || Helper.hasSpade && World.isInHub()
+
     private fun updateInventorySnapshot() {
-        if (mc.player == null || !World.isInSkyblock() || World.isNone()) return
+        if (mc.player == null || !World.isInSkyblock() || World.isNone() || !shouldTrackInventoryChanges()) {
+            oldInventory = emptyMap()
+            return
+        }
+
         newInventory = Helper.readPlayerInv()
         newPurse = Helper.getPurse()
         if (oldInventory.isEmpty()) {

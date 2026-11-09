@@ -80,9 +80,9 @@ internal object SettingsMigration {
 
     private fun ids(ids: Collection<String>) = JsonArray().apply { ids.forEach(::add) }
 
-    private fun lowercase(value: JsonElement): JsonElement = when {
-        value is JsonPrimitive && value.isString -> JsonPrimitive(value.asString.lowercase())
-        value is JsonArray -> JsonArray().apply { value.forEach { add(lowercase(it)) } }
+    private fun lowercase(value: JsonElement): JsonElement = when (value) {
+        is JsonPrimitive if value.isString -> JsonPrimitive(value.asString.lowercase())
+        is JsonArray -> JsonArray().apply { value.forEach { add(lowercase(it)) } }
         else -> value
     }
 
@@ -119,7 +119,7 @@ internal object SettingsMigration {
         "medalCretanUrnEnabled" to "cretan_urn",
     )
 
-    // The on/off settings in every old sub that could be switched off, by category and sub title
+    // The on/off settings in every old sub that could be switched off, by category and subtitle
     private val OLD_SUB_SWITCHES: Map<String, Map<String, List<String>>> = mapOf(
         "Diana" to mapOf(
             "Diana Burrows" to listOf("spadeGuess", "curveSpadeGuess", "highlightChainEnds", "showChainStep", "arrowGuess", "closeBurrowDetection"),
@@ -152,7 +152,7 @@ internal object SettingsMigration {
             "Warp Title Customization" to listOf("warpTitleAsSubtitle"),
         ),
         "Medal" to mapOf(
-            // The clip switches all needed Enable Medal Clips, so turning that off is enough and keeps the selected drops
+            // The clip switches all needed "Enable Medal Clips", so turning that off is enough and keeps the selected drops
             "Medal Clips" to listOf("medalEnabled"),
         ),
         "QOL" to emptyMap(),

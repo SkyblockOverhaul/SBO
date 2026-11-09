@@ -92,21 +92,21 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Trackers.TrackerLo
     }
 
     private val LOOT_ITEMS = listOf(
-        LootItemData("MYTHOLOGICAL_DYE", "Mythological Dye", RED),
+        LootItemData("MYTHOLOGICAL_DYE", "Mythological Dye", RED, short = "Dye"),
         LootItemData("MYTH_THE_FISH", "Myth the Fish", RED),
-        LootItemData("SHIMMERING_WOOL", "Shimmering Wool", RED, combined = true, dropMobId = "KING_MINOS", dropMobLsId = "KING_MINOS_LS"),
+        LootItemData("SHIMMERING_WOOL", "Shimmering Wool", RED, combined = true, dropMobId = "KING_MINOS", dropMobLsId = "KING_MINOS_LS", short = "Wool"),
         LootItemData("MANTI_CORE", "Manti-core", RED, combined = true, dropMobId = "MANTICORE", dropMobLsId = "MANTICORE_LS"),
         LootItemData("KING_MINOS_SHARD", "King Minos Shard", RED, isRarerDrop = true),
         LootItemData("FATEFUL_STINGER", "Fateful Stinger", LIGHT_PURPLE, combined = true, dropMobId = "MANTICORE", dropMobLsId = "MANTICORE_LS"),
-        LootItemData("CHIMERA", "Chimera", LIGHT_PURPLE, combined = true, dropMobId = "MINOS_INQUISITOR", dropMobLsId = "MINOS_INQUISITOR_LS"),
+        LootItemData("CHIMERA", "Chimera", LIGHT_PURPLE, combined = true, dropMobId = "MINOS_INQUISITOR", dropMobLsId = "MINOS_INQUISITOR_LS", short = "Chim"),
         LootItemData("BRAIN_FOOD", "Brain Food", DARK_PURPLE, combined = true, dropMobId = "SPHINX", dropMobLsId = "SPHINX_LS"),
-        LootItemData("MINOS_RELIC", "Minos Relic", DARK_PURPLE, isRarerDrop = true, dropMobId = "MINOS_CHAMPION"),
+        LootItemData("MINOS_RELIC", "Minos Relic", DARK_PURPLE, isRarerDrop = true, dropMobId = "MINOS_CHAMPION", short = "Relic"),
         LootItemData("SPHINX_SHARD", "Sphinx Shard", DARK_PURPLE, isRarerDrop = true),
-        LootItemData("BRAIDED_GRIFFIN_FEATHER", "Braided Griffin Feather", DARK_PURPLE, isRarerDrop = true),
+        LootItemData("BRAIDED_GRIFFIN_FEATHER", "Braided Griffin Feather", DARK_PURPLE, isRarerDrop = true, short = "Braided"),
         LootItemData("DAEDALUS_STICK", "Daedalus Stick", GOLD, isRarerDrop = true, dropMobId = "MINOTAUR"),
         LootItemData("MINOTAUR_SHARD", "Minotaur Shard", GOLD, isRarerDrop = true),
         LootItemData("CROWN_OF_GREED", "Crown of Greed", GOLD, isRarerDrop = true),
-        LootItemData("GRIFFIN_FEATHER", "Griffin Feather", GOLD),
+        LootItemData("GRIFFIN_FEATHER", "Griffin Feather", GOLD, short = "Feather"),
         LootItemData("MYTHOS_FRAGMENT", "Mytho Fragment", GOLD),
         LootItemData("WASHED_UP_SOUVENIR", "Washed-up Souvenir", GOLD, isRarerDrop = true),
         LootItemData("CRETAN_URN", "Cretan Urn", DARK_GREEN),
@@ -303,7 +303,10 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Trackers.TrackerLo
             Trackers.LootSort.AMOUNT_DESC -> lines.sortedByDescending { amount(it, tracker) }
             Trackers.LootSort.AMOUNT_ASC -> lines.sortedBy { amount(it, tracker) }
             // The lootshare line stays below its item
-            Trackers.LootSort.CUSTOM -> customOrder(ORDER, ITEM_IDS).let { order -> lines.sortedBy { order.indexOf(it.data.id) } }
+            Trackers.LootSort.CUSTOM -> {
+                val order = customOrder(ORDER, ITEM_IDS)
+                lines.sortedBy { order.indexOf(it.data.id) }
+            }
         }
     }
 
@@ -400,8 +403,42 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Trackers.TrackerLo
         }
     }
 
+    override fun compactLines(): List<CompactLine>? {
+        if (!Trackers.isCompact(Trackers.CompactTracker.LOOT)) return null
+        val type = Trackers.lootTracker
+        val tracker = getDianaTracker(type) ?: return emptyList()
+        val hidden = DataManager.sboData.hideTrackerLines
+        // Only the main loot, the lootshare drops added after a +
+        val items = lootLines(tracker).asSequence().filter { !it.ls }.map { it.data }.filter { it.short != null && it.id !in hidden }.toList()
+        val entries = items.mapNotNull { data ->
+            val amount = tracker.getAmountOf(data.id)
+            val lsAmount = if (data.combined) tracker.getAmountOf("${data.id}_LS") else 0
+            if (amount + lsAmount <= 0 && Trackers.hideUnobtainedItems) return@mapNotNull null
+            val ls = if (lsAmount > 0) "+${Helper.formatNumber(lsAmount, withCommas = true)}" else ""
+            Entry(data.short, data.color, Helper.formatNumber(amount, withCommas = true) + ls)
+        }
+        val timer = timer(type)
+        val totalProfit = totalProfit(tracker)
+        val profitPerHr = profitPerHour(tracker, totalProfit)
+        val burrowsPerHr = Helper.getBurrowsPerHr(tracker, timer)
+        val head = CompactLine("Loot", listOfNotNull(
+            Entry(null, null, Helper.toTitleCase("$type")),
+            Entry(null, null, Helper.formatTime(tracker.items.TIME)),
+            if (timer.isRunning()) null else Entry(null, null, "Paused")
+        ))
+        val profit = CompactLine(null, listOfNotNull(
+            Entry("Profit", GOLD, Helper.formatNumber(totalProfit)),
+            if (profitPerHr > 0.0) Entry(null, null, "${Helper.formatNumber(profitPerHr)}/h") else null
+        ))
+        val burrows = CompactLine(null, listOfNotNull(
+            Entry("Burrows", null, Helper.formatNumber(tracker.items.TOTAL_BURROWS, withCommas = true)),
+            if (burrowsPerHr.isNaN()) null else Entry(null, null, "$burrowsPerHr/h")
+        ))
+        return listOf(head) + packed(entries) + profit + burrows
+    }
+
     override fun elementClicked(id: String) {
-        if (moveClicked(id, ORDER, ITEM_IDS) { view().rows.mapNotNull(::itemOf).distinct() }) return
+        if (moveClicked(id, ORDER, ITEM_IDS) { view().rows.asSequence().mapNotNull(::itemOf).distinct().toList() }) return
         when (id) {
             "mode" -> {
                 Trackers.lootTracker = Trackers.lootTracker.nextOption()
@@ -453,10 +490,12 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Trackers.TrackerLo
     }
 
     private fun coinBreakdown(tracker: DianaTracker): String =
-        "$YELLOW${BOLD}Coin Break Down:\n" +
-            "${GOLD}Treasure: $AQUA${Helper.formatNumber(tracker.items.COINS - tracker.items.FISH_COINS - tracker.items.SCAVENGER_COINS)}\n" +
-            "${GOLD}Four-Eyed Fish: $AQUA${Helper.formatNumber(tracker.items.FISH_COINS)}\n" +
-            "${GOLD}Scavenger: $AQUA${Helper.formatNumber(tracker.items.SCAVENGER_COINS)}"
+        """
+        $YELLOW${BOLD}Coin Break Down:
+        ${GOLD}Treasure: $AQUA${Helper.formatNumber(tracker.items.COINS - tracker.items.FISH_COINS - tracker.items.SCAVENGER_COINS)}
+        ${GOLD}Four-Eyed Fish: $AQUA${Helper.formatNumber(tracker.items.FISH_COINS)}
+        ${GOLD}Scavenger: $AQUA${Helper.formatNumber(tracker.items.SCAVENGER_COINS)}
+        """.trimIndent()
 
     private fun profitBreakdown(profitPerHr: Any, profitPerBurrow: Any, coaProfitPerHr: Number): String =
         "$GOLD$profitPerHr coins/hr\n" +
@@ -569,12 +608,11 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Trackers.TrackerLo
                 val scaleFactor = mc.window.guiScale
                 val mouseX = mc.mouseHandler.xpos() / scaleFactor
                 val mouseY = mc.mouseHandler.ypos() / scaleFactor
-                RenderUtils2D.drawHoveringString(drawContext,
-                    "$YELLOW${BOLD}Coin Break Down:\n" +
-                            "${GOLD}Treasure: $AQUA${Helper.formatNumber(tracker.items.COINS - tracker.items.FISH_COINS - tracker.items.SCAVENGER_COINS)}\n" +
-                            "${GOLD}Four-Eyed Fish: $AQUA${Helper.formatNumber(tracker.items.FISH_COINS)}\n" +
-                            "${GOLD}Scavenger: $AQUA${Helper.formatNumber(tracker.items.SCAVENGER_COINS)}",
-                    mouseX, mouseY, textRenderer)
+                RenderUtils2D.drawHoveringString(
+                    drawContext,
+                    coinBreakdown(tracker),
+                    mouseX, mouseY, textRenderer
+                )
             }
     }
 
@@ -610,14 +648,16 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Trackers.TrackerLo
     )
 
     /** Used up items (shurikens), their worth counts against the profit. */
-    private val lossFields = LOOT_ITEMS.filter { it.negativeValue }.map { it.id }.toSet()
+    private val lossFields = LOOT_ITEMS.asSequence().filter { it.negativeValue }.map { it.id }.toSet()
 
     private val profitFields = DianaItemsData::class.java.declaredFields
+        .asSequence()
         .filterNot { it.name in excludedProfitFields }
         .map { field ->
             field.isAccessible = true
             field to field.name.replace("_LS", "")
         }
+        .toList()
 
     /** Coins worth of every dropped item with a price (field name without "_LS", lootshare drops added in), coins not included. */
     fun profitByItem(tracker: DianaTracker): Map<String, Long> {

@@ -3,7 +3,7 @@ package net.sbo.mod.utils.time
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
-import java.util.concurrent.Executors
+import java.nio.ByteBuffer
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -23,12 +23,6 @@ object TimeUtil {
     private const val NTP_TIMEOUT_MILLIS = 5_000
 
     private const val NTP_EPOCH_OFFSET_SECONDS = 2_208_988_800L
-
-    private val EXECUTOR = Executors.newSingleThreadExecutor { runnable ->
-        Thread(runnable, "SBO Time Synchronization").apply {
-            isDaemon = true
-        }
-    }
 
     private val started = AtomicBoolean(false)
 
@@ -77,8 +71,10 @@ object TimeUtil {
             return
         }
 
-        EXECUTOR.execute {
-            synchronize()
+        Thread(::synchronize, "SBO Time Synchronization").apply {
+            isDaemon = true
+            priority = Thread.NORM_PRIORITY + 1 // one-shot thread, have a little more priority than normal to finish earlier if possible
+            start()
         }
     }
 
@@ -164,13 +160,15 @@ object TimeUtil {
                 "Invalid NTP response"
             }
 
+            val buffer = ByteBuffer.wrap(packet)
+
             // T2: server request receive time.
             val serverReceiveMillis =
-                readNtpTimestamp(packet, 32)
+                readNtpTimestamp(buffer, 32)
 
             // T3: server response transmit time.
             val serverTransmitMillis =
-                readNtpTimestamp(packet, 40)
+                readNtpTimestamp(buffer, 40)
 
             val localSendMillis =
                 localTimeAtNano(localSendNanoTime)
@@ -184,7 +182,7 @@ object TimeUtil {
              * offset = ((T2 - T1) + (T3 - T4)) / 2
              */
             val offsetMillis = (
-                (serverReceiveMillis - localSendMillis) +
+                serverReceiveMillis - localSendMillis +
                     (serverTransmitMillis - localReceiveMillis)
                 ) / 2L
 
@@ -201,31 +199,19 @@ object TimeUtil {
     }
 
     private fun readNtpTimestamp(
-        packet: ByteArray,
+        buffer: ByteBuffer,
         offset: Int
     ): Long {
-        val seconds = readUnsignedInt(packet, offset)
-        val fraction = readUnsignedInt(packet, offset + 4)
+        val seconds = Integer.toUnsignedLong(buffer.getInt(offset))
+        val fraction = Integer.toUnsignedLong(buffer.getInt(offset + 4))
 
         val unixSeconds =
             seconds - NTP_EPOCH_OFFSET_SECONDS
 
         val millis =
-            (fraction * 1_000L) / 0x1_0000_0000L
+            fraction * 1_000L / 0x1_0000_0000L
 
         return unixSeconds * 1_000L + millis
-    }
-
-    private fun readUnsignedInt(
-        packet: ByteArray,
-        offset: Int
-    ): Long {
-        return (
-            (packet[offset].toLong() and 0xFF) shl 24 or
-                ((packet[offset + 1].toLong() and 0xFF) shl 16) or
-                ((packet[offset + 2].toLong() and 0xFF) shl 8) or
-                (packet[offset + 3].toLong() and 0xFF)
-            )
     }
 
     private fun localTimeAtNano(nanoTime: Long): Long {

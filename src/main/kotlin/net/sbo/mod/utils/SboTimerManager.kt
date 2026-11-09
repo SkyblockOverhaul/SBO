@@ -18,7 +18,7 @@ internal fun getInactivityLimitNanos(): Long {
 }
 
 object SboTimerManager {
-    internal val activeTimers = mutableSetOf<SBOTimer>()
+    private val activeTimers = mutableSetOf<SBOTimer>()
     // The trackers are read on every use, DataManager can swap them (alpha data)
     internal val timerMayor = SBOTimer({ DataManager.dianaTrackerMayorData })
     internal val timerTotal = SBOTimer({ DataManager.dianaTrackerTotalData })

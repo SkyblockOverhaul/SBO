@@ -20,7 +20,6 @@ import net.sbo.mod.utils.waypoint.WaypointManager
 import java.util.*
 import java.util.regex.Pattern
 import java.util.concurrent.TimeUnit
-import java.util.function.BooleanSupplier
 import net.minecraft.core.particles.ParticleTypes as MCParticleTypes
 
 object BurrowDetector {
@@ -260,7 +259,7 @@ object BurrowDetector {
 
     @SboEvent
     fun onBurrowDug(event: BurrowDugEvent) {
-        ChainTracker.onBurrowDug(event.currentBurrow, event.maxBurrow, event.lastBlock)
+        ChainTracker.onBurrowDug(event.currentBurrow, event.maxBurrow, DianaEvents.lastBlockClicked)
         when {
             event.currentBurrow == 1 -> chainStart()
 

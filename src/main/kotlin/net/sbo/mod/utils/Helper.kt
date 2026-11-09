@@ -1,6 +1,5 @@
 package net.sbo.mod.utils
 
-import net.minecraft.client.gui.screens.Screen
 import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
 import net.minecraft.world.item.ItemStack
@@ -18,7 +17,6 @@ import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.entity.DianaMobDeathEvent
 import net.sbo.mod.utils.events.impl.game.WorldChangeEvent
-import net.sbo.mod.utils.events.impl.guis.GuiCloseEvent
 import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
 import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.utils.game.ScoreBoard
@@ -136,7 +134,7 @@ object Helper {
             RareDrops.onChatDrop("Enchanted Book (Chimera 1) §b(+§b566 ✯ Magic Find)")
         }*/
 
-        // Workaround to not timeout on the first requests since there is lot of work being done that steals CPU time from our HTTP threads during game startup. Wait after at least 1 second of virtual thread carrier threads being available, and runAsync's ForkJoinPool task queue to become empty to be able to run our task.
+        // Workaround to not timeout on the first requests since there is a lot of work being done that steals CPU time from our HTTP threads during game startup. Wait after at least 1 second of virtual thread carrier threads being available, and runAsync's ForkJoinPool task queue to become empty to be able to run our task.
         sleep(1000) {
             CompletableFuture.runAsync {
                 updateItemPriceInfo()
@@ -241,7 +239,7 @@ object Helper {
     fun sleep(milliseconds: Long, callback: () -> Unit) {
         SBO_CALLBACK_THREAD.execute {
             Thread.sleep(milliseconds)
-            mc.execute {
+            mc.schedule {
                 callback()
             }
         }
@@ -279,12 +277,12 @@ object Helper {
 
     private fun getItemCount(items: DianaItemsData, propertyName: String): Int =
         ITEM_COUNT_GETTERS[propertyName]?.invoke(items)
-            ?: (ITEM_PROPERTIES[propertyName]?.call(items) as? Int)
+            ?: ITEM_PROPERTIES[propertyName]?.call(items) as? Int
             ?: 0
 
     private fun getMobCount(mobs: DianaMobsData, propertyName: String): Int =
         MOB_COUNT_GETTERS[propertyName]?.invoke(mobs)
-            ?: (MOB_PROPERTIES[propertyName]?.call(mobs) as? Int)
+            ?: MOB_PROPERTIES[propertyName]?.call(mobs) as? Int
             ?: 0
 
     private val ITEM_PROPERTIES = DianaItemsData::class.memberProperties.associateBy { it.name }
@@ -594,7 +592,7 @@ object Helper {
 
         val resultText = info.template
             .replace("{amount}", (amountOverride ?: info.totalAmount).toString())
-            .replace("{percentage}", "%.2f".format(info.percentage) + "%")
+            .replace("{percentage}", "%.2f".format(Locale.ROOT, info.percentage) + "%")
             .replace("{mf}", if (magicFind > 0) "$magicFind" else "")
             .replace("{lstext}", if (isLootshare) " (LS)" else "")
             .replace("{price}", getItemPriceFormatted(info.itemId))
@@ -619,7 +617,7 @@ object Helper {
 
     /** A message setting's lines as one chat message: the lines joined with spaces, blank lines skipped. */
     fun joinLines(lines: Array<out String>): String =
-        lines.map { it.trim() }.filter { it.isNotEmpty() }.joinToString(" ")
+        lines.asSequence().map { it.trim() }.filter { it.isNotEmpty() }.joinToString(" ")
 
     private fun getCustomMessage(message: Array<out String>): String = joinLines(message)
 
@@ -745,7 +743,7 @@ object Helper {
         lastAhFetch = System.currentTimeMillis()
         SboApi.ahItems()
             .toJson<List<Map<String, Map<String, Long>>>>(true) { json ->
-                priceDataAh = json.flatMap { it.entries }.associate { it.key to it.value["price"]!! }
+                priceDataAh = json.asSequence().flatMap { it.entries }.associate { it.key to it.value["price"]!! }
                 DianaLoot.updateLines()
             }.error { error ->
                 SBOKotlin.logger.error("Unexpected error while fetching AH item prices", error)
@@ -850,7 +848,7 @@ object Helper {
     }
 
     fun formatChances(chance: Double, label: String): String {
-        val percent = String.format("%.2f", chance * 100)
+        val percent = String.format(Locale.ROOT, "%.2f", chance * 100)
         val fraction = " §7(§b1/${(1 / chance).roundToInt()}§7)"
         return "§eChance: §b$percent%$fraction $label"
     }

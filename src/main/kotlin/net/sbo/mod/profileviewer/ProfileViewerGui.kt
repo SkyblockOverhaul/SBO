@@ -88,7 +88,7 @@ object ProfileViewerGui {
     // The last block grows for 350 ms, then the check shows 100 ms before the items
     private const val LOADING_DONE_MS = 450L
     // When each block fills, with a fixed seed so the scattered order is the same every time
-    private val LOADING_ORDER = (0 until LOADING_CELLS).shuffled(Random(7))
+    private val LOADING_ORDER = (0..<LOADING_CELLS).shuffled(Random(7))
     private val ITEM_TABS = listOf(
         "inventory" to "Inventory", "wardrobe" to "Wardrobe", "equipment" to "Equipment", "loadouts" to "Loadouts",
         "storage" to "Storage", "pets" to "Pets", "accessories" to "Accessory Bag"
@@ -184,7 +184,7 @@ object ProfileViewerGui {
         val now = useState(System.currentTimeMillis())
         PartyFinderGui.FONTS.keys.forEach { id -> useBodyClass("pf-font-$id", config.font == id) }
         useSboScale(UiScale.own(config.uiScale))
-        val theme = useSboTheme(config.theme)
+        val theme = useSboTheme("profileviewer", config.theme)
         useBodyClass("pf-hypixel", theme.hypixelColors)
         useBodyClass("pf-recomb", config.recombobulated)
         useBodyClass("pf-marks", theme.marks)
@@ -238,7 +238,7 @@ object ProfileViewerGui {
         }
         val itemsLoad = when {
             loadKey == null || Themes.itemsLoading == Themes.ITEMS_LOADING_OFF -> null
-            built < needed.size || (loadingFor == loadKey && loadedFor != loadKey) -> ItemsLoad(built, needed.size)
+            built < needed.size || loadingFor == loadKey && loadedFor != loadKey -> ItemsLoad(built, needed.size)
             else -> null
         }
         useEffect(name) {
@@ -648,17 +648,17 @@ object ProfileViewerGui {
         div(className = "pv-items-loading") {
             if (load.done) img(src = "${StatView.ICONS}/check.svg", className = "pf-icon pv-loading-check", key = "check")
             else img(src = "${StatView.ICONS}/refresh.svg", className = "pf-icon pv-spinner", key = "spinner")
-            span(className = "pf-muted") { +(if (load.done) "Items loaded" else "Loading items ${load.percent}%") }
+            span(className = "pf-muted") { +if (load.done) "Items loaded" else "Loading items ${load.percent}%" }
             bar(load.built.toDouble(), load.total.toDouble(), "pv-bar big pv-items-bar")
         }
     }
 
     private fun NodeBuilder.inventory(items: PlayerItems) {
         div(className = "pv-slots") {
-            for (it in 9 until 36) slot(items.inventory.getOrNull(it), key = it)
+            for (it in 9..<36) slot(items.inventory.getOrNull(it), key = it)
         }
         div(className = "pv-slots pv-hotbar") {
-            for (it in 0 until 9) slot(items.inventory.getOrNull(it), key = it)
+            for (it in 0..<9) slot(items.inventory.getOrNull(it), key = it)
         }
     }
 
@@ -666,7 +666,7 @@ object ProfileViewerGui {
     private fun NodeBuilder.setPage(page: Int, worn: Int?, setOf: (Int) -> List<DisplayItem?>?) {
         val first = page * SETS_PAGE
         div(className = "pv-slots") {
-            for (piece in 0 until 4) {
+            for (piece in 0..<4) {
                 for (set in first + 1..first + SETS_PAGE) {
                     slot(setOf(set)?.getOrNull(piece), key = "$set:$piece", extra = if (worn == set) "equipped" else null)
                 }
@@ -679,28 +679,28 @@ object ProfileViewerGui {
         if (items.loadouts.isEmpty()) return p(className = "pf-hint") { +"No loadouts set up." }
         val first = page * LOADOUTS_PAGE
         div(className = "pv-loadouts") {
-            items.loadouts.drop(first).take(LOADOUTS_PAGE).forEachIndexed { i, loadout ->
+            items.loadouts.asSequence().drop(first).take(LOADOUTS_PAGE).toList().forEachIndexed { i, loadout ->
                 div(className = "pv-loadout", key = first + i) {
                     span(className = "pv-loadout-number", title = loadout.name) { +"${first + i + 1}" }
                     val armor = loadout.armorSet?.let(items::wardrobeSet)
                     val equipment = loadout.equipmentSet?.let(items::equipmentSet)
-                    for (it in 0 until 4) slot(armor?.getOrNull(it), key = "a$it")
+                    for (it in 0..<4) slot(armor?.getOrNull(it), key = "a$it")
                     div(className = "pv-loadout-gap")
-                    for (it in 0 until 4) slot(equipment?.getOrNull(it), key = "e$it")
+                    for (it in 0..<4) slot(equipment?.getOrNull(it), key = "e$it")
                 }
             }
         }
     }
 
     private fun NodeBuilder.pager(labels: List<String>, page: Int, onPage: (Int) -> Unit, onClose: (() -> Unit)? = null) {
-        val slots = PAGER_CELLS - 2 - (if (onClose != null) 1 else 0)
+        val slots = PAGER_CELLS - 2 - if (onClose != null) 1 else 0
         div(className = "pv-pager") {
             pagerCell("<", "prev", enabled = page > 0) { onPage(page - 1) }
             shownPages(page, labels.size, slots).forEachIndexed { i, shown ->
                 if (shown == null) span(className = "pv-pager-cell pv-pager-gap", key = "gap$i") { +"..." }
                 else pagerCell(labels[shown], shown, active = shown == page) { onPage(shown) }
             }
-            pagerCell(">", "next", enabled = page in 0 until labels.lastIndex) { onPage(page + 1) }
+            pagerCell(">", "next", enabled = page in 0..<labels.lastIndex) { onPage(page + 1) }
             if (onClose != null) {
                 div(className = "pv-pager-cell pv-pager-close", key = "close", title = "Back to the storage", onClick = { onClose() }) {
                     img(src = "${StatView.ICONS}/close.svg", className = "pf-icon")
@@ -719,33 +719,33 @@ object ProfileViewerGui {
      * first and the last page always show, and the pages around the current one.
      */
     private fun shownPages(page: Int, pages: Int, slots: Int): List<Int?> {
-        if (pages <= slots) return (0 until pages).toList()
+        if (pages <= slots) return (0..<pages).toList()
         val edge = slots - 2
-        if (page < edge) return (0 until edge).toList() + null + (pages - 1)
-        if (page >= pages - edge) return listOf(0, null) + (pages - edge until pages)
+        if (page < edge) return (0..<edge).toList() + null + (pages - 1)
+        if (page >= pages - edge) return listOf(0, null) + (pages - edge..<pages)
         val around = slots - 4
         val first = page - (around - 1) / 2
-        return listOf(0, null) + (first until first + around) + null + (pages - 1)
+        return listOf(0, null) + (first..<first + around) + null + (pages - 1)
     }
 
     /** Five rows of nine like an ender chest page. */
     private fun NodeBuilder.grid(list: List<DisplayItem?>, page: Int, worn: Int? = null) {
         val first = page * CONTAINER_PAGE
         div(className = "pv-slots") {
-            for (it in first until first + CONTAINER_PAGE) slot(list.getOrNull(it), key = it, extra = if (it == worn) "equipped" else null)
+            for (it in first..<first + CONTAINER_PAGE) slot(list.getOrNull(it), key = it, extra = if (it == worn) "equipped" else null)
         }
     }
 
     /** Like Hypixel's storage menu, the ender chest pages and the backpacks open with a click. */
     private fun NodeBuilder.storage(items: PlayerItems, open: String?, onOpen: (String) -> Unit) {
-        val (kind, index) = open?.split(":")?.let { it[0] to it[1].toInt() } ?: ("" to 0)
+        val (kind, index) = open?.split(":")?.let { it[0] to it[1].toInt() } ?: "" to 0
         if (open != null) div(className = "pv-storage-label") { +openedName(open) }
         if (kind == "ec") return grid(items.enderChest, index)
         if (kind == "bp") return grid(items.backpacks.firstOrNull { it.slot == index }?.items.orEmpty(), 0)
         val pages = enderChestPages(items)
         div(className = "pv-storage-label") { +"Ender Chest" }
         div(className = "pv-slots") {
-            for (page in 0 until ENDER_CHEST_PAGES) {
+            for (page in 0..<ENDER_CHEST_PAGES) {
                 if (page >= pages) {
                     slot(null, key = "ec$page", extra = "locked")
                     continue
@@ -759,7 +759,7 @@ object ProfileViewerGui {
         }
         div(className = "pv-storage-label") { +"Backpacks" }
         div(className = "pv-slots") {
-            for (slot in 0 until BACKPACK_SLOTS) {
+            for (slot in 0..<BACKPACK_SLOTS) {
                 val backpack = items.backpacks.firstOrNull { it.slot == slot }
                 if (backpack == null) {
                     slot(null, key = "bp$slot", extra = "locked")
@@ -786,7 +786,7 @@ object ProfileViewerGui {
 
     /** The ender chest pages or the backpacks, whichever the open one belongs to, for the arrows. */
     private fun storageGroup(items: PlayerItems, open: String): List<String> =
-        if (open.startsWith("ec:")) (0 until enderChestPages(items)).map { "ec:$it" }
+        if (open.startsWith("ec:")) (0..<enderChestPages(items)).map { "ec:$it" }
         else items.backpacks.map { "bp:${it.slot}" }
 
     private fun openedName(open: String): String {
@@ -806,7 +806,7 @@ object ProfileViewerGui {
         // The viewer stats come first, like the XP of a skill
         val all = (category.viewer + category.reqs.map { it.stat } + category.display +
             category.subcategories.flatMap { sub -> sub.viewer + sub.reqs.map { it.stat } + sub.display }).distinct()
-        val shown = { ids: List<String> -> ids.distinct().filter { it in all && isShown(it, all) } }
+        val shown = { ids: List<String> -> ids.asSequence().distinct().filter { it in all && isShown(it, all) }.toList() }
         val moved = ViewerLayout.TOP[category.id].orEmpty()
         // Category stats that differ per subcategory go under each subcategory
         val categoryIds = shown(category.viewer + category.reqs.map { it.stat } + category.display)
@@ -863,7 +863,7 @@ object ProfileViewerGui {
             span(className = classNames(
                 "pf-panel-value",
                 "estimated" to StatView.estimated(id),
-                "missing" to (value == null || value is JsonNull)
+                "missing" to (value == null || value === JsonNull)
             )) { pieces(StatView.valuePieces(id, value)) }
         }
     }
@@ -884,9 +884,10 @@ object ProfileViewerGui {
             bar(tracking.tracking, tracking.max, "pv-bar big")
         }
         p(className = "pf-hint") {
-            +(if (showAll) "Everything that gives Diana Tracking, the biggest missing gains first." else "What is still missing for more Diana Tracking, the biggest gains first.")
+            +if (showAll) "Everything that gives Diana Tracking, the biggest missing gains first." else "What is still missing for more Diana Tracking, the biggest gains first."
         }
-        val sources = tracking.sources.sortedByDescending { it.max - it.value }.filter { showAll || it.value < it.max }
+        val sources = tracking.sources.asSequence().sortedByDescending { it.max - it.value }.filter { showAll || it.value < it.max }
+            .toList()
         if (sources.isEmpty()) return div(className = "pf-message") { p { +"Nothing missing, every source of Tracking is maxed." } }
         sources.forEach { source ->
             val done = source.value >= source.max

@@ -192,16 +192,21 @@ object HubChunkCache {
 
     private fun logStats(current: FakeChunkManager) {
         val runtime = Runtime.getRuntime()
-        val usedMb = (runtime.totalMemory() - runtime.freeMemory()) shr 20
+        val usedMb = runtime.totalMemory() - runtime.freeMemory() shr 20
         SBOKotlin.logger.debug(
-            "[HubChunkCache] ${current.world}: fake=${current.fakeChunkCount} stored=${current.storedChunkCount} " +
-                "areas=${stores.mapValues { it.value.size }} heap=${usedMb}MB/${runtime.maxMemory() shr 20}MB"
+            "[HubChunkCache] {}: fake={} stored={} areas={} heap={}MB/{}MB",
+            current.world,
+            current.fakeChunkCount,
+            current.storedChunkCount,
+            stores.mapValues { it.value.size },
+            usedMb,
+            runtime.maxMemory() shr 20
         )
     }
 
     // One area per line, commas also split since no area name has one
     private fun cachedAreas(): Set<String> =
-        General.chunkCacheAreas.flatMap { it.split(',') }.mapNotNullTo(HashSet()) { it.trim().lowercase().ifEmpty { null } }
+        General.chunkCacheAreas.asSequence().flatMap { it.split(',') }.mapNotNullTo(HashSet()) { it.trim().lowercase().ifEmpty { null } }
 
     private fun isAreaCached(area: String, areas: Set<String>, workEverywhere: Boolean): Boolean =
         workEverywhere || area in areas

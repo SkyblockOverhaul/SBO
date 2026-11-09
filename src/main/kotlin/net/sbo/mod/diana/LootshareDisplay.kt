@@ -17,14 +17,14 @@ import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
-import net.sbo.mod.utils.events.impl.entity.EntitiyHitEvent
+import net.sbo.mod.utils.events.impl.entity.EntityHitEvent
 import net.sbo.mod.utils.events.impl.entity.EntityLoadEvent
 import net.sbo.mod.utils.events.impl.entity.EntityUnloadEvent
 import net.sbo.mod.utils.render.RenderUtils3D
 import java.util.concurrent.TimeUnit
 
 /**
- * Shows "Lootshared" above rare Diana mobs while in a party: grey and struck through until you dealt
+ * Shows "Lootshared" above rare Diana mobs while in a party: gray and struck through until you dealt
  * enough damage for loot share (1% of the mob's max HP), aqua after that. Mobs you spawned yourself are skipped.
  *
  * Damage is counted from the damage splash armor stands that appear right after you hit the mob, like Skysoft does.
@@ -144,7 +144,8 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
         get() = this in RareMobs.ShareMobs && this in RareMobs.ReceiveMobs
 
     /** Rare mobs around you right now, including your own, for the party overlay. */
-    internal val rareMobsAround: List<RareMob> get() = targets.values.map { it.type }.filter { it.isEnabled }
+    internal val rareMobsAround: List<RareMob> get() = targets.values.asSequence().map { it.type }.filter { it.isEnabled }
+        .toList()
 
     /** Whether you spawned one of the rare mobs around you, the debug test mode treats them as someone else's. */
     val ownMobAround: Boolean get() = targets.values.any { it.own && it.type.isEnabled && !Debug.lootshareDisplayTest }
@@ -193,7 +194,7 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
     }
 
     @SboEvent
-    fun onEntityHit(event: EntitiyHitEvent) {
+    fun onEntityHit(event: EntityHitEvent) {
         if (event.player != mc.player) return
         // Resolve a mob that was hit before its first tick here, so an instant hit still counts
         if (event.entity in pendingMobs) checkPendingMobs(System.nanoTime())
@@ -229,6 +230,7 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
     // Keep damage dealt to the old entity when the same mob shows up again as a new entity
     private fun Target.takeOverRemoved(now: Long) {
         val old = removedTargets
+            .asSequence()
             .filter { it.type == type && now - it.removedNanos <= RESPAWN_WINDOW_NS && it.mob.distanceToSqr(mob) <= RESPAWN_MAX_DISTANCE_SQ }
             .minByOrNull { it.mob.distanceToSqr(mob) }
             ?: return
@@ -253,8 +255,7 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
 
     private fun Target.updateNameStand() {
         val stand = nameStand?.takeIf { it.isAlive } ?: findNameStand()?.also { nameStand = it } ?: return
-        val name = stand.customName
-        if (name == null) return
+        val name = stand.customName ?: return
 
         val match = healthRegex.find(name.string.removeFormatting()) ?: return
         parseNumber(match.groupValues[2])?.let { maxHealth = it }
@@ -273,8 +274,7 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
             for (id in intArrayOf(mob.id + offset, mob.id - offset)) {
                 val stand = world.getEntity(id) as? ArmorStand ?: continue
                 if (stand.distanceToSqr(mob) > NAME_STAND_MAX_DISTANCE_SQ) continue
-                val name = stand.customName
-                if (name == null) continue
+                val name = stand.customName ?: continue
                 if (name.string.contains(type.display)) return stand
             }
         }
@@ -297,6 +297,7 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
             // Only count one splash per melee hit of yours, next to the mob you hit, so party members' splashes in
             // the same moment are not added to your damage. Extra splashes like ferocity procs are left out too.
             val target = targets.values
+                .asSequence()
                 .filter { it.isLabeled && it.hitBefore(loadNanos) != null && stand.distanceToSqr(it.mob) <= SPLASH_MAX_DISTANCE_SQ }
                 .minByOrNull { stand.distanceToSqr(it.mob) }
                 ?: continue

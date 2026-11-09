@@ -72,7 +72,7 @@ class Condition internal constructor(
         get() = resolved ?: (property.apply { isAccessible = true }.getDelegate() as? ConfigEntry<*>)?.also { resolved = it }
 
     // Counts as met until the setting is found, so a read during init doesn't lock anything
-    val met: Boolean get() = entry?.let { check(it.get()) } ?: true
+    val met: Boolean get() = entry?.let { check(it.get()) } != false
 }
 
 /** A group of [conditions] that all, or with [any] at least one, have to be met. */
@@ -287,18 +287,18 @@ annotation class OffOption
 
 private val offConstants = object : ClassValue<Set<String>>() {
     override fun computeValue(type: Class<*>): Set<String> =
-        type.fields.filter { it.isEnumConstant && it.isAnnotationPresent(OffOption::class.java) }.mapTo(HashSet()) { it.name }
+        type.fields.asSequence().filter { it.isEnumConstant && it.isAnnotationPresent(OffOption::class.java) }.mapTo(HashSet()) { it.name }
 }
 
 // A constant with a body is a subclass of its enum
 private val Enum<*>.enumClass: Class<*> get() = javaClass.let { if (it.isEnum) it else it.superclass }
 
 /** True for the constant marked with [OffOption]. */
-val Enum<*>.isOff: Boolean get() = name in offConstants.get(enumClass)
+val Enum<*>.isOff: Boolean get() = name in offConstants[enumClass]
 
 val Enum<*>.optionLabel: String get() = (this as? Option)?.label ?: name.lowercase().replaceFirstChar { it.uppercase() }
 
-val Enum<*>.optionDescription: String get() = (this as? Option)?.description ?: ""
+val Enum<*>.optionDescription: String get() = (this as? Option)?.description.orEmpty()
 
 /** The next constant, from the last one back to the first. The [OffOption] one is skipped, so cycling never turns a feature off. */
 fun <E : Enum<E>> E.nextOption(): E {

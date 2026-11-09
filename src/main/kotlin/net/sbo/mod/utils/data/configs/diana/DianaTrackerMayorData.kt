@@ -9,6 +9,8 @@ data class DianaTrackerMayorData(
     override var edited: Boolean = false,
     /** Goes up with every reset and restore of the tracker. */
     internal var resetCount: Int = 0,
+    /** Server time of the last tracked drop or mob, its election year decides when the tracker resets. 0 in files from before. */
+    var lastTrackedAt: Long = 0L,
 ) : DianaTracker {
     fun snapshot(): DianaTrackerMayorData {
         return DianaTrackerMayorData(
@@ -16,6 +18,7 @@ data class DianaTrackerMayorData(
             items = this.items.copy(),
             mobs = this.mobs.copy(),
             edited = this.edited,
+            lastTrackedAt = this.lastTrackedAt,
         )
     }
 }

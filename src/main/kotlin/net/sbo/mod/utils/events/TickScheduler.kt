@@ -27,7 +27,7 @@ object TickScheduler {
         tasks.addLast(task)
     }
 
-    data class ScheduledTask(
+    class ScheduledTask(
         private val interval: Int,
         private var counter: Int = 0,
         val action: () -> Boolean

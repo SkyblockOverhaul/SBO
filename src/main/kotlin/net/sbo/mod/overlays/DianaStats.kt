@@ -7,7 +7,6 @@ import net.sbo.mod.config.nextOption
 import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.removeFormatting
-import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.DataManager.sboData
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.guis.GuiCloseEvent
@@ -32,7 +31,7 @@ object DianaStats : DianaOverlay<DianaStats.View>("Diana Stats", Trackers.Tracke
             changeSort.text = "${YELLOW}Sort: ${Trackers.statsSort.label}"
         }
 
-    // The new look shows hidden lines and the hint only in the inventory
+    // The new-look shows hidden lines and the hint only in the inventory
     @SboEvent
     fun onGuiClose(event: GuiCloseEvent) {
         if (CRAFTING_PLAYER_INVENTORY_FILTER(event.screen)) updateLines()
@@ -45,30 +44,31 @@ object DianaStats : DianaOverlay<DianaStats.View>("Diana Stats", Trackers.Tracke
 
     private fun createStatLine(name: String, formattedText: String): OverlayTextLine {
         val line = OverlayTextLine(formattedText).onClick { toggleHidden(name) }.setCondition {
-            val meetsManualHideCondition = !(!isCraftingScreenOpen() && name in DataManager.sboData.hideTrackerLines)
+            val meetsManualHideCondition = !(!isCraftingScreenOpen() && name in sboData.hideTrackerLines)
             meetsManualHideCondition
         }
-        if (name in DataManager.sboData.hideTrackerLines) {
+        if (name in sboData.hideTrackerLines) {
             line.text = "$GRAY$STRIKETHROUGH${formattedText.removeFormatting()}"
         }
         return line
     }
 
-    // The stats of the new look: hide key, name, color, the count and the lootshare count (null for stats without lootshare)
-    private class Stat(val key: String, val name: String, val color: ChatFormatting, val count: () -> Int, val lsCount: (() -> Int)? = null)
+    // The stats of the new look: hide key, name, color, the count and the lootshare count (null for stats without lootshare),
+    // [short] is the name in the compact look, after "Since"
+    private class Stat(val key: String, val name: String, val short: String, val color: ChatFormatting, val count: () -> Int, val lsCount: (() -> Int)? = null)
 
     private val STATS = listOf(
-        Stat("STATS_MOBS_SINCE_KING", "Mobs since King", RED, { sboData.mobsSinceKing }),
-        Stat("STATS_KINGS_SINCE_WOOL", "Kings since Wool", RED, { sboData.kingSinceWool }, { sboData.kingSinceLsWool }),
-        Stat("STATS_MOBS_SINCE_MANTI", "Mobs since Manti", RED, { sboData.mobsSinceManti }),
-        Stat("STATS_MANTIS_SINCE_CORE", "Mantis since Core", RED, { sboData.mantiSinceCore }, { sboData.mantiSinceLsCore }),
-        Stat("STATS_MANTIS_SINCE_STINGER", "Mantis since Stinger", RED, { sboData.mantiSinceStinger }, { sboData.mantiSinceLsStinger }),
-        Stat("STATS_MOBS_SINCE_INQ", "Mobs since Inq", LIGHT_PURPLE, { sboData.mobsSinceInq }),
-        Stat("STATS_INQS_SINCE_CHIM", "Inqs since Chimera", LIGHT_PURPLE, { sboData.inqsSinceChim }, { sboData.inqsSinceLsChim }),
-        Stat("STATS_MOBS_SINCE_SPHINX", "Mobs since Sphinx", LIGHT_PURPLE, { sboData.mobsSinceSphinx }),
-        Stat("STATS_SPHINXES_SINCE_FOOD", "Sphinxes since Food", DARK_PURPLE, { sboData.sphinxSinceFood }, { sboData.sphinxSinceLsFood }),
-        Stat("STATS_CHAMPS_SINCE_RELIC", "Champs since Relic", DARK_PURPLE, { sboData.champsSinceRelic }),
-        Stat("STATS_MINOTAURS_SINCE_STICK", "Minotaurs since Stick", GOLD, { sboData.minotaursSinceStick })
+        Stat("STATS_MOBS_SINCE_KING", "Mobs since King", "King", RED, { sboData.mobsSinceKing }),
+        Stat("STATS_KINGS_SINCE_WOOL", "Kings since Wool", "Wool", RED, { sboData.kingSinceWool }, { sboData.kingSinceLsWool }),
+        Stat("STATS_MOBS_SINCE_MANTI", "Mobs since Manti", "Manti", RED, { sboData.mobsSinceManti }),
+        Stat("STATS_MANTIS_SINCE_CORE", "Mantis since Core", "Core", RED, { sboData.mantiSinceCore }, { sboData.mantiSinceLsCore }),
+        Stat("STATS_MANTIS_SINCE_STINGER", "Mantis since Stinger", "Sting", RED, { sboData.mantiSinceStinger }, { sboData.mantiSinceLsStinger }),
+        Stat("STATS_MOBS_SINCE_INQ", "Mobs since Inq", "Inq", LIGHT_PURPLE, { sboData.mobsSinceInq }),
+        Stat("STATS_INQS_SINCE_CHIM", "Inqs since Chimera", "Chim", LIGHT_PURPLE, { sboData.inqsSinceChim }, { sboData.inqsSinceLsChim }),
+        Stat("STATS_MOBS_SINCE_SPHINX", "Mobs since Sphinx", "Sphinx", LIGHT_PURPLE, { sboData.mobsSinceSphinx }),
+        Stat("STATS_SPHINXES_SINCE_FOOD", "Sphinxes since Food", "Food", DARK_PURPLE, { sboData.sphinxSinceFood }, { sboData.sphinxSinceLsFood }),
+        Stat("STATS_CHAMPS_SINCE_RELIC", "Champs since Relic", "Relic", DARK_PURPLE, { sboData.champsSinceRelic }),
+        Stat("STATS_MINOTAURS_SINCE_STICK", "Minotaurs since Stick", "Stick", GOLD, { sboData.minotaursSinceStick })
     )
 
     private const val ORDER = "stats"
@@ -82,7 +82,7 @@ object DianaStats : DianaOverlay<DianaStats.View>("Diana Stats", Trackers.Tracke
 
     override fun view(): View {
         val inventory = isCraftingScreenOpen()
-        val hidden = DataManager.sboData.hideTrackerLines
+        val hidden = sboData.hideTrackerLines
         val rows = sortedStats().mapNotNull { stat ->
             // Hidden lines only show (crossed out) in the inventory, to unhide them
             val isHidden = stat.key in hidden
@@ -108,6 +108,17 @@ object DianaStats : DianaOverlay<DianaStats.View>("Diana Stats", Trackers.Tracke
             if (view.reorder) hint("Click a stat to hide it, the arrows to move it")
             else if (view.inventory) hint("Click a stat to hide it, the badge to change the order")
         }
+    }
+
+    override fun compactLines(): List<CompactLine>? {
+        if (!Trackers.isCompact(Trackers.CompactTracker.STATS)) return null
+        val hidden = sboData.hideTrackerLines
+        val entries = sortedStats().filter { it.key !in hidden }.map { stat ->
+            val ls = stat.lsCount?.takeIf { !Trackers.hideLsStats }?.let { "/${Helper.formatNumber(it(), withCommas = true)}" }.orEmpty()
+            Entry(stat.short, stat.color, Helper.formatNumber(stat.count(), withCommas = true) + ls)
+        }
+        val lines = packed(entries)
+        return if (lines.isEmpty()) lines else listOf(lines.first().copy(title = "Since")) + lines.drop(1)
     }
 
     override fun elementClicked(id: String) {
@@ -146,7 +157,7 @@ object DianaStats : DianaOverlay<DianaStats.View>("Diana Stats", Trackers.Tracke
                 withCommas = true
             )}"),
         )
-        lines.addAll(sortedStats().map { statLines[STATS.indexOf(it)] })
+        sortedStats().mapTo(lines) { statLines[STATS.indexOf(it)] }
         return lines
     }
 }

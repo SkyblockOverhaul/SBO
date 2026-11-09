@@ -41,7 +41,7 @@ import kotlin.concurrent.thread
 
 object CloudSync {
     private const val SLOT = "sbo"
-    const val COMMAND = "sbocloud"
+    private const val COMMAND = "sbocloud"
     private const val TITLE = "Cloud Sync"
     private const val OPEN_HINT = "Type /$COMMAND to choose."
 
@@ -134,7 +134,7 @@ object CloudSync {
     private fun changed() = listeners.forEach { it() }
 
     var autoSync: Boolean
-        get() = state().autoSync ?: legacyAutoSync ?: false
+        get() = state().autoSync ?: legacyAutoSync == true
         set(value) {
             state().autoSync = value
             DataManager.sboData.save()
@@ -153,7 +153,7 @@ object CloudSync {
     fun init() {
         Register.onTick(20 * 60 * AUTO_UPLOAD_MINUTES) { _ ->
             if (SBOKotlin.mc.level == null || !autoActive()) return@onTick
-            if ((uploadInFlight?.count ?: 0L) > 0L) return@onTick
+            if (uploadInFlight?.count ?: 0L > 0L) return@onTick
             SBOKotlin.logger.info("[CloudSync] periodic auto upload")
             upload(auto = true)
         }
@@ -191,8 +191,11 @@ object CloudSync {
     }
 
     // Shows the question in the window, outside of it a toast points there
-    private fun ask(text: String, vararg actions: Action) {
-        question = Question(text, actions.toList())
+    private fun ask(text: String, vararg actions: Action) =
+        ask(text, actions.asList())
+
+    private fun ask(text: String, actions: List<Action>) {
+        question = Question(text, actions)
         if (toaster == null) notify("warning", "$text $OPEN_HINT")
         changed()
     }
@@ -270,12 +273,12 @@ object CloudSync {
         cloudInfo?.takeIf { System.currentTimeMillis() - it.at < STATUS_MAX_AGE_MS }?.let { return block(it.slot) }
         SboApi.cloudStatus()
             .toJson<CloudStatusResponse>(ignoreUnknownKeys = true) { response ->
-                if (!response.success) return@toJson SBOKotlin.logger.warn("[CloudSync] status failed: ${response.error}")
+                if (!response.success) return@toJson SBOKotlin.logger.warn("[CloudSync] status response is not successfull: ${response.error}")
                 val slot = response.slots.find { it.slot == SLOT }
                 remember(slot)
                 block(slot)
             }
-            .error { SBOKotlin.logger.warn("[CloudSync] status failed: ${it.message}") }
+            .error { SBOKotlin.logger.warn("[CloudSync] status request failed: ${it.message}") }
     }
 
     // Fresh install: offers the cloud save right after /sbokey, if there is one this PC never used
@@ -416,7 +419,7 @@ object CloudSync {
     }
 
     // Milliseconds until the refresh button may ask the server again
-    fun refreshWaitMs(): Long = maxOf(0L, (lastStatusRequest + REFRESH_COOLDOWN_MS) - System.currentTimeMillis())
+    fun refreshWaitMs(): Long = maxOf(0L, lastStatusRequest + REFRESH_COOLDOWN_MS - System.currentTimeMillis())
 
     @Volatile private var lastStatusRequest = 0L
 
@@ -582,7 +585,7 @@ object CloudSync {
                     is Check.Problem -> {
                         if (auto) autoPaused = true
                         if (check.needsSignKey) downloadWaitingForSignKey = true
-                        ask(check.question.text, *check.question.actions.toTypedArray())
+                        ask(check.question.text, check.question.actions)
                         finish()
                     }
                     is Check.Ok -> SBOKotlin.mc.schedule {

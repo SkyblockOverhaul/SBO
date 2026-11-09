@@ -51,14 +51,14 @@ internal object RareMobs {
             in rareMobs -> onRareSpawn(mob, rareMobs.getValue(mob))
             "Minos Champion" -> {
                 sboData.champsSinceRelic += 1
-                Tracker.trackMob(mob, 1)
+                Tracker.trackMob(mob)
             }
             "Minotaur" -> {
                 sboData.minotaursSinceStick += 1
                 if (sboData.minotaursSinceStick >= 2) sboData.b2bStick = false
-                Tracker.trackMob(mob, 1)
+                Tracker.trackMob(mob)
             }
-            in plainMobs -> Tracker.trackMob(mob, 1)
+            in plainMobs -> Tracker.trackMob(mob)
             else -> Chat.chat("§6[SBO] §cUnknown diana mob spawned: $mob. Please report this.")
         }
     }
@@ -73,8 +73,8 @@ internal object RareMobs {
 
     private fun onRareSpawn(mob: String, rare: RareMob) {
         DianaMobDetect.onRareSpawn(mob)
-        Tracker.trackMob(mob, 1)
-        sboData.(rare.countForDrops)()
+        Tracker.trackMob(mob)
+        rare.countForDrops(sboData)
 
         val mobsSince = rare.mobsSince.value
         if (Drops.sendSinceMessage) {

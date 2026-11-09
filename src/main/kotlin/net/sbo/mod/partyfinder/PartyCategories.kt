@@ -109,7 +109,7 @@ data class PartyTarget(val category: CategoryDef, val sub: SubcategoryDef?, val 
         all -> category.subcategories.maxOf { it.maxSize ?: category.maxSize }
         else -> sub?.maxSize ?: category.maxSize
     }
-    val open: Boolean get() = sub?.open ?: true
+    val open: Boolean get() = sub?.open != false
     val opensAt: Long? get() = sub?.opensAt
     val createOpen: Boolean get() = sub?.createOpen ?: open
 

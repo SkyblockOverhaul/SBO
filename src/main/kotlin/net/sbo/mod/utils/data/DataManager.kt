@@ -27,7 +27,6 @@ import java.time.format.DateTimeFormatter
 import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.zip.*
-import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty0
 
 /**
@@ -164,7 +163,7 @@ object DataManager {
         }
     }
 
-    fun <T> write(modName: String, data: T, fileName: String) {
+    private fun <T> write(modName: String, data: T, fileName: String) {
         val modConfigDir = File(FabricLoader.getInstance().configDir.toFile(), modName)
         val dataFile = File(modConfigDir, fileName)
         dataFile.parentFile.mkdirs()
@@ -250,7 +249,7 @@ object DataManager {
 
             checkSeal(modName, loadedData, jsonObject, dataFile, fileName, clazz)
         } catch (_: JsonSyntaxException) {
-            SBOKotlin.logger.error("[$modName] Error parsing JSON in $fileName, resetting to default data.")
+            SBOKotlin.logger.error("[$modName] Error parsing JSON in $fileName, resetting to default tracker data.")
             val data = defaultSupplier()
             writeJsonAtomically(dataFile, sealedTree(data, fileName))
             data
@@ -262,7 +261,7 @@ object DataManager {
         }
     }
 
-    // Changes made outside of SBO are undone with the sealed copy, only a file without a usable seal stays as it is
+    // Changes made outside SBO are undone with the sealed copy, only a file without a usable seal stays as it is
     private fun <T : DianaTracker> checkSeal(modName: String, loaded: T, tree: JsonObject, dataFile: File, fileName: String, clazz: Class<T>): T {
         val original = TrackerSeal.original(tree, fileName)
         if (original != null) {
@@ -354,7 +353,7 @@ object DataManager {
             it.isAnnotationPresent(DataField::class.java) && it.getAnnotation(DataField::class.java).fileName in ALPHA_FILES
         }
         fields.forEach { it.isAccessible = true }
-        dirtyConfigs.removeAll(fields.map { it.name.replaceFirstChar { c -> c.uppercase() } }.toSet())
+        dirtyConfigs.removeAll(fields.asSequence().map { it.name.replaceFirstChar { c -> c.uppercase() } }.toSet())
 
         val loaded = DATA_SAVER_EXECUTOR.submit<List<Any>> {
             fields.forEach { write(dataDir, it.get(this), pathOf(it.getAnnotation(DataField::class.java).fileName)) }
@@ -384,7 +383,7 @@ object DataManager {
         typedEntry.fileName to gson.toJsonTree(typedEntry.getter())
     }
 
-    fun exportAll(): Map<String, String> = DataRegistry.entries.associate { entry ->
+    private fun exportAll(): Map<String, String> = DataRegistry.entries.associate { entry ->
         @Suppress("UNCHECKED_CAST")
         val typedEntry = entry as ConfigEntry<Any>
         typedEntry.fileName to gson.toJson(typedEntry.getter())
@@ -393,12 +392,14 @@ object DataManager {
     // Main thread only
     fun importAll(files: Map<String, String>) {
         val parsed = this::class.java.declaredFields
+            .asSequence()
             .filter { it.isAnnotationPresent(DataField::class.java) }
             .mapNotNull { field ->
                 val json = files[field.getAnnotation(DataField::class.java).fileName] ?: return@mapNotNull null
                 val value = gson.fromJson(json, field.type) ?: throw JsonSyntaxException("${field.name} is empty")
                 field to value
             }
+            .toList()
 
         // Snapshot before the swap, the single thread executor backs it up before the next save
         val snapshot = exportAll()
@@ -551,7 +552,7 @@ object DataManager {
                 }
                 return
             } catch (_: IOException) {
-                // AccessDeniedException, FileSystemException etc land here (Windows AV/indexing lock)
+                // AccessDeniedException, FileSystemException etc. land here (Windows AV/indexing lock)
                 if (attempt < maxAttempts) {
                     try {
                         Thread.sleep(50L * attempt)
@@ -784,7 +785,9 @@ object DataManager {
 
         Files.newDirectoryStream(dir).use { stream ->
             for (path in stream) {
-                return@isEffectivelyEmpty Files.isDirectory(path) && isEffectivelyEmpty(path)
+                if (!Files.isDirectory(path) || !isEffectivelyEmpty(path)) {
+                    return false
+                }
             }
         }
 

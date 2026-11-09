@@ -8,6 +8,9 @@ import net.sbo.mod.utils.math.SboVec
  * @property pos The position of the warp point in the game world.
  * @property unlocked Indicates if the warp is unlocked.
  * @property setting An optional name for an associated setting.
+ * @property warpType The [AdditionalHubWarps] enum type of this [WarpPoint], null for hub.
+ * @property preferWarpAgainstCompetitive The competing warp for this warp, where this warp wins over it.
+ * @property extraBlocks The extra blocks to compensate for any negative time loss from exiting through this warp.
  */
 data class WarpPoint(
     val pos: SboVec,

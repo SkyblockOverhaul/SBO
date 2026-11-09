@@ -164,7 +164,7 @@ class FakeChunkManager internal constructor(
         if (HubChunkCache.sodiumLoaded) SodiumCompat.onFakeChunkRemoved(level, chunkX, chunkZ, willBeReplaced)
     }
 
-    /** Copies a real chunk before vanilla unloads it, and fakes it afterwards if it is still in view. */
+    /** Copies a real chunk before vanilla unloads it, and fakes it afterward if it is still in view. */
     fun saveRealChunk(chunkX: Int, chunkZ: Int) {
         if (!inArea(chunkX, chunkZ)) return
         val chunk = chunkCache.getChunk(chunkX, chunkZ, ChunkStatus.FULL, false) ?: return
@@ -177,7 +177,7 @@ class FakeChunkManager internal constructor(
 
     fun substitutePending() {
         if (pendingReplacements.isEmpty) return
-        for (i in 0 until pendingReplacements.size) {
+        for (i in 0..<pendingReplacements.size) {
             val key = pendingReplacements.getLong(i)
             if (fakeChunks.containsKey(key)) continue
             loadFromStore(ChunkPos.getX(key), ChunkPos.getZ(key))
@@ -218,7 +218,7 @@ class FakeChunkManager internal constructor(
         pendingReplacements.clear()
     }
 
-    fun inArea(chunkX: Int, chunkZ: Int): Boolean {
+    private fun inArea(chunkX: Int, chunkZ: Int): Boolean {
         if (area == null) return true
 
         return inArea(chunkX, chunkZ, area)
