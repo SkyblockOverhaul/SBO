@@ -133,8 +133,8 @@ object BurrowDetector {
             refreshBurrows(deathOriginating = false, expectedTimesDug = 2)
 
             val anyClose = WaypointManager.getAllGuessesAndBurrows().filter { it.distanceToPlayer() < 90 }
-            // With a place to use the spade, the title shows once you are there
-            if (Burrows.showTitleWhenChainEnds && anyClose.isEmpty() && !SpadeGuessOptimizer.hasSpotAfterChain()) requestSpade("chain")
+            // With the optimizer the spade is used here first, the place to use it is only shown if that finds nothing new
+            if (Burrows.showTitleWhenChainEnds && (Burrows.spadeGuessOptimizer || anyClose.isEmpty())) requestSpade("chain")
             true
         }
 

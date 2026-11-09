@@ -39,6 +39,7 @@ import kotlin.math.roundToInt
 
 private const val RARE_MOB_STALE_TICKS = 20
 private const val RARE_MOB_VALIDATION_DISTANCE = 25.0
+private const val CLOSE_SPADE_GUESS_DISTANCE = 15.0
 
 object WaypointManager {
     private val waypoints = mutableMapOf<String, MutableList<Waypoint>>()
@@ -251,12 +252,21 @@ object WaypointManager {
             invalidSubGuessPositions.forEach(ArrowGuessBurrow::removeSubGuessFromInternalState)
 
             // Remove the shovel guess if a known burrow, or an arrow guess exists at the same block, or 2 blocks near it (a shovel guess is exact or next to the burrow, so a farther one is a different burrow).
+            // A spade used closer than 15 blocks to the burrow guesses up to ~3 blocks off, 4 blocks for those.
             // The old spade guess is less precise, 30 blocks for it
-            val shovelMergeDistance = if (Burrows.curveSpadeGuess) 2 else 30
+            val playerPos = Player.getLastPosition()
+            val shovelMergeDistanceOf = { shovelGuess: Waypoint ->
+                when {
+                    !Burrows.curveSpadeGuess -> 30
+                    shovelGuess.pos.distanceTo(playerPos) < CLOSE_SPADE_GUESS_DISTANCE -> 4
+                    else -> 2
+                }
+            }
             val redundantShovelIterator = shovelGuesses.iterator()
             while (redundantShovelIterator.hasNext()) {
                 val shovelGuess = redundantShovelIterator.next()
                 val shovelGuessBlock = shovelGuess.pos.roundLocationToBlock()
+                val shovelMergeDistance = shovelMergeDistanceOf(shovelGuess)
 
                 allStaticBurrowWaypoints.firstOrNull { staticBurrow ->
                     val waypointBlock = staticBurrow.pos.roundLocationToBlock()
@@ -268,11 +278,12 @@ object WaypointManager {
                 }
             }
 
-            // Remove duplicate shovel guesses that are within 2 blocks of each other (30 with the old spade guess)
+            // Remove duplicate shovel guesses that are within 2 blocks of each other (4 close to you, 30 with the old spade guess)
             val duplicates = mutableSetOf<Waypoint>()
             for (index in shovelGuesses.indices) {
                 val shovelGuess = shovelGuesses[index]
                 val shovelGuessBlock = shovelGuess.pos.roundLocationToBlock()
+                val shovelMergeDistance = shovelMergeDistanceOf(shovelGuess)
 
                 shovelGuesses.asSequence().drop(index + 1).firstOrNull { otherGuess ->
                     shovelGuessBlock.distanceTo(otherGuess.pos.roundLocationToBlock()) <= shovelMergeDistance
