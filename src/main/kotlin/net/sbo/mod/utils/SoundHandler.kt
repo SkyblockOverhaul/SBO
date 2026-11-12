@@ -191,7 +191,7 @@ object SoundHandler {
             }
         } catch (e: Exception) {
             logger.error("[$MOD_ID] Failed to process audio format: ${file.name}", e)
-            runCatching { inputStream.close() }
+            inputStream.closeQuietly()
             return
         }
 
@@ -199,9 +199,9 @@ object SoundHandler {
             clip.open(stream)
         } catch (e: Exception) {
             logger.error("[$MOD_ID] Failed to open audio stream: ${file.name}", e)
-            runCatching { clip.close() }
-            runCatching { stream.close() }
-            runCatching { inputStream.close() }
+            clip.closeQuietly()
+            stream.closeQuietly()
+            inputStream.closeQuietly()
             return
         }
 
@@ -213,6 +213,13 @@ object SoundHandler {
         // Use separate function for cleanup to ensure all resources are closed
         cleanupOnAudioStop(clip, stream, inputStream)
         clip.start()
+    }
+
+    private fun AutoCloseable.closeQuietly() {
+        try {
+            close()
+        } catch (_: Exception) {
+        }
     }
 
     /**
@@ -257,7 +264,7 @@ object SoundHandler {
             override fun writeImpl(samples: ShortArray, offs: Int, len: Int) {
                 super.writeImpl(samples, offs, len)
 
-                runCatching {
+                try {
                     val sourceLine = JAVA_SOUND_SOURCE_HANDLE.get(this) as? SourceDataLine
 
                     if (sourceLine != null && sourceLine.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
@@ -267,6 +274,7 @@ object SoundHandler {
                             gain.value = targetGain
                         }
                     }
+                } catch (_: Exception) {
                 }
             }
         }
