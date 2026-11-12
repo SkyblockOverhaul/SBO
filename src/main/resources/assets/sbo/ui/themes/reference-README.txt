@@ -22,7 +22,7 @@ WHICH FILE IS WHICH WINDOW
   achievements.css   Achievements                                         body.sbo-window-achievements
   sounds.css         Sounds                                               body.sbo-window-sounds
   cloud.css          Cloud sync                                           body.sbo-window-cloud
-  badge.css          Badges                                               body.sbo-window-badge
+  customizer.css     SBO Customizer (/sbocustomizer)                      body.sbo-window-customizer
   elements.css       Default look of the plain elements in every window: button, input, select,
                      checkbox, switch, slider, scroll bars, tooltips, menus, dialogs, toasts ...
                      The classes starting with "guilib-" come from here.

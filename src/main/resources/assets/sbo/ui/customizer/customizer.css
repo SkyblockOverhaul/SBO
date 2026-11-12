@@ -1,0 +1,190 @@
+/* SBO Customizer. Colors of the SBO Dark theme, same variables as cloud.css and the party finder; themes override them. */
+body {
+    --bg: #1e1f22;
+    --panel: #2b2d31;
+    --panel-2: #313338;
+    --card: #26282c;
+    --card-hover: #2a2c31;
+    --border: #3f4147;
+    --border-hover: #5a5d66;
+    --text: #f2f3f5;
+    --text-strong: #ffffff;
+    --text-soft: #dbdee1;
+    --subtle: #b5bac1;
+    --muted: #949ba4;
+    --dim: #80848e;
+    --title: #55ffff;
+    --accent: #006efa;
+    --accent-hover: #2a88ff;
+    --accent-text: #ffffff;
+    --accent-soft: rgba(0, 110, 250, 0.3);
+    --accent-faint: rgba(0, 110, 250, 0.18);
+    --banner-bg: rgba(0, 110, 250, 0.14);
+    --banner-border: rgba(0, 110, 250, 0.5);
+    --banner-text: #bcd9ff;
+    --ok: #57c96b;
+    --ok-soft: rgba(87, 201, 107, 0.18);
+    --ok-border: rgba(87, 201, 107, 0.55);
+    --bad: #ee5c5c;
+    --bad-border: rgba(238, 92, 92, 0.6);
+    --danger: #da373c;
+    --estimated: #c9a7f0;
+    --input-bg: #1e1f22;
+    --input-border: #4e5058;
+    --input-border-hover: #6d6f78;
+    --control: #3c3f45;
+    --control-border: #55595f;
+    --control-hover: #4a4e55;
+    --control-active: #2f3236;
+    --menu: #2b2d31;
+    --popup: #111214;
+    --highlight: #3f4248;
+    --disabled: #4e5058;
+    --disabled-text: #949ba4;
+    --backdrop: rgba(0, 0, 0, 0.55);
+    --shadow: rgba(0, 0, 0, 0.6);
+    --scrollbar-thumb: #ffffff80;
+    --scrollbar-track: #00000020;
+    --toast-success: #3ba55d;
+    --toast-warning: #faa61a;
+    --toast-error: #ed4245;
+    --menu-danger: #f47b7d;
+    --tint: rgba(255, 255, 255, 0.06);
+    --tint-strong: rgba(255, 255, 255, 0.08);
+    --star: #f0b232;
+    /* GuiLib's own controls, menus, tooltips and toasts in the theme colors */
+    --guilib-text: var(--text);
+    --guilib-text-strong: var(--text-strong);
+    --guilib-text-secondary: var(--text-soft);
+    --guilib-text-muted: var(--subtle);
+    --guilib-text-subtle: var(--dim);
+    --guilib-accent: var(--accent);
+    --guilib-accent-soft: var(--accent-soft);
+    --guilib-on-accent: var(--accent-text);
+    --guilib-surface: var(--menu);
+    --guilib-surface-2: var(--input-bg);
+    --guilib-surface-3: var(--popup);
+    --guilib-highlight: var(--highlight);
+    --guilib-tint: var(--tint);
+    --guilib-tint-strong: var(--tint-strong);
+    --guilib-backdrop: var(--backdrop);
+    --guilib-border: var(--input-border);
+    --guilib-border-hover: var(--input-border-hover);
+    --guilib-border-strong: var(--dim);
+    --guilib-border-subtle: var(--border);
+    --guilib-focus: var(--text-strong);
+    --guilib-button: var(--control);
+    --guilib-button-hover: var(--control-hover);
+    --guilib-button-active: var(--control-active);
+    --guilib-button-border: var(--control-border);
+    --guilib-track: var(--disabled);
+    --guilib-track-border: var(--input-border-hover);
+    --guilib-success: var(--toast-success);
+    --guilib-warning: var(--toast-warning);
+    --guilib-danger: var(--toast-error);
+    --guilib-danger-text: var(--menu-danger);
+    --guilib-scrollbar-thumb: var(--scrollbar-thumb);
+    --guilib-scrollbar-track: var(--scrollbar-track);
+    color: var(--text);
+}
+
+body { display: flex; align-items: center; justify-content: center; }
+
+/* Natural size, no scrolling: the window scales down as a whole on small screens */
+.cz-window {
+    display: flex;
+    flex-direction: column;
+    width: 560px;
+    flex-shrink: 0;
+    background-color: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    animation: cz-fade 150ms ease-out;
+}
+@keyframes cz-fade { from { opacity: 0; transform: translateY(6px); } }
+
+.cz-header {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 4px 3px 8px;
+    background-color: var(--panel);
+    border-bottom: 1px solid var(--border);
+}
+.cz-logo { width: 9px; height: 9px; }
+.cz-title { font-weight: bold; color: var(--title); white-space: nowrap; }
+.cz-rank { padding: 1px 5px; border-radius: 3px; font-size: 7px; font-weight: bold; color: #1e1f22; }
+.cz-spacer { flex-grow: 1; }
+.cz-icon { padding: 1px 5px; background-color: transparent; border-color: transparent; }
+.cz-close:hover { background-color: var(--danger); }
+.cz-primary { background-color: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.cz-primary:hover { background-color: var(--accent-hover); }
+.cz-danger { background-color: var(--danger); border-color: var(--danger); color: #ffffff; }
+.cz-danger:hover { background-color: var(--menu-danger); }
+
+.cz-body { display: flex; align-items: stretch; gap: 8px; padding: 6px; }
+
+/* Left: the player as others see them */
+.cz-stage { width: 210px; flex-shrink: 0; display: flex; flex-direction: column; gap: 3px; }
+.cz-scene {
+    position: relative;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    background: linear-gradient(180deg, #2c4a6b, #7fa3c8);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+}
+/* Name tag right above the head: the column stands on the ground, so it moves with the model's size */
+.cz-figure { display: flex; flex-direction: column; align-items: center; gap: 2px; padding-bottom: 0; }
+.cz-nametag { padding: 1px 3px; background-color: rgba(0, 0, 0, 0.25); white-space: nowrap; }
+.cz-model { width: 100px; transition: height 120ms ease-out; }
+/* Block, not flex: flex items lose the spaces at their edges */
+.cz-game { white-space: pre; }
+.cz-ch { display: inline-block; }
+.cz-inline-logo { width: 8px; height: 8px; vertical-align: middle; }
+.cz-ground { height: 10px; flex-shrink: 0; background: linear-gradient(180deg, #4f7a3a, #3b5e2b); }
+.cz-lines { display: flex; flex-direction: column; gap: 2px; }
+.cz-line { padding: 1px 3px; white-space: nowrap; overflow: hidden; }
+.cz-line-tab { background-color: rgba(0, 0, 0, 0.55); }
+.cz-line-chat { background-color: rgba(0, 0, 0, 0.35); }
+.cz-status { height: 9px; text-align: center; white-space: nowrap; overflow: hidden; }
+
+/* Right: one part at a time */
+.cz-editor { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.cz-nav { align-self: stretch; }
+.cz-panel { height: 226px; }
+.cz-panel-tall { height: 252px; }
+.cz-center { display: flex; justify-content: center; padding: 16px 0; color: var(--subtle); }
+
+.cz-row { display: flex; align-items: center; gap: 8px; min-height: 18px; padding: 2px 4px; border-radius: 3px; }
+.cz-row:hover { background-color: var(--card); }
+.cz-label { width: 70px; flex-shrink: 0; color: var(--text-strong); }
+.cz-control { flex-grow: 1; min-width: 0; display: flex; justify-content: flex-end; }
+.cz-inline { display: flex; align-items: center; gap: 3px; }
+.cz-select { min-width: 96px; }
+.cz-symbol { min-width: 44px; }
+.cz-symbol-part { min-width: 64px; }
+.cz-slider { width: 130px; }
+.cz-chips { justify-content: flex-end; }
+.cz-toggle { padding: 1px 4px; }
+.cz-on { background-color: var(--accent-soft); border-color: var(--accent); }
+.cz-muted { color: var(--muted); }
+.cz-hint { color: var(--muted); font-size: 7px; }
+.cz-note { margin: 0 4px 3px 4px; }
+.cz-heading { margin: 5px 4px 1px 4px; color: var(--title); font-weight: bold; font-size: 7px; }
+.cz-footer { display: flex; justify-content: flex-end; padding: 4px 4px 0 4px; }
+.cz-error { margin: 4px; color: var(--bad); }
+
+.cz-steps { margin: 0 4px 4px 4px; padding: 5px 6px; background-color: var(--banner-bg); border: 1px solid var(--banner-border); border-radius: 4px; }
+.cz-steps-title { color: var(--banner-text); margin-bottom: 2px; }
+.cz-step { margin-top: 2px; color: var(--text-soft); }
+
+/* Asks before leaving unsaved changes */
+.cz-modal { width: min(90vw, 240px); padding: 8px; background-color: var(--bg); border: 1px solid var(--border); border-radius: 6px; }
+.cz-modal-title { font-weight: bold; color: var(--text-strong); margin-bottom: 3px; }
+.cz-modal-text { color: var(--subtle); margin-bottom: 8px; }
+.cz-modal-buttons { display: flex; gap: 4px; justify-content: flex-end; }

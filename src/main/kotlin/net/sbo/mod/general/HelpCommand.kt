@@ -34,7 +34,7 @@ object HelpCommand {
         mapOf("cmd" to "sboKey", "desc" to "Set your sbokey"),
         mapOf("cmd" to "sboClearKey", "desc" to "Reset your sbokey"),
         mapOf("cmd" to "sbocloud", "desc" to "Opens the Cloud Sync window (also to load backups)"),
-        mapOf("cmd" to "sbobadge", "desc" to "Edit your SBO badge (supporters, maintainers and moderators)"),
+        mapOf("cmd" to "sbocustomizer", "desc" to "Your badge, name look and player size (supporters, maintainers and moderators)"),
         mapOf("cmd" to "sboinforeport", "desc" to "Sends your SBO settings and mods that break SBO features to the SBO team"),
         mapOf("cmd" to "sbotestmedalclip [drop|all]", "desc" to "Test Medal clip saving"),
         mapOf("cmd" to "sbosounds", "desc" to "Opens custom sounds setting Gui"),

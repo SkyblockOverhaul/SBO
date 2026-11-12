@@ -32,20 +32,29 @@ abstract class AvatarRendererMixin {
             require = 0
     )
     private final void sbo$extractBadge(@NonNull final Avatar entity, @NonNull final AvatarRenderState state, final float partialTick, @NonNull final CallbackInfo ci) {
-        if (!(entity instanceof Player)) {
+        // Models in menus (inventory) get no badge, name tag color or size, those only belong in the world
+        if (!(entity instanceof Player) || SboBadges.INSTANCE.getMenuModel()) {
             ((BadgeRenderStateAccessor) state).sbo$setBadgeLine(null);
             return;
         }
         final UUID uuid = entity.getUUID();
         ((BadgeRenderStateAccessor) state).sbo$setBadgeLine(SboBadges.INSTANCE.nameTagLine(uuid));
         if (state.nameTag != null) state.nameTag = SboBadges.INSTANCE.colorNameTag(uuid, state.nameTag);
+        // Badge size: only the model and where its name tag sits, the hitbox stays as it is
+        final float size = SboBadges.INSTANCE.sizeOf(uuid);
+        if (size != 1.0F) {
+            state.scale *= size;
+            // Vanilla only sets the attachment this frame while the name shows; otherwise it is last frame's, already scaled
+            if (state.nameTag != null && state.nameTagAttachment != null) state.nameTagAttachment = state.nameTagAttachment.scale(size);
+        }
     }
 
     // Vanilla never shows the camera's own name, in third person the own badge should be visible
     @ModifyReturnValue(method = "shouldShowName(Lnet/minecraft/world/entity/Avatar;D)Z", at = @At("RETURN"), order = 2000, require = 0)
     @SuppressWarnings("ReferenceEquality") // entity != mc.player is safe
     private final boolean sbo$showOwnBadge(final boolean original, @NonNull final Avatar entity, final double distanceSq) {
-        if (original) return true;
+        // The own model in the inventory keeps vanilla's choice, else F5 would put the name tag into the inventory
+        if (original || SboBadges.INSTANCE.getMenuModel()) return original;
         final Minecraft mc = Minecraft.getInstance();
         if (entity != mc.player || mc.options.getCameraType().isFirstPerson() || entity.isInvisible()) return false;
 

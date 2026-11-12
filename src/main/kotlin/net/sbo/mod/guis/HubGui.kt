@@ -109,9 +109,9 @@ object HubGui {
             },
         ) { CloudSyncGui.open() },
         Tile(
-            "SBO Badge", "Your logo, stat and name color", "/sbobadge", Items.NAME_TAG,
+            "SBO Customizer", "Your badge, name look and player size", "/sbocustomizer", Items.NAME_TAG,
             supporter = Supporter("Patreon and Ko-fi supporters, maintainers and moderators") { SboBadges.hasAccess() },
-        ) { BadgeGui.open() },
+        ) { CustomizerGui.open() },
     )
 
     private val COMMANDS = Tile("Commands", "Every SBO command and what it does", "/sbohelp", Items.COMMAND_BLOCK) {}

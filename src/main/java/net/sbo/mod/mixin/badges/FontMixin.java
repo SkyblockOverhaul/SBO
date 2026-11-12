@@ -19,6 +19,9 @@ final class FontMixin {
         require = 0
     )
     private final @NonNull FormattedCharSequence sbo$recolorNames(@NonNull final FormattedCharSequence text) {
+        // Chat lines with moving badges in their current colors
+        final FormattedCharSequence animated = SboBadges.INSTANCE.animatedChatLine(text);
+        if (animated != null) return animated;
         final FormattedCharSequence recolored = SboBadges.INSTANCE.replaceEverywhere(text);
         return recolored != null ? recolored : text;
     }

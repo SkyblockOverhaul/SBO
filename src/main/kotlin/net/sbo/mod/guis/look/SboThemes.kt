@@ -256,7 +256,7 @@ object SboThemes {
         "achievements.css" to "/assets/sbo/ui/achievements/achievements.css",
         "sounds.css" to "/assets/sbo/ui/sounds/sounds.css",
         "cloud.css" to "/assets/sbo/ui/cloud/cloud.css",
-        "badge.css" to "/assets/sbo/ui/badge/badge.css",
+        "customizer.css" to "/assets/sbo/ui/customizer/customizer.css",
         "elements.css" to "/assets/guilib/css/ua.css"
     )
 
