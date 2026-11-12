@@ -569,8 +569,9 @@ object Helper {
 
     fun showTitle(title: String?, subtitle: String?, fadeIn: Int, time: Int, fadeOut: Int, overwrite: Boolean = true) {
         val currentDurationTicks = mc.gui.titleTime
-        val currentTitle = mc.gui.title?.string
-        val currentSubtitle = mc.gui.subtitle?.string
+        // A title whose time ran out is not drawn anymore, even if Minecraft did not clear it (a times packet can set its time to 0)
+        val currentTitle = if (currentDurationTicks > 0) mc.gui.title?.string else null
+        val currentSubtitle = if (currentDurationTicks > 0) mc.gui.subtitle?.string else null
 
         if (overwrite || time >= currentDurationTicks) {
             mc.gui.setTimes(fadeIn, time, fadeOut)

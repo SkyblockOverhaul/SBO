@@ -80,6 +80,12 @@ class Waypoint(
     private var hasText = text.isNotEmpty()
 
     var isClosest = false
+
+    private companion object {
+        /** The warp title and subtitle set last, so the next tick knows the title on screen is its own and may replace it. */
+        var lastWarpTitle = ""
+        var lastWarpSubtitle = ""
+    }
     var timesDug = 0
     var userInteractedWith = false
     private var dynamicOpacity = 1.0f
@@ -176,14 +182,23 @@ class Waypoint(
 
                 val text = "§" + (if (this.type == "rareMob") "d" else "b") + "Warp §e$warpName${if (Waypoints.lookAlike) " §b[${distanceRaw.roundToInt()}m]" else distanceText}"
                 val asSubtitle = Warps.warpTitleAsSubtitle
+                val title = if (asSubtitle) "" else text
+                val subtitle = if (asSubtitle) text else ""
 
-                val titleBusy = !mc.gui.title?.string.isNullOrEmpty() && mc.gui.titleTime > 0 // When asSubtitle is disabled, Helper.showTitle checks internally if busy or not; but when its subtitle, it appends warp subtitle inside another one, e.g. Use Spade one, with higher duration, causing warp title to keep showing as subtitle even after warping till the main title (e.g., Use Spade one) expires; this makes it delay warp title till the original title disappears which fixes the issue.
+                // Another title (Use Spade, rare mob, drops, Hypixel) is showing: wait until it is gone, so the warp text is not mixed into it.
+                // A title we set ourselves last tick, an empty one, or one whose time ran out is overwritten, which resets its times to 1 tick every tick.
+                // A times packet arriving while a title shows (Hypixel) changes its time: with a stay of 0 the title is left with time 0 but is never cleared,
+                // so it counted as "showing" forever and the warp title never came back; with a long fade in it stayed almost invisible.
+                val currentTitle = mc.gui.title?.string.orEmpty()
+                val currentSubtitle = mc.gui.subtitle?.string.orEmpty()
+                val isEmpty = currentTitle.isEmpty() && currentSubtitle.isEmpty()
+                val isOurs = currentTitle == lastWarpTitle && currentSubtitle == lastWarpSubtitle
+                val titleBusy = mc.gui.title != null && mc.gui.titleTime > 0 && !isEmpty && !isOurs
 
-                if (!asSubtitle || !titleBusy) {
-                    val title = if (asSubtitle) "" else text
-                    val subtitle = if (asSubtitle) text else null
-
-                    Helper.showTitle(title, subtitle, 0, 1, 0, overwrite = false) // 1 ticks because next tick this will be called again. Overwrite false to not wipe rare mob title or use spade title.
+                if (!titleBusy) {
+                    Helper.showTitle(title, subtitle, 0, 1, 0) // 1 tick because next tick this will be called again
+                    lastWarpTitle = title
+                    lastWarpSubtitle = subtitle
                 }
             }
         } else {
