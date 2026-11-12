@@ -1,13 +1,17 @@
 package net.sbo.mod.general
 
+import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import com.google.gson.JsonPrimitive
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.ModContainer
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.mixinbase.MixinHealth
+import net.sbo.mod.settings.Settings
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.chat.Chat
@@ -22,14 +26,16 @@ import java.io.File
 import java.nio.file.Files
 
 /**
- * Collects mod conflicts: SBO hooks another mod broke (see [MixinHealth]) and the mods that change the same game
- * classes. Only those mods go in, never the whole mod list, that would tell far more about the player than needed.
- * Saved to mod-conflicts.json every session; when a hook is broken the player is told once and can send the
- * report to the SBO Discord with a click, `/sboconflicts` shows and sends it by hand.
+ * The info report: mod conflicts, i.e. SBO hooks another mod broke (see [MixinHealth]) and the mods that change the same
+ * game classes, plus everything the player can set in SBO's settings and windows, so support can find wrong settings too.
+ * Only the conflicting mods go in, never the whole mod list, that would tell far more about the player than needed;
+ * other players' names and keys are left out of the settings.
+ * Saved to info-report.json; when a hook is broken the player is told once and can send the report to the SBO Discord
+ * with a click, `/sboinforeport` shows and sends it by hand.
  */
 object ModConflicts {
-    private const val COMMAND = "sboconflicts"
-    private const val FILE_NAME = "mod-conflicts.json"
+    private const val COMMAND = "sboinforeport"
+    private const val FILE_NAME = "info-report.json"
     // The chat isn't ready the moment the first world loads
     private const val NOTICE_DELAY_MS = 5_000L
     // The backend's limits (routes/modConflicts.ts), a longer report would be refused as a whole
@@ -52,6 +58,8 @@ object ModConflicts {
         val mcVersion: String,
         val failed: List<FailedHook>,
         val suspects: List<Suspects>,
+        /** Taken when the report is shown or sent, not when the first world loads. */
+        val settings: kotlinx.serialization.json.JsonObject? = null,
     )
 
     private val json = Json { prettyPrint = true }
@@ -121,6 +129,48 @@ object ModConflicts {
         }
     }
 
+    /** What the player set in the settings, the GUIs and their own badge; other players' names and keys are left out. */
+    private fun settings(): JsonObject {
+        val gson = Gson()
+        val account = Player.accountUuid()
+        val sboData = gson.toJsonTree(DataManager.sboData).asJsonObject.apply {
+            remove("sboKey")
+            remove("currentCoaUuid")
+            add("partyBlacklist", JsonPrimitive(DataManager.sboData.partyBlacklist.size))
+            // Per account; only this account's, without the sync hashes
+            add("cloudSync", JsonObject().also { sync ->
+                DataManager.sboData.cloudSync[account]?.let { state ->
+                    sync.add("version", JsonPrimitive(state.version))
+                    state.autoSync?.let { sync.add("autoSync", JsonPrimitive(it)) }
+                    state.premium?.let { sync.add("premium", JsonPrimitive(it)) }
+                }
+            })
+            remove("badgeAccess")
+            DataManager.sboData.badgeAccess[account]?.let { add("badgeAccess", JsonPrimitive(it)) }
+        }
+        val partyFinder = gson.toJsonTree(DataManager.partyFinderConfigState).asJsonObject.apply {
+            add("blockedPlayers", JsonPrimitive(DataManager.partyFinderConfigState.blockedPlayers.size))
+            add("viewerFavorites", JsonPrimitive(DataManager.partyFinderConfigState.viewerFavorites.size))
+        }
+        return JsonObject().apply {
+            add("settings", Settings.values())
+            add("sboData", sboData)
+            add("overlays", gson.toJsonTree(DataManager.overlayData))
+            add("sounds", gson.toJsonTree(DataManager.soundSettingsData))
+            add("partyFinder", partyFinder)
+            add("alphaData", JsonPrimitive(DataManager.alphaActive))
+            SboBadges.own()?.let { add("ownBadge", gson.toJsonTree(it)) }
+        }
+    }
+
+    /** The report with the settings as they are right now; without them when reading them fails. */
+    private fun withSettings(report: Report): Report {
+        val settings = runCatching { Json.parseToJsonElement(settings().toString()).jsonObject }
+            .onFailure { SBOKotlin.logger.warn("[ModConflicts] could not read the settings for the report", it) }
+            .getOrNull()
+        return report.copy(settings = settings)
+    }
+
     private fun readJson(path: java.nio.file.Path): JsonObject? =
         runCatching { JsonParser.parseString(Files.readString(path)).asJsonObject }.getOrNull()
 
@@ -136,7 +186,8 @@ object ModConflicts {
     }
 
     private fun show(byHand: Boolean) {
-        val report = report ?: return Chat.chat("§6[SBO] §eJoin a world first, the check runs then.")
+        val report = report?.let(::withSettings) ?: return Chat.chat("§6[SBO] §eJoin a world first, the check runs then.")
+        save(report)
         if (report.failed.isEmpty()) {
             if (!byHand) return
             Chat.chat("§6[SBO] §aNo SBO feature is broken by another mod.")
@@ -150,15 +201,15 @@ object ModConflicts {
         if (sent) return Chat.chat("§6[SBO] §7Report already sent this session, saved in config/${DataManager.dataDir}/$FILE_NAME.")
         Chat.clickableChat(
             "§6[SBO] §7Saved in config/${DataManager.dataDir}/$FILE_NAME. §e§l[Send report]",
-            "Sends this report to the SBO Discord so we can fix it, only SBO's versions and the mods changing the same game code go along",
+            "Sends this report to the SBO Discord so we can fix it: SBO's versions, your SBO settings and the mods changing the same game code",
         ) { send() }
     }
 
     private fun send() {
-        val report = report ?: return
+        val report = report?.let(::withSettings) ?: return
         if (sent) return
         sent = true
-        SboApi.modConflicts(compactJson.encodeToString(report.copy(player = Player.getName())))
+        SboApi.infoReport(compactJson.encodeToString(report.copy(player = Player.getName())))
             .toJsonObject {
                 if (it.getBoolean("Success")) Chat.chat("§6[SBO] §aReport sent, thanks!")
                 else {
