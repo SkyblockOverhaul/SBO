@@ -106,6 +106,44 @@ object Burrows : Category("Burrows") {
 
     init {
         sub {
+            this.title = "Spade Guess Optimizer"
+        }
+    }
+
+    var spadeGuessOptimizer by boolean(false) {
+        this.name = literal("Spade Guess Optimizer")
+        this.since = "0.7.2-beta.3"
+        this.description = literal("When you finish a chain and using your spade there finds no new chain, it shows a location within your specified distance from your last burrow to stand and use spade for new chain discovery. Works with any amount of chains you have. The guess line to spade guess locations is prioritized over any other burrow type. Spade guess locations can be 5 blocks further than your set limit per chain you lose.")
+    }
+
+    var optimizerDetour by int(35) {
+        this.range = 10..150
+        this.slider = true
+        this.name = literal("Optimizer Detour")
+        this.since = "0.7.2-beta.3"
+        depends(::spadeGuessOptimizer)
+        this.description = literal("How many blocks away from the chain's last burrow you're willing to go for a place to use your spade.")
+    }
+
+    var lookForMaxChains by boolean(true) {
+        this.name = literal("Look For Max Chains")
+        this.since = "0.7.2-beta.3"
+        depends(::spadeGuessOptimizer)
+        this.description = literal("After starting your game, a lobby swap or /sboclearburrows, shows places across the hub to use your spade until you discover 7 chains. The guess line and warp key go to them during the process until 3 spade guesses in a row fail to discover a new chain, which then the feature stops and redirects you to your guess burrows.")
+    }
+
+    var SpadeGuessOptimizerColor by color(
+        Color(1.0f, 0.65f, 0.0f).rgb
+    ) {
+        this.name = literal("Spade Guess Optimizer Color")
+        this.since = "0.7.2-beta.3"
+        depends(::spadeGuessOptimizer)
+        this.description = literal("Color of the place to stand and use your spade to find a new chain.")
+        this.allowAlpha = false
+    }
+
+    init {
+        sub {
             this.title = "Spade"
         }
     }

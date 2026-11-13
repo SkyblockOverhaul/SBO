@@ -12,13 +12,16 @@ import net.sbo.mod.utils.events.impl.game.PlayerInteractEvent
 import net.sbo.mod.utils.events.impl.game.WorldChangeEvent
 import net.sbo.mod.utils.events.impl.packets.ParticleReceiveEvent
 import net.sbo.mod.utils.game.World
+import net.sbo.mod.utils.game.InventoryUtils
 import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.utils.math.PolynomialFitter
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.math.SboVec.Companion.toSboVec
+import net.sbo.mod.utils.waypoint.Waypoint
 import net.sbo.mod.utils.waypoint.WaypointManager
 import java.util.concurrent.TimeUnit
 import kotlin.math.*
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Guesses the burrow the spade points at from its dripping lava trail.
@@ -42,6 +45,9 @@ import kotlin.math.*
  *
  * Full trails (10+ particles) only use the cubic fit when the curve found no block. The curve guess is kept otherwise,
  * the cubic fit can end on a burrow next to the one the spade points at.
+ *
+ * A spade guess within [PARTICLE_DISTANCE] blocks while holding the spade for [NO_PARTICLE_TICKS] ticks with no burrow
+ * found at it (its particles would show there) is removed, like arrow guesses.
  */
 object PreciseGuessBurrow {
     private val particleLocations = mutableListOf<SboVec>()
@@ -58,6 +64,8 @@ object PreciseGuessBurrow {
     /** Whether [throwGuess]'s waypoint was made by this spade use, a guess that was already there is left when it moves. */
     private var ownsThrowGuess = false
     private var shortTrailChecked = false
+    /** The ticks each spade guess was within [PARTICLE_DISTANCE] blocks while holding the spade. */
+    private val ticksInParticleRange = HashMap<Waypoint, Int>()
 
     private val SPADE_WINDOW = TimeUnit.MILLISECONDS.toNanos(3000L)
     /** Particles come every 0.1 seconds, a particle much later is from another spade use the game did not report. */
@@ -73,6 +81,9 @@ object PreciseGuessBurrow {
     private const val POINT_ERROR = 0.002
     private const val PICK_SIDE = 3
     private const val PICK_UP = 2
+    /** How far burrow particles show while holding the spade. */
+    private const val PARTICLE_DISTANCE = 30.0
+    private const val NO_PARTICLE_TICKS = 20
 
     // The step counts tried for the curve: N_MIN, N_MIN + N_STEP, ... up to 200
     private const val N_MIN = 5.0
@@ -91,7 +102,35 @@ object PreciseGuessBurrow {
     private var summed = 1
 
     fun init() {
-        Register.onTick(1) { checkShortTrail() }
+        Register.onTick(1) {
+            checkShortTrail()
+            removeGuessesWithoutParticles()
+        }
+    }
+
+    /** Removes the spade guesses that show no burrow particles after [NO_PARTICLE_TICKS] ticks in range of them. */
+    private fun removeGuessesWithoutParticles() {
+        val player = SBOKotlin.mc.player
+        if (!Burrows.spadeGuess || !World.isInHub() || player == null || !InventoryUtils.isItemHeld("SPADE", 1.seconds)) {
+            ticksInParticleRange.clear()
+            return
+        }
+        val guesses = WaypointManager.getWaypointsOfType("guess").toList()
+        ticksInParticleRange.keys.retainAll(guesses.toSet())
+        val playerPos = player.position().toSboVec()
+        for (guess in guesses) {
+            if (guess.pos.distanceTo(playerPos) > PARTICLE_DISTANCE) {
+                ticksInParticleRange.remove(guess)
+                continue
+            }
+            // A burrow found at the guess replaces it, one still here has no burrow
+            val ticks = (ticksInParticleRange[guess] ?: 0) + 1
+            ticksInParticleRange[guess] = ticks
+            if (ticks >= NO_PARTICLE_TICKS) {
+                WaypointManager.removeWaypoint(guess)
+                ticksInParticleRange.remove(guess)
+            }
+        }
     }
 
     @SboEvent
@@ -164,6 +203,7 @@ object PreciseGuessBurrow {
         }
         if (Burrows.curveSpadeGuess && this.particleLocations.isEmpty() && now - lastGuessTime < DOUBLE_CLICK) return
         BurrowDetector.pendingUseSpadeTitle = null
+        SpadeGuessOptimizer.onUseSpade()
         this.particleLocations.clear()
         lastGuessTime = now
         throwLook = player.getViewVector(1f).toSboVec().normalize()
@@ -190,6 +230,7 @@ object PreciseGuessBurrow {
         val guess = guessPosition.down(0.5).roundLocationToBlock()
         WaypointManager.addSpadeGuess(guess)
         ChainTracker.onSpadeGuess(guess)
+        throwEye?.let { SpadeGuessOptimizer.onSpadeGuess(it, guess) }
     }
 
     /**
@@ -204,6 +245,7 @@ object PreciseGuessBurrow {
         WaypointManager.addSpadeGuess(pos)
         ownsThrowGuess = !existed && WaypointManager.waypointExists("guess", pos).first
         ChainTracker.onSpadeGuess(pos)
+        throwEye?.let { SpadeGuessOptimizer.onSpadeGuess(it, pos) }
     }
 
     /** Whether a burrow can be on the block: grass with air above (or not loaded yet), and on [BurrowSpots] if it has a list. */
