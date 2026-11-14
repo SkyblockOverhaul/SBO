@@ -21,6 +21,7 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.SourceSetContainer
+import dev.detekt.gradle.Detekt
 import dev.detekt.gradle.extensions.DetektExtension
 import net.ltgt.gradle.errorprone.errorprone
 
@@ -298,6 +299,18 @@ val enableDetekt = providers.gradleProperty("enableDetekt")
 
 if (enableDetekt) {
     apply(plugin = "dev.detekt")
+
+    tasks.named<Detekt>("detektMain") {
+        // Analyze the same transformed sources as compileKotlin.
+        dependsOn(replaceKotlinSources)
+        setSource(replaceKotlinSources.flatMap { it.outputDirectory })
+
+        // Exclude KSP-generated event registration classes.
+        exclude(
+            "**/SboEvent_*_SboEventRegister.kt",
+            "**/SboEventGeneratedRegistry.kt"
+        )
+    }
 
     extensions.configure<DetektExtension> {
         parallel = true
