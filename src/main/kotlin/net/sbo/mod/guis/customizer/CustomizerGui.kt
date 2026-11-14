@@ -19,7 +19,6 @@ import net.sbo.mod.guis.look.SboLook
 import net.sbo.mod.guis.look.useFitScale
 import net.sbo.mod.guis.look.useSboScale
 import net.sbo.mod.guis.look.useSboTheme
-import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.data.BadgePart
 import net.sbo.mod.utils.data.BadgeSettings
 import net.sbo.mod.utils.data.OwnBadgeResponse

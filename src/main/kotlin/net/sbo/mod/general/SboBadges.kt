@@ -493,7 +493,7 @@ object SboBadges {
     }
 
     /** Whether the colors of [name]'s badge move for the viewer; their chars can move without them. */
-    private fun colorsMove(name: String): Boolean = byName[name.lowercase()]?.let { uuidOf(it.uuid) }?.let(::animates) ?: true
+    private fun colorsMove(name: String): Boolean = byName[name.lowercase()]?.let { uuidOf(it.uuid) }?.let(::animates) != false
 
     private class AnimatedMessage(val original: Component) {
         var frame = -1L

@@ -127,7 +127,7 @@ object DataManager {
 
     fun init() {
         loadAllData(dataDir)
-        saveAllDataThreaded(dataDir)
+        saveAllDataThreaded()
         savePeriodically(5)
         Register.onTick(60) { saveDirtyData() }
     }
@@ -292,7 +292,7 @@ object DataManager {
         }
     }
 
-    private fun saveAllDataThreaded(modName: String) {
+    private fun saveAllDataThreaded() {
         DATA_SAVER_EXECUTOR.execute {
             saveAllData()
         }
@@ -335,7 +335,7 @@ object DataManager {
      */
     private fun savePeriodically(interval: Int) {
         Register.onTick(20 * 60 * interval) { _ ->
-            saveAllDataThreaded(dataDir)
+            saveAllDataThreaded()
         }
     }
 
@@ -413,7 +413,7 @@ object DataManager {
         // A restore counts as a reset of the tracker
         dianaTrackerMayorData.resetCount = maxOf(resets, dianaTrackerMayorData.resetCount) + 1
         SboTimerManager.afterTrackerSwap()
-        saveAllDataThreaded(dataDir)
+        saveAllDataThreaded()
     }
 
     // === BACKUP ===

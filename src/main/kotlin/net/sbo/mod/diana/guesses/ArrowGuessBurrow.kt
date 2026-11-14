@@ -113,8 +113,7 @@ object ArrowGuessBurrow {
 
     @SboEvent
     fun onReceiveParticle(event: ParticleReceiveEvent) {
-        if (!Burrows.arrowGuess) return
-        if (!World.isInHub()) return
+        if (!Burrows.arrowGuess || !World.isInHub()) return
 
         val packet = event.packet
         if (!packet.isRelevant()) return
@@ -129,9 +128,7 @@ object ArrowGuessBurrow {
 
     @SboEvent
     fun onTick(event: TickEvent) {
-        if (!Burrows.arrowGuess) return
-        if (!World.isInHub()) return
-        if (allGuesses.isEmpty()) return
+        if (!Burrows.arrowGuess || !World.isInHub() || allGuesses.isEmpty()) return
         checkMoveGuess()
     }
 

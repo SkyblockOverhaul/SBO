@@ -50,7 +50,7 @@ class Overlay(
 
     override fun updateConditions() {
         super.updateConditions()
-        lines.forEach { it.updateCondition() }
+        lines.fastForEach { it.updateCondition() }
     }
 
     fun addLine(line: OverlayTextLine) {

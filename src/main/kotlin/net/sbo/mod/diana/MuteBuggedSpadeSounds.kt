@@ -21,8 +21,11 @@ object MuteBuggedSpadeSounds {
         val sound = event.sound
         val isRealMusic = sound.pitch == 1f && sound.volume == 1f && sound.x == 0.0 && sound.y == 0.0 && sound.z == 0.0
 
-        if (sound.identifier.toString().replace("minecraft:", "").startsWith("music") && !isRealMusic) {
-            event.isCanceled = true
+        if (!isRealMusic) {
+            val identifier = sound.identifier.toString()
+            if (identifier.startsWith("minecraft:music") || identifier.startsWith("music")) {
+                event.isCanceled = true
+            }
         }
     }
 }

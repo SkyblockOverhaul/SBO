@@ -72,17 +72,13 @@ class Waypoint(
 
             field = value
             hasText = value.isNotEmpty()
-
-            component = Component.nullToEmpty(value)
-
-            visualOrderText = component.visualOrderText
-            textWidth = mc.font.width(visualOrderText)
+            visualTextDirty = true
         }
-    // Font.width may lazily bake and upload glyphs, which is render-thread only.
-    // A waypoint is sometimes constructed while handling a network packet, before
-    // format() runs on the client thread and fills this cache.
+    // Font.width may lazily bake and upload glyphs, so visual text is prepared
+    // lazily on the render thread rather than while formatting hidden waypoints.
     private var textWidth = 0
     private var hasText = text.isNotEmpty()
+    private var visualTextDirty = true
 
     var isClosest = false
 
@@ -105,6 +101,7 @@ class Waypoint(
     private var secondaryText: Component? = null
     private var secondaryTextWidth = 0
     private var secondaryVisualOrderText: FormattedCharSequence? = null
+    private var secondaryVisualTextDirty = false
 
     fun hasStrongerStateThan(other: Waypoint): Boolean =
         this.timesDug > other.timesDug || this.userInteractedWith && !other.userInteractedWith
@@ -160,15 +157,30 @@ class Waypoint(
             secondaryText = null
             secondaryTextWidth = 0
             secondaryVisualOrderText = null
+            secondaryVisualTextDirty = false
             return
         }
 
-        val component = Component.nullToEmpty(newText)
-        val visualOrderText = component.visualOrderText
+        secondaryVisualTextDirty = true
+    }
 
-        secondaryText = component
-        secondaryVisualOrderText = visualOrderText
-        secondaryTextWidth = mc.font.width(visualOrderText)
+    private fun updateVisualText() {
+        if (visualTextDirty) {
+            component = Component.nullToEmpty(formattedText)
+            visualOrderText = component.visualOrderText
+            textWidth = mc.font.width(visualOrderText)
+            visualTextDirty = false
+        }
+
+        if (secondaryVisualTextDirty) {
+            val component = Component.nullToEmpty(secondaryTextSource!!)
+            val visualOrderText = component.visualOrderText
+
+            secondaryText = component
+            secondaryVisualOrderText = visualOrderText
+            secondaryTextWidth = mc.font.width(visualOrderText)
+            secondaryVisualTextDirty = false
+        }
     }
 
     private fun setWarpText() {
@@ -279,9 +291,7 @@ class Waypoint(
         return RgbAndHex(floatArrayOf(r, g, b), color.rgb)
     }
 
-    fun format(
-        inqWaypoints: List<Waypoint>
-    ) {
+    fun format(rareMobWaypoints: List<Waypoint>) {
         this.distanceRaw = distanceToPlayer()
         this.dynamicOpacity = if (Waypoints.dynamicWaypointOpacity) updateDynamicOpacity() else (Waypoints.waypointOpacity / 100.0).toFloat().coerceIn(0.2f, 1.0f)
 
@@ -289,14 +299,14 @@ class Waypoint(
 
         when (this.type) {
             "guess", "arrow", "burrow" -> {
-                if (isClosest && !inqWaypoints.isEmpty()) isClosest = false
+                if (isClosest && !rareMobWaypoints.isEmpty()) isClosest = false
                 this.line = Waypoints.guessAndBurrowLine && isClosest
 
                 setWarpText()
             }
 
             "rareMob" -> {
-                val newest = inqWaypoints.last() == this
+                val newest = rareMobWaypoints.last() == this
 
                 if (newest) isClosest = true
                 this.line = newest && Waypoints.inqLine && this.distanceRaw >= 8.0
@@ -338,6 +348,8 @@ class Waypoint(
 
     fun render(context: LevelRenderContext) {
         if (!this.formatted || this.hidden) return
+
+        updateVisualText()
 
         val rgbAndHex = getRgbAndHex()
 

@@ -6,7 +6,6 @@ import net.minecraft.world.entity.LivingEntity
 import net.minecraft.client.player.RemotePlayer
 import net.minecraft.world.entity.decoration.Mannequin
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.settings.categories.RareMobs
 import net.sbo.mod.utils.Helper.isValidEntityInHub
 import net.sbo.mod.utils.accessors.isSboGlowing
@@ -17,7 +16,6 @@ import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.entity.EntityLoadEvent
 import net.sbo.mod.utils.events.impl.entity.EntityUnloadEvent
-import net.sbo.mod.diana.DianaMobDetect.toDebugString
 //#if MC < 26.2
 import java.awt.Color
 //#endif
