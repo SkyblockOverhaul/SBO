@@ -70,7 +70,7 @@ plugins {
     alias(libs.plugins.ksp)
     id("com.replaymod.preprocess")
     id("dev.detekt") version "2.0.0-alpha.6" apply false
-    id("net.ltgt.errorprone") version "5.1.1"
+    id("net.ltgt.errorprone") version "5.2.0" apply false
 }
 
 // The preprocessCode task takes too long otherwise, as it has to go through kotlin analysis api. With null mappings, it finishes almost instantly. All our MC version targets are unobfuscated (26.1+) anyways.
@@ -255,13 +255,17 @@ val enableErrorprone = providers.gradleProperty("enableErrorprone")
     .map(String::toBoolean)
     .getOrElse(false)
 
-tasks.withType<JavaCompile>().configureEach {
-    options.errorprone {
-        enabled = enableErrorprone
+if (enableErrorprone) {
+    apply(plugin = "net.ltgt.errorprone")
 
-        // Mixins usually result in unused methods (injections) and variables (forced parameter list)
-        disable("UnusedMethod")
-        disable("UnusedVariable")
+    tasks.withType<JavaCompile>().configureEach {
+        options.errorprone {
+            enabled = true
+
+            // Mixins usually result in unused methods (injections) and variables (forced parameter list)
+            disable("UnusedMethod")
+            disable("UnusedVariable")
+        }
     }
 }
 
@@ -578,7 +582,9 @@ dependencies {
 
     runtimeOnly("me.djtheredstoner:DevAuth-fabric:${property("devauth.version")}")
 
-    errorprone("com.google.errorprone:error_prone_core:${property("errorprone.version")}")
+    if (enableErrorprone) {
+        errorprone("com.google.errorprone:error_prone_core:${property("errorprone.version")}")
+    }
 }
 
 tasks.findByName("preprocessCode")?.apply {
