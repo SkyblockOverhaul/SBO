@@ -94,6 +94,8 @@ data class SboData(
     var badgeAnimationsInChat: String = "own", // "off", "own" or "all": whose badge colors and motion move in chat, see SboBadges.NAMES_*
     var badgeLooksOfOthers: Boolean = true, // false hides the symbols and text styles (bold, italic...) of other players' names
     var badgeSizesOfOthers: Boolean = true, // false shows every other player in their normal size
+    var badgeLineSize: Float = 1f, // text size of the badge line above heads, only on your screen, see SboBadges.lineSize
+    var badgeNameSize: Float = 1f, // text size of every player's name line above heads, only on your screen, see SboBadges.nameSize
     var badgeAccess: MutableMap<String, Boolean> = mutableMapOf(), // account uuid -> may have a badge
     var collapsedSettings: MutableSet<String> = mutableSetOf(), // collapsed subs in the settings, "Diana/Waypoints"
     var currentCoaUuid: String = "",

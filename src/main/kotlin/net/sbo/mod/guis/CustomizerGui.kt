@@ -91,6 +91,8 @@ object CustomizerGui {
         // The part the symbols row in Player changes
         var symbolPart by useState(BadgePart.NAME)
         var leaving by useState(false)
+        // Here and not in Others, so the stage shows the text sizes while the sliders move
+        var textSizes by useState(TextSizes(SboBadges.lineSize(), SboBadges.nameSize()))
         useSboScale()
         useSboTheme("customizer")
 
@@ -159,7 +161,7 @@ object CustomizerGui {
                 button(className = "cz-icon cz-close", title = "Close", onClick = { close() }) { +"x" }
             }
             div(className = "cz-body") {
-                Stage(StageProps(ready?.badge, settings))
+                Stage(StageProps(ready?.badge, settings, textSizes))
                 div(className = "cz-editor") {
                     when (val state = load) {
                         Load.Loading -> {
@@ -168,7 +170,7 @@ object CustomizerGui {
                         is Load.Failed -> scroll(className = "cz-panel cz-panel-tall guilib-autohide") {
                             failed(state)
                             heading("How others' badges show for you")
-                            Others()
+                            Others(OthersProps(textSizes) { textSizes = it })
                         }
                         is Load.Ready -> {
                             val badge = state.badge
@@ -177,7 +179,7 @@ object CustomizerGui {
                             scroll(className = "cz-panel guilib-autohide", key = "panel:$section") {
                                 when (section) {
                                     PLAYER -> playerPanel(badge, current, symbolPart, { symbolPart = it }) { draft = it }
-                                    OTHERS -> Others()
+                                    OTHERS -> Others(OthersProps(textSizes) { textSizes = it })
                                     else -> partPanel(badge, current, section) { draft = it }
                                 }
                             }
@@ -515,7 +517,11 @@ object CustomizerGui {
 
     // ---- Others: how other players' badges show for you, saved right away ---------------------------------------
 
-    private val Others = component("CustomizerOthers") {
+    private data class TextSizes(val tag: Float, val name: Float)
+
+    private data class OthersProps(val textSizes: TextSizes, val onTextSizes: (TextSizes) -> Unit)
+
+    private val Others = component<OthersProps>("CustomizerOthers") { (textSizes, onTextSizes) ->
         val data = DataManager.sboData
         var inTab by useState(data.badgesInTab)
         var inChat by useState(data.badgesInChat)
@@ -581,6 +587,33 @@ object CustomizerGui {
         row("Player sizes", "Other players in the size they picked. Off shows everyone in their normal size.") {
             switch(checked = sizes, onChange = { sizes = it.checked; data.badgeSizesOfOthers = it.checked; saved() })
         }
+        heading("Text above heads")
+        row("Tag size", "The badge line above every player's head, yours too.") {
+            textSizeSlider(textSizes.tag) { onTextSizes(textSizes.copy(tag = it)); data.badgeLineSize = it; saved() }
+        }
+        row("Name size", "The name line of players with an SBO badge or team tag, yours too. The tag stays on top of it.") {
+            textSizeSlider(textSizes.name) { onTextSizes(textSizes.copy(name = it)); data.badgeNameSize = it; saved() }
+        }
+    }
+
+    private fun NodeBuilder.textSizeSlider(value: Float, onChange: (Float) -> Unit) {
+        div(className = "cz-inline") {
+            slider(
+                value = value,
+                onChange = { v ->
+                    // On the steps, so the saved value stays a clean number
+                    val size = ((v / SboBadges.TEXT_SIZE_STEP).roundToInt() * SboBadges.TEXT_SIZE_STEP * 100f).roundToInt() / 100f
+                    onChange(size.coerceIn(SboBadges.MIN_TEXT_SIZE, SboBadges.MAX_TEXT_SIZE))
+                },
+                min = SboBadges.MIN_TEXT_SIZE,
+                max = SboBadges.MAX_TEXT_SIZE,
+                step = SboBadges.TEXT_SIZE_STEP,
+                showValue = true,
+                format = { "%.2fx".format(Locale.ROOT, it) },
+                className = "cz-slider",
+            )
+            button(disabled = value == 1f, title = "Normal size", onClick = { onChange(1f) }) { +"Reset" }
+        }
     }
 
     private fun NodeBuilder.failed(state: Load.Failed) {
@@ -598,10 +631,10 @@ object CustomizerGui {
 
     // ---- Stage: the player as others see them --------------------------------------------------------------------
 
-    private data class StageProps(val badge: OwnBadgeResponse?, val settings: BadgeSettings?)
+    private data class StageProps(val badge: OwnBadgeResponse?, val settings: BadgeSettings?, val textSizes: TextSizes)
 
     // Its own component, so moving colors only draw the stage again
-    private val Stage = component<StageProps>("CustomizerStage") { (badge, settings) ->
+    private val Stage = component<StageProps>("CustomizerStage") { (badge, settings, textSizes) ->
         val model = useMemo { FakePlayer.ofLocalPlayer() }
         // A new frame number draws the stage again; the colors read the time themselves
         val frame = useState(0L)
@@ -619,10 +652,11 @@ object CustomizerGui {
         div(className = "cz-stage") {
             div(className = "cz-scene") {
                 div(className = "cz-figure") {
+                    // The text sizes from Others, the name size only for players with a badge as in game
                     if (preview != null && SboBadges.hasHeadLine(preview.badge)) {
-                        div(className = "cz-nametag") { game(SboBadges.line(preview.badge, animate = true)) }
+                        div(className = "cz-nametag", style = textSize(textSizes.tag)) { game(SboBadges.line(preview.badge, animate = true)) }
                     }
-                    div(className = "cz-nametag") { game(shown(TeamTagPlace.HEAD)) }
+                    div(className = "cz-nametag", style = textSize(if (preview != null) textSizes.name else 1f)) { game(shown(TeamTagPlace.HEAD)) }
                     if (model != null) {
                         entity(
                             model,
@@ -745,6 +779,8 @@ object CustomizerGui {
      * and the window's font places pieces a little differently, so chars would twitch. The motion fonts that set chars
      * lower in game are left out by the window's text too, so those chars are drawn the same pixels lower here.
      */
+    private fun textSize(size: Float): String? = if (size == 1f) null else "font-size: ${"%.2f".format(Locale.ROOT, size)}em"
+
     private fun NodeBuilder.game(line: Component) {
         div(className = "cz-game") {
             var index = 0

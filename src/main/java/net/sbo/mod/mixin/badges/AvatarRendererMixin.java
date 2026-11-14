@@ -35,10 +35,12 @@ abstract class AvatarRendererMixin {
         // Models in menus (inventory) get no badge, name tag color or size, those only belong in the world
         if (!(entity instanceof Player) || SboBadges.INSTANCE.getMenuModel()) {
             ((BadgeRenderStateAccessor) state).sbo$setBadgeLine(null);
+            ((BadgeRenderStateAccessor) state).sbo$setNameSize(1.0F);
             return;
         }
         final UUID uuid = entity.getUUID();
         ((BadgeRenderStateAccessor) state).sbo$setBadgeLine(SboBadges.INSTANCE.nameTagLine(uuid));
+        ((BadgeRenderStateAccessor) state).sbo$setNameSize(SboBadges.INSTANCE.nameSizeOf(uuid));
         if (state.nameTag != null) state.nameTag = SboBadges.INSTANCE.colorNameTag(uuid, state.nameTag);
         // Badge size: only the model and where its name tag sits, the hitbox stays as it is
         final float size = SboBadges.INSTANCE.sizeOf(uuid);

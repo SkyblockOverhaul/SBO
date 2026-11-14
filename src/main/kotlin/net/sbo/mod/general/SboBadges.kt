@@ -288,6 +288,21 @@ object SboBadges {
     private const val MIN_SIZE = 0.1f
     private const val MAX_SIZE = 1.75f
 
+    /** Text size of the badge line above heads, the viewer's own choice for every badge. */
+    fun lineSize(): Float = textSize(DataManager.sboData.badgeLineSize)
+
+    /** Text size of the name line above heads, the viewer's own choice. */
+    fun nameSize(): Float = textSize(DataManager.sboData.badgeNameSize)
+
+    /** Name size for a player: only SBO badge holders and the team (the customizer's players) get it, everyone else stays 1. */
+    fun nameSizeOf(uuid: UUID): Float = if (uuid in byUuid || uuid in team) nameSize() else 1f
+
+    private fun textSize(size: Float): Float = size.takeIf { it.isFinite() }?.coerceIn(MIN_TEXT_SIZE, MAX_TEXT_SIZE) ?: 1f
+
+    const val MIN_TEXT_SIZE = 0.2f
+    const val MAX_TEXT_SIZE = 1.2f
+    const val TEXT_SIZE_STEP = 0.05f
+
     /** The viewer's switch for a place hides other supporters and contributors, never the team or your own badge. */
     private fun shown(enabled: Boolean, player: String) =
         enabled || player.lowercase() in teamNames || player.equals(own()?.name, ignoreCase = true)

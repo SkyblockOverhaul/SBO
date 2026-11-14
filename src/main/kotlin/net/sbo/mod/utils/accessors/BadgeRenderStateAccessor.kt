@@ -8,4 +8,6 @@ import net.minecraft.network.chat.Component
 internal interface BadgeRenderStateAccessor {
     fun `sbo$getBadgeLine`(): Component?
     fun `sbo$setBadgeLine`(line: Component?)
+    fun `sbo$getNameSize`(): Float
+    fun `sbo$setNameSize`(size: Float)
 }

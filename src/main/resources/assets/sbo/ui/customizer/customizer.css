@@ -145,7 +145,8 @@ body { display: flex; align-items: center; justify-content: center; }
 /* Block, not flex: flex items lose the spaces at their edges */
 .cz-game { white-space: pre; }
 .cz-ch { display: inline-block; }
-.cz-inline-logo { width: 8px; height: 8px; vertical-align: middle; }
+/* In em, so it follows the text size of its line (1em is 8px) */
+.cz-inline-logo { width: 1em; height: 1em; vertical-align: middle; }
 .cz-ground { height: 10px; flex-shrink: 0; background: linear-gradient(180deg, #4f7a3a, #3b5e2b); }
 .cz-lines { display: flex; flex-direction: column; gap: 2px; }
 .cz-line { padding: 1px 3px; white-space: nowrap; overflow: hidden; }

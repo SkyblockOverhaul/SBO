@@ -11,6 +11,8 @@ import org.spongepowered.asm.mixin.Unique;
 final class AvatarRenderStateMixin implements BadgeRenderStateAccessor {
     @Unique
     private @Nullable Component sbo$badgeLine;
+    @Unique
+    private float sbo$nameSize = 1.0F;
 
     @Override
     public final @Nullable Component sbo$getBadgeLine() {
@@ -20,5 +22,15 @@ final class AvatarRenderStateMixin implements BadgeRenderStateAccessor {
     @Override
     public final void sbo$setBadgeLine(@Nullable final Component line) {
         sbo$badgeLine = line;
+    }
+
+    @Override
+    public final float sbo$getNameSize() {
+        return sbo$nameSize;
+    }
+
+    @Override
+    public final void sbo$setNameSize(final float size) {
+        sbo$nameSize = size;
     }
 }
