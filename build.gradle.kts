@@ -86,6 +86,29 @@ tasks.matching { it.name == "generateIdentityMappingsFromSourceMinecraftJars" ||
     outputs.cacheIf { true }
 }
 
+// Loom disables caching for this task normally; enabling it speeds up builds when up-to-date check fails but a build cache is available (such as on CI).
+tasks.configureEach {
+    if (javaClass.name == "net.fabricmc.loom.task.ValidateAccessWidenerTask") {
+        val validationMarker = layout.buildDirectory.file(
+            "loom-cache/validate-access-widener/$name.success"
+        )
+
+        // Declare a deterministic output so Gradle can track task state.
+        outputs.file(validationMarker)
+
+        // Override Loom's @DisableCachingByDefault.
+        outputs.cacheIf("Access widener validation is deterministic") { true }
+
+        // Only create the marker after successful validation.
+        doLast {
+            validationMarker.get().asFile.apply {
+                parentFile.mkdirs()
+                writeText("OK")
+            }
+        }
+    }
+}
+
 private val projectVersion = project.property("mod.version")?.toString() ?: throw AssertionError("missing mod version property")
 
 // Sets the artifact version
@@ -284,6 +307,10 @@ if (enableDetekt) {
 
         config.setFrom(files("../../detekt.yml"))
         buildUponDefaultConfig = true
+
+        // Temporary to see compiler errors during analysis.
+        // FIXME: Remove after figuring out.
+        debug = true
     }
 
     tasks.named("compileKotlin") {
@@ -583,7 +610,7 @@ dependencies {
     runtimeOnly("me.djtheredstoner:DevAuth-fabric:${property("devauth.version")}")
 
     if (enableErrorprone) {
-        errorprone("com.google.errorprone:error_prone_core:${property("errorprone.version")}")
+        add("errorprone", "com.google.errorprone:error_prone_core:${property("errorprone.version")}")
     }
 }
 
