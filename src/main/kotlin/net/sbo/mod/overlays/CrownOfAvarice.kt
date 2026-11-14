@@ -120,6 +120,8 @@ object CrownOfAvarice {
         // world change), so comparing the reference each tick finds every change without reading the lore.
         // Rates (/h, maxed in) move with the playtime, they are refreshed every few seconds while it runs.
         Register.onTick(1) {
+            if (!World.isInHub() || !Helper.hasSpade) return@onTick
+
             val stack = mc.player?.inventory?.getItem(39)
             val trackerOn = tracker != null
             val blocked = alphaBlocked
@@ -477,7 +479,9 @@ object CrownOfAvarice {
         if (this == null || this.isEmpty()) return false
 
         val lookup = ItemLookup(this)
-        return "CROWN_OF_AVARICE" in lookup.sbId || "CROWN_OF_AVARICE_CELEBRATION" in lookup.sbId
+        val sbId = lookup.sbId
+
+        return "CROWN_OF_AVARICE" in sbId || "CROWN_OF_AVARICE_CELEBRATION" in sbId
     }
 
     private fun updateCoaPrice() {

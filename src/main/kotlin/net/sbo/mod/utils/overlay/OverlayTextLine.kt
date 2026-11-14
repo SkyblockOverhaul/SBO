@@ -74,6 +74,7 @@ class OverlayTextLine(
 
         orderedText = computed
         orderedTextSource = currentText
+        cachedTextWidth = -1
 
         return computed
     }

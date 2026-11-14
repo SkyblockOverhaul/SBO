@@ -16,8 +16,8 @@ import net.sbo.mod.utils.MojangAuth
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.SboKey
 import net.sbo.mod.utils.events.Register
+import net.sbo.mod.utils.http.RefreshingHttpClient
 import java.net.URI
-import java.net.http.HttpClient
 import java.net.http.WebSocket
 import java.net.http.WebSocketHandshakeException
 import java.time.Duration
@@ -44,7 +44,9 @@ object PartyFinderSocket {
     }
 
     private val json = Json { ignoreUnknownKeys = true }
-    private val client: HttpClient = HttpClient.newBuilder().connectTimeout(Duration.ofMillis(CONNECT_WAIT_MS)).build()
+    private val client = RefreshingHttpClient(refreshIntervalTicks = null) {
+        connectTimeout(Duration.ofMillis(CONNECT_WAIT_MS))
+    }
     private val lock = Any()
 
     @Volatile private var socket: WebSocket? = null
@@ -140,11 +142,13 @@ object PartyFinderSocket {
     private fun connect() {
         MojangAuth.ensureKey(onFail = { opened(null) }) { key ->
             val uri = URI.create(SBOKotlin.API_URL.replaceFirst("http", "ws") + "/pf/ws")
-            client.newWebSocketBuilder()
-                .connectTimeout(Duration.ofMillis(CONNECT_WAIT_MS))
-                .header("x-sbo-key", key)
-                .header("x-sbo-uuid", Player.accountUuid())
-                .buildAsync(uri, Listener())
+            client.useClient {
+                it.newWebSocketBuilder()
+                    .connectTimeout(Duration.ofMillis(CONNECT_WAIT_MS))
+                    .header("x-sbo-key", key)
+                    .header("x-sbo-uuid", Player.accountUuid())
+                    .buildAsync(uri, Listener())
+            }
                 .whenComplete { ws, error ->
                     if (error != null) {
                         // A refused key (unknown, replaced or of another account): the next try logs in again

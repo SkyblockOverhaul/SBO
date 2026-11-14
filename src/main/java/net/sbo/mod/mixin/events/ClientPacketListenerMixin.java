@@ -1,6 +1,5 @@
 package net.sbo.mod.mixin.events;
 
-import java.util.EnumSet;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.PacketListener;
 import net.minecraft.network.protocol.Packet;
@@ -51,7 +50,7 @@ final class ClientPacketListenerMixin {
     @Inject(method = "handlePlayerInfoUpdate", at = @At("TAIL"))
     private final void sbo$onPlayerInfoUpdate(@NonNull final ClientboundPlayerInfoUpdatePacket packet, @NonNull final CallbackInfo ci) {
         // only entries being added or display names changing affect the cached lines (ignores latency, gamemode, ...)
-        final EnumSet<ClientboundPlayerInfoUpdatePacket.Action> actions = packet.actions();
+        final var actions = packet.actions();
         if (actions.contains(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER) || actions.contains(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_DISPLAY_NAME)) {
             TabList.INSTANCE.markDirty();
         }

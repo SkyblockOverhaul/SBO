@@ -33,7 +33,7 @@ final class SkyHanniAdvancedPlayerListMixin {
             require = 0
     )
     private final @Nullable Component sbo$decorateCustomName(@Nullable final Component customName) {
-        final Component decorated = SboBadges.INSTANCE.decorateSkyHanniTab(customName);
+        final var decorated = SboBadges.INSTANCE.decorateSkyHanniTab(customName);
         return decorated != null ? decorated : customName;
     }
 

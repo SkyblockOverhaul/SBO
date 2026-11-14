@@ -24,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * rebuilds these methods costs the badge, not a crash.
  */
 @Mixin(AvatarRenderer.class)
-abstract class AvatarRendererMixin {
+final class AvatarRendererMixin {
     @Inject(
             method = "extractRenderState(Lnet/minecraft/world/entity/Avatar;Lnet/minecraft/client/renderer/entity/state/AvatarRenderState;F)V",
             at = @At("TAIL"),
@@ -38,12 +38,12 @@ abstract class AvatarRendererMixin {
             ((BadgeRenderStateAccessor) state).sbo$setNameSize(1.0F);
             return;
         }
-        final UUID uuid = entity.getUUID();
+        final var uuid = entity.getUUID();
         ((BadgeRenderStateAccessor) state).sbo$setBadgeLine(SboBadges.INSTANCE.nameTagLine(uuid));
         ((BadgeRenderStateAccessor) state).sbo$setNameSize(SboBadges.INSTANCE.nameSizeOf(uuid));
         if (state.nameTag != null) state.nameTag = SboBadges.INSTANCE.colorNameTag(uuid, state.nameTag);
         // Badge size: only the model and where its name tag sits, the hitbox stays as it is
-        final float size = SboBadges.INSTANCE.sizeOf(uuid);
+        final var size = SboBadges.INSTANCE.sizeOf(uuid);
         if (size != 1.0F) {
             state.scale *= size;
             // Vanilla only sets the attachment this frame while the name shows; otherwise it is last frame's, already scaled
@@ -57,7 +57,7 @@ abstract class AvatarRendererMixin {
     private final boolean sbo$showOwnBadge(final boolean original, @NonNull final Avatar entity, final double distanceSq) {
         // The own model in the inventory keeps vanilla's choice, else F5 would put the name tag into the inventory
         if (original || SboBadges.INSTANCE.getMenuModel()) return original;
-        final Minecraft mc = Minecraft.getInstance();
+        final var mc = Minecraft.getInstance();
         if (entity != mc.player || mc.options.getCameraType().isFirstPerson() || entity.isInvisible()) return false;
 
         return SboBadges.INSTANCE.showOwnNameTag();

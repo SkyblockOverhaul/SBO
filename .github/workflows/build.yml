@@ -25,9 +25,9 @@ jobs:
         run: |
           # A version tag (0.7.2-beta.1, 0.7.2, with or without a v) builds as that version, so the jars and the mod itself carry it
           if [[ "$GITHUB_REF" == refs/tags/* ]]; then
-            ./gradlew build --scan "-Pmod.version=${GITHUB_REF_NAME#v}"
+            ./gradlew build --scan -PenableDetekt=true -PenableErrorprone=true "-Pmod.version=${GITHUB_REF_NAME#v}"
           else
-            ./gradlew build --scan
+            ./gradlew build --scan -PenableDetekt=true -PenableErrorprone=true
           fi
       - name: capture build artifacts
         uses: actions/upload-artifact@v7

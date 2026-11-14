@@ -82,7 +82,7 @@ object Tracker {
             true
         }
 
-        Register.onChatMessageCancelable(Pattern.compile("(.*?) §efound a §cPhoenix §epet!(.*?)$", Pattern.DOTALL)) { _, matchResult ->
+        Register.onChatMessageCancelable(Pattern.compile("(.*?) §efound a §cPhoenix §epet!(.*?)$")) { _, matchResult ->
             val player = matchResult.group(1).removeFormatting().lowercase()
             if (!player.contains(Player.getName().orEmpty().lowercase())) return@onChatMessageCancelable true
             if (General.phoenixAnnouncer) {
@@ -95,7 +95,7 @@ object Tracker {
             true
         }
 
-        Register.onChatMessageCancelable(Pattern.compile("^§eYou (.*?) Griffin [Bb]urrow(.*?)$", Pattern.DOTALL)) { _, matchResult ->
+        Register.onChatMessageCancelable(Pattern.compile("^§eYou (.*?) Griffin [Bb]urrow(.*?)$")) { _, matchResult ->
             if (matchResult.group(2).removeFormatting().contains("(1/")) lastBurrow = BurrowType.START // The first one is always Start
             trackItem("TOTAL_BURROWS", 1)
             if (Trackers.fourEyedFish) {
@@ -106,14 +106,14 @@ object Tracker {
             General.HiddenMessage.DIANA !in General.hideMessages
         }
 
-        Register.onChatMessageCancelable(Pattern.compile("(.*?) §eYou dug (.*?)§2(.*?)§e!(.*?)$", Pattern.DOTALL)) { _, matchResult ->
+        Register.onChatMessageCancelable(Pattern.compile("(.*?) §eYou dug (.*?)§2(.*?)§e!(.*?)$")) { _, matchResult ->
             lastBurrow = BurrowType.MOB
             val mob = matchResult.group(3)
             if (!isMobOnCooldown.getOrDefault(mob, false)) trackMobOnSpawnAndSave(mob)
             General.HiddenMessage.DIANA !in General.hideMessages
         }
 
-        Register.onChatMessageCancelable(Pattern.compile("^§6§lRARE DROP! §eYou dug out a (.*?)§e!$", Pattern.DOTALL)) { _, matchResult ->
+        Register.onChatMessageCancelable(Pattern.compile("^§6§lRARE DROP! §eYou dug out a (.*?)§e!$")) { _, matchResult ->
             if (!(lastBurrow == BurrowType.MOB && lastSpawnedMob == "Sphinx")) lastBurrow = BurrowType.TREASURE
             when (val drop = matchResult.group(1).drop(2)) {
                 "Griffin Feather", "Mythos Fragment" -> trackItem(drop, 1)
@@ -122,13 +122,13 @@ object Tracker {
             true
         }
 
-        Register.onChatMessageCancelable(Pattern.compile("^§6§lRARE DROP! (.*?)$", Pattern.DOTALL)) { _, matchResult ->
+        Register.onChatMessageCancelable(Pattern.compile("^§6§lRARE DROP! (.*?)$")) { _, matchResult ->
             RareDrops.onChatDrop(matchResult.group(1))
             true
         }
 
         Register.onChatMessageCancelable(
-            Pattern.compile("^§d§lWOW! (.*?) §6found a §2Mythological Dye.*$", Pattern.DOTALL)
+            Pattern.compile("^§d§lWOW! (.*?) §6found a §2Mythological Dye.*$")
         ) { _, matchResult ->
             val player = matchResult.group(1).removeFormatting().lowercase().trim()
             if (player.contains(Player.getName()?.lowercase()?.trim().orEmpty())) RareDrops.onMythologicalDye()
@@ -137,8 +137,7 @@ object Tracker {
 
         Register.onChatMessageCancelable(
             Pattern.compile(
-                "^§b§lCHARM! §7You charmed the §c§2(.*?) §7and received §a(\\d+) §[0-9a-f](.*?) Shards?§7!$",
-                Pattern.DOTALL
+                "^§b§lCHARM! §7You charmed the §c§2(.*?) §7and received §a(\\d+) §[0-9a-f](.*?) Shards?§7!$"
             )
         ) { _, matchResult ->
             trackShard(matchResult.group(3), matchResult.group(2))
@@ -147,8 +146,7 @@ object Tracker {
 
         Register.onChatMessageCancelable(
             Pattern.compile(
-                "^§e§lLOOT SHARE §fYou received §b(\\d+) §[0-9a-f](.*?) §fShards for assisting §b(.*?)§f!$",
-                Pattern.DOTALL
+                "^§e§lLOOT SHARE §fYou received §b(\\d+) §[0-9a-f](.*?) §fShards for assisting §b(.*?)§f!$"
             )
         ) { _, matchResult ->
             trackShard(matchResult.group(2), matchResult.group(1))

@@ -16,6 +16,7 @@ import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.HypixelModApi.isOnHypixel
+import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.configs.diana.DianaTrackerMayorData
 import net.sbo.mod.utils.data.AchievementStats
@@ -404,9 +405,14 @@ object AchievementManager {
     private val COA_MF_PATTERN_MATCHER: Matcher = Pattern.compile("\\+([0-9]*\\.?[0-9]+) Magic Find ")!!.matcher("")
 
     private fun trackCOA() {
+        if (!World.isInHub() || !Helper.hasSpade) return
+
         val helmet = mc.player?.inventory?.getItem(39) ?: return
+
         val lookup = ItemLookup(helmet)
-        if ("Crown of Avarice" !in lookup.displayName) return
+        val sbId = lookup.sbId
+
+        if (sbId != "CROWN_OF_AVARICE" && sbId != "CROWN_OF_AVARICE_CELEBRATION") return
 
         unlockAchievement(121)
 

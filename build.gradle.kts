@@ -1,6 +1,8 @@
 import net.fabricmc.loom.task.RemapJarTask
 import com.replaymod.gradle.preprocess.PreprocessTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import java.lang.module.ModuleDescriptor.Version
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
@@ -19,6 +21,8 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.SourceSetContainer
+import dev.detekt.gradle.extensions.DetektExtension
+import net.ltgt.gradle.errorprone.errorprone
 
 @CacheableTask
 abstract class ReplaceMinecraftSources : DefaultTask() {
@@ -56,6 +60,8 @@ abstract class ReplaceMinecraftSources : DefaultTask() {
     }
 }
 
+private val kotlinLanguageVersion = "2.5"
+
 plugins {
     java
     kotlin("jvm")
@@ -63,13 +69,21 @@ plugins {
     alias(libs.plugins.loom)
     alias(libs.plugins.ksp)
     id("com.replaymod.preprocess")
+    id("dev.detekt") version "2.0.0-alpha.6" apply false
+    id("net.ltgt.errorprone") version "5.1.1"
 }
 
+// The preprocessCode task takes too long otherwise, as it has to go through kotlin analysis api. With null mappings, it finishes almost instantly. All our MC version targets are unobfuscated (26.1+) anyways.
 afterEvaluate {
     tasks.withType<PreprocessTask>().configureEach {
         sourceMappings = null
         destinationMappings = null
     }
+}
+
+// Preprocessor task that runs without cache otherwise. It declares its inputs and outputs already; no reason not to enable the cache, especially since we already set mappings to null above.
+tasks.matching { it.name == "generateIdentityMappingsFromSourceMinecraftJars" || it.name == "generateIdentityMappingsFromDestinationMinecraftJars" }.configureEach {
+    outputs.cacheIf { true }
 }
 
 private val projectVersion = project.property("mod.version")?.toString() ?: throw AssertionError("missing mod version property")
@@ -92,8 +106,15 @@ loom {
     // Some stuff were made private / package-private in later versions, so we need this.
     accessWidenerPath = file("src/main/resources/sbo.classtweaker")
 
-    runs.configureEach {
+    runConfigs.named("client") {
         generateRunConfig.set(true)
+    }
+
+    runConfigs.named("server") {
+        generateRunConfig.set(false)
+    }
+
+    runs.configureEach {
         preferGradleTask = true
     }
 
@@ -174,21 +195,109 @@ tasks.named<KotlinJvmCompile>("compileKotlin") {
     setSource(replaceKotlinSources.map { it.outputDirectory })
 }
 
+tasks.withType<JavaCompile>().configureEach {
+    // This enables all lints and keeps parameter metadata in methods for reflection compatibility
+    options.compilerArgs.add("-Xlint:all")
+    options.compilerArgs.add("-parameters")
+
+    // Equivalant to passing the -g argument to javac, preserves "debug" information such as local variable names in bytecode. it's not really a debug thing and mostly used in production too.
+    options.isDebug = true
+}
+
 tasks.withType<KotlinJvmCompile>().configureEach {
     compilerOptions {
-        val args = mutableListOf<String>()
-        args.addAll(freeCompilerArgs.get())
+        // Zero means use 1 thread per core. Default value is one which is single threaded and doesn't scale.
+        freeCompilerArgs.add("-Xbackend-threads=0")
 
-        args.addAll(
-            listOf(
-                "-Xbackend-threads=0", // 0 means use 1 thread per core. Default value is 1 which is single threaded and doesn't scale, often bottlenecks compilation
-                "-jvm-default=no-compatibility", // this not a library mod or API, no need to generate additional DefaultImpls classes (which is bigger jar size and more compile time)
-            )
-        )
+        // Data classes normally have a public copy function, even if their constructor is declared private. This addresses it.
+        freeCompilerArgs.add("-Xconsistent-data-class-copy-visibility")
 
-        freeCompilerArgs = args
+        // Improves Java interopability.
+        //freeCompilerArgs.add("-Xjava-direct")
+        //freeCompilerArgs.add("-Xdirect-java-actualization")
+        freeCompilerArgs.add("-Xemit-jvm-type-annotations")
 
-        moduleName.set("sbo-${projectVersion}-${mcVersion}") // default is project name which becomes e.g 1.21.11-fabric or 26.1.2-fabric without the sbo naming; The module name is used when generating the mangled name for internal visibility items and the .kotlin_module file in the META-INF directory.
+        // Skip evaluating assertion conditionals if JVM does not have assertions enabled anyways. This matches the javac behaviour. The default mode "legacy" always evaluates expressions even if assertions were disabled, which is unnecessary, but kept for compatibility.
+        freeCompilerArgs.add("-Xassertions=jvm")
+
+        // Improves compilation speed by using faster JAR file system access.
+        freeCompilerArgs.add("-Xuse-fast-jar-file-system")
+
+        // Strips unused private functions before doing FIR analysis, speeding up the compilation pipeline.
+        // Causes: java.util.NoSuchElementException: Sequence contains no element matching the predicate. internal compiler error, temporarily commented out.
+        //freeCompilerArgs.add("-Xfir-aggressive-pruning")
+
+        // Let JVM throw a regular NullPointerException if anything is null; it says what is null in the message since Java 14 or so, Kotlin's explicit checks are extra overhead with no additional benefit in modern JVMs.
+        freeCompilerArgs.add("-Xno-call-assertions")
+        freeCompilerArgs.add("-Xno-receiver-assertions")
+        freeCompilerArgs.add("-Xno-param-assertions")
+
+        // This not a library mod or API, no need to generate additional DefaultImpls classes (which is bigger jar size and more compile time)
+        jvmDefault = JvmDefaultMode.NO_COMPATIBILITY
+
+        // Set Kotlin versions, this allows using the latest compiler while targeting a lower kotlin version if necessary, and otherwise ensures all versions match if language and api version are same as the compiler version.
+        apiVersion = KotlinVersion.fromVersion(kotlinLanguageVersion)
+        languageVersion = KotlinVersion.fromVersion(kotlinLanguageVersion)
+
+        // These enable some extra built-in lints in kotlin compiler which help catch mistakes
+        progressiveMode = true
+        extraWarnings.set(true)
+
+        // Default is project name which becomes e.g 1.21.11-fabric or 26.1.2-fabric without the sbo naming; The module name is used when generating the mangled name for internal visibility items and the .kotlin_module file in the META-INF directory.
+        moduleName.set("sbo-${projectVersion}-${mcVersion}")
+
+        // Same as JavaCompile, keeps parameter metadata in methods for reflection compatibility
+        javaParameters = true
+    }
+}
+
+val enableErrorprone = providers.gradleProperty("enableErrorprone")
+    .map(String::toBoolean)
+    .getOrElse(false)
+
+tasks.withType<JavaCompile>().configureEach {
+    options.errorprone {
+        enabled = enableErrorprone
+
+        // Mixins usually result in unused methods (injections) and variables (forced parameter list)
+        disable("UnusedMethod")
+        disable("UnusedVariable")
+    }
+}
+
+val enableDetekt = providers.gradleProperty("enableDetekt")
+    .map(String::toBoolean)
+    .getOrElse(false)
+
+if (enableDetekt) {
+    apply(plugin = "dev.detekt")
+
+    extensions.configure<DetektExtension> {
+        parallel = true
+
+        // Detekt rule violations will be reported, but won't fail the build.
+        ignoreFailures = true
+
+        config.setFrom(files("../../detekt.yml"))
+        buildUponDefaultConfig = true
+    }
+
+    tasks.named("compileKotlin") {
+        finalizedBy("detektMain")
+    }
+
+    tasks.named("compileTestKotlin") {
+        finalizedBy("detektTest")
+    }
+}
+
+val disableTests = providers.gradleProperty("disableTests")
+    .map(String::toBoolean)
+    .getOrElse(false)
+
+if (disableTests) {
+    tasks.matching { it.name.contains("Test") || it.name.contains("test") }.configureEach {
+        enabled = false
     }
 }
 
@@ -278,9 +387,11 @@ runDirectory.mkdirs()
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    failFast = true
     testLogging {
         showStackTraces = true
-        //showStandardStreams = true // enable if troubleshooting failures
+        // enable if troubleshooting failures
+        //showStandardStreams = true
         exceptionFormat = TestExceptionFormat.FULL
     }
     javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
@@ -466,6 +577,8 @@ dependencies {
     }
 
     runtimeOnly("me.djtheredstoner:DevAuth-fabric:${property("devauth.version")}")
+
+    errorprone("com.google.errorprone:error_prone_core:${property("errorprone.version")}")
 }
 
 tasks.findByName("preprocessCode")?.apply {

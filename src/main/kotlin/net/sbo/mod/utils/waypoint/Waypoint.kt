@@ -24,6 +24,9 @@ private const val MAX_OPACITY = 1.0f
 private const val FADE_START_DISTANCE = 4.5
 private const val FADE_END_DISTANCE = 100.0
 
+private val EMPTY_COMPONENT = Component.nullToEmpty("")
+private val EMPTY_FORMATTED_CHAR_SEQUENCE = EMPTY_COMPONENT.visualOrderText
+
 internal fun calculateDynamicOpacity(distance: Double): Float = when {
     !distance.isFinite() -> MAX_OPACITY
     Waypoints.lookAlike -> (0.1f + 0.005f * (distance * distance).toFloat()).coerceIn(MIN_OPACITY, MAX_OPACITY)
@@ -62,9 +65,11 @@ class Waypoint(
     private var formatted: Boolean = false
     private var distanceRaw: Double = 0.0
     private var distanceText: String = ""
-    private var component: Component = Component.nullToEmpty(text)
-    private var formattedText: String = text
+    private var component: Component = EMPTY_COMPONENT
+    private var formattedText: String = ""
         set(value) {
+            if (field == value) return
+
             field = value
             hasText = value.isNotEmpty()
 
@@ -89,12 +94,14 @@ class Waypoint(
     var timesDug = 0
     var userInteractedWith = false
     private var dynamicOpacity = 1.0f
+    @JvmField
     var preventInvalidRemoval = false
     var rareMobMissingTicks: Int = 0
     var preventStaleRareMobRemoval = false
 
-    private var visualOrderText = Component.nullToEmpty(text).visualOrderText
+    private var visualOrderText = EMPTY_FORMATTED_CHAR_SEQUENCE
 
+    private var secondaryTextSource: String? = null
     private var secondaryText: Component? = null
     private var secondaryTextWidth = 0
     private var secondaryVisualOrderText: FormattedCharSequence? = null
@@ -134,28 +141,34 @@ class Waypoint(
         } else {
             ""
         }
-
-        clearSecondaryText()
     }
 
     private fun getWaypointDistanceText(): String = if (Waypoints.lookAlike) "" else distanceText
 
-    private fun setSecondaryDistanceText() {
-        if (!Waypoints.lookAlike || distanceText.isEmpty()) return
+    private fun updateSecondaryDistanceText(show: Boolean) {
+        val newText = if (show && Waypoints.lookAlike && distanceText.isNotEmpty()) {
+            distanceText.trim()
+        } else {
+            null
+        }
 
-        val component = Component.nullToEmpty(distanceText.trim())
+        if (newText == secondaryTextSource) return
 
-        secondaryText = component
+        secondaryTextSource = newText
+
+        if (newText == null) {
+            secondaryText = null
+            secondaryTextWidth = 0
+            secondaryVisualOrderText = null
+            return
+        }
+
+        val component = Component.nullToEmpty(newText)
         val visualOrderText = component.visualOrderText
 
-        secondaryTextWidth = mc.font.width(visualOrderText)
+        secondaryText = component
         secondaryVisualOrderText = visualOrderText
-    }
-
-    private fun clearSecondaryText() {
-        secondaryText = null
-        secondaryTextWidth = 0
-        secondaryVisualOrderText = null
+        secondaryTextWidth = mc.font.width(visualOrderText)
     }
 
     private fun setWarpText() {
@@ -280,7 +293,6 @@ class Waypoint(
                 this.line = Waypoints.guessAndBurrowLine && isClosest
 
                 setWarpText()
-                setSecondaryDistanceText()
             }
 
             "rareMob" -> {
@@ -294,14 +306,11 @@ class Waypoint(
                 } else {
                     this.formattedText = "$text${getWaypointDistanceText()}"
                 }
-
-                setSecondaryDistanceText()
             }
 
             "world" -> {
                 this.line = false
                 this.formattedText = "$text${getWaypointDistanceText()}"
-                setSecondaryDistanceText()
             }
 
             "subGuess", "debug" -> {
@@ -312,9 +321,10 @@ class Waypoint(
             else -> {
                 this.line = false
                 this.formattedText = "$text${getWaypointDistanceText()}"
-                setSecondaryDistanceText()
             }
         }
+
+        updateSecondaryDistanceText(this.type != "subGuess" && this.type != "debug")
 
         formatted = true
     }

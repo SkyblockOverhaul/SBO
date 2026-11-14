@@ -3,6 +3,7 @@ package net.sbo.mod.utils
 import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.entity.LivingEntity
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.tracker.Tracker
@@ -76,6 +77,27 @@ object Helper {
             .factory() // virtual threads are daemon by default
     )
 
+    fun LivingEntity.isValidEntityInHub(checkInvisibility: Boolean = true): Boolean {
+        val level = mc.level
+
+        // Intentional reference equality; Entity#level() should return exactly mc.level, and ClientLevel#getEntity(I) should return exactly this entity; otherwise the entity does not belong to the current level.
+        return mc.player != null && level != null && this.level() === mc.level && !this.dead && World.isInHub() && this.isAlive && (!checkInvisibility || !this.isInvisible) && level.getEntity(this.id) === this
+    }
+
+    /**
+     * Essentially .forEach, but without the extra overhead from allocating an Iterator object.
+     *
+     * JIT compiler can usually optimize the iteration, but it does not prevent the Iterator object allocation itself.
+     * If any iterator allocations shows up in an allocation profiler report, switching to this can improve performance.
+     *
+     * Note that if the list is a LinkedList, you should keep using .forEach / for (item in list), as algorithmic complexity grows with indexed access.
+     */
+    inline fun <T> List<T>.fastForEach(action: (T) -> Unit) {
+        for (i in 0..<size) {
+            action(this[i])
+        }
+    }
+
     private fun onLootShare() {
         lastLootShare = System.nanoTime()
     }
@@ -87,7 +109,7 @@ object Helper {
     }
 
     fun init() {
-        Register.onChatMessageCancelable(Pattern.compile("^§e§lLOOT SHARE §fYou received .*? for assisting .*?!?$", Pattern.DOTALL)) { _, _ ->
+        Register.onChatMessageCancelable(Pattern.compile("^§e§lLOOT SHARE §fYou received .*? for assisting .*?!?$")) { _, _ ->
             onLootShare()
             true
         }
@@ -358,7 +380,7 @@ object Helper {
             return "0s"
         }
 
-        val totalSeconds = (milliseconds / 1000).toInt()
+        val totalSeconds = milliseconds / 1000
         val totalMinutes = totalSeconds / 60
         val totalHours = totalMinutes / 60
         val days = totalHours / 24
@@ -369,23 +391,33 @@ object Helper {
         val builder = StringBuilder()
 
         if (days > 0) {
-            builder.append("${days}d ")
+            builder.append(days).append('d')
         }
         if (hours > 0 || days > 0) {
-            builder.append("${hours}h ")
+            if (builder.isNotEmpty()) builder.append(' ')
+            builder.append(hours).append('h')
         }
         if (minutes > 0 || hours > 0 || days > 0) {
-            builder.append("${minutes}m ")
+            if (builder.isNotEmpty()) builder.append(' ')
+            builder.append(minutes).append('m')
         }
         if (builder.isEmpty()) {
             if (decimalSeconds) {
-                builder.append("${"%.1f".format(Locale.ROOT, milliseconds / 1000.0)}s")
+                val tenths = if (milliseconds < 100) {
+                    (milliseconds + 50) / 100
+                } else {
+                    milliseconds / 100
+                }
+                builder.append(tenths / 10)
+                    .append('.')
+                    .append(tenths % 10)
+                    .append('s')
             } else {
-                builder.append("${seconds}s")
+                builder.append(seconds).append('s')
             }
         }
 
-        return builder.toString().trim()
+        return builder.toString()
     }
 
     /**

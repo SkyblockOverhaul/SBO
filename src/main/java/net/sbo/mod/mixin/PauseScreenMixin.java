@@ -33,7 +33,7 @@ final class PauseScreenMixin {
         if (sbo$addedButtons == 0 && !sbo$injected && General.INSTANCE.getAchievementsButton()) {
             sbo$injected = true;
 
-            final Button custom = Button.builder(
+            final var custom = Button.builder(
                     Component.literal("SBO Achievements"),
                     b -> SBOKotlin.mc.schedule(AchievementsGui.INSTANCE::open)
             ).width(204).build();

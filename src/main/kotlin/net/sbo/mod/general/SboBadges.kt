@@ -632,7 +632,7 @@ object SboBadges {
             }
             start = -1
         }
-        return found ?: emptyList()
+        return found.orEmpty()
     }
 
     /** Name of the badge holder or tagged team member a tab entry shows, null for everyone else. */

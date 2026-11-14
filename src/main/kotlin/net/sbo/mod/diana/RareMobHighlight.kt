@@ -1,18 +1,26 @@
 package net.sbo.mod.diana
 
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap
 import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.world.entity.LivingEntity
-import net.minecraft.world.entity.player.Player
+import net.minecraft.client.player.RemotePlayer
+import net.minecraft.world.entity.decoration.Mannequin
 import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.settings.categories.RareMobs
+import net.sbo.mod.utils.Helper.isValidEntityInHub
 import net.sbo.mod.utils.accessors.isSboGlowing
+//#if MC < 26.2
 import net.sbo.mod.utils.accessors.setSboGlowColor
+//#endif
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.entity.EntityLoadEvent
 import net.sbo.mod.utils.events.impl.entity.EntityUnloadEvent
+import net.sbo.mod.diana.DianaMobDetect.toDebugString
+//#if MC < 26.2
 import java.awt.Color
-import java.util.HashMap
+//#endif
 import java.util.concurrent.TimeUnit
 //#if MC > 26.1
 //$$ import net.minecraft.util.ARGB
@@ -34,10 +42,10 @@ object RareMobHighlight {
     private val NAME_CHECK_TIMEOUT_NS = TimeUnit.SECONDS.toNanos(1L)
 
     private val rareMobs = mutableMapOf<LivingEntity, RareMob>()
-    private val pendingMobs = mutableMapOf<LivingEntity, Long>()
+    private val pendingMobs = Object2LongOpenHashMap<LivingEntity>()
 
     fun init() {
-        Register.onTick(4) {
+        Register.onTick(1) {
             val world = mc.level ?: return@onTick
             world.checkMobGlow()
         }
@@ -46,22 +54,36 @@ object RareMobHighlight {
 
         //#if MC > 26.1
         //$$ CustomGlowCallback.EVENT.register { entity, _ ->
-        //$$    if (!RareMobs.HighlightRareMobs) GlowConstants.NO_GLOW
+        //$$    if (!RareMobs.HighlightRareMobs) {
+        //$$        return@register GlowConstants.NO_GLOW
+        //$$    }
+        //$$
+        //$$    val rareMob = rareMobs[entity]
+        //$$    if (rareMob == null) {
+        //$$        return@register GlowConstants.NO_GLOW
+        //$$    }
         //$$
         //$$    // Minecraft already renders all glow as opaque, and non-opaque values are reserved by Render Chest.
-        //$$    rareMobs[entity]?.glowColor?.let(ARGB::opaque) ?: GlowConstants.NO_GLOW
+        //$$    val color = ARGB.opaque(rareMob.glowColor)
+        //$$
+        //$$    return@register color
         //$$ }
         //#endif
     }
 
     @SboEvent
     fun onEntityLoad(event: EntityLoadEvent) {
+        if (!RareMobs.HighlightRareMobs) return
+
         val mob = event.entity
-        if (mob is LivingEntity) {
-            if (!RareMobs.HighlightRareMobs) return
-            if (event.entity is Player && event.entity.uuid.version() == 4) return
+        val isPlayer = mob is RemotePlayer
+
+        if (isPlayer || mob is Mannequin) {
+            if (isPlayer && mob.uuid.version() == 4) return
+            if (!mob.isValidEntityInHub(checkInvisibility = false)) return
 
             val rare = RareMob.fromName(mob.name.string)
+
             if (rare != null) {
                 rareMobs[mob] = rare
             } else {
@@ -72,22 +94,29 @@ object RareMobHighlight {
 
     @SboEvent
     fun onEntityUnload(event: EntityUnloadEvent) {
-        if (event.entity is LivingEntity) {
-            pendingMobs.remove(event.entity)
-            if (rareMobs.remove(event.entity) != null) {
-                event.entity.isSboGlowing = false
+        val mob = event.entity
+
+        if (mob is RemotePlayer || mob is Mannequin) {
+            pendingMobs.removeLong(mob)
+
+            if (rareMobs.remove(mob) != null) {
+                mob.isSboGlowing = false
             }
         }
     }
 
     private fun ClientLevel.checkMobGlow() {
-        val pendingIterator = pendingMobs.entries.iterator()
+        val player = mc.player
+
+        val pendingIterator = pendingMobs.object2LongEntrySet().fastIterator()
         val now = System.nanoTime()
 
         while (pendingIterator.hasNext()) {
-            val (mob, spawnTime) = pendingIterator.next()
+            val entry = pendingIterator.next()
+            val mob = entry.key
+            val spawnTime = entry.longValue
 
-            if (!mob.isAlive || mob.level() != this) {
+            if (!RareMobs.HighlightRareMobs || !mob.isValidEntityInHub(checkInvisibility = false)) {
                 pendingIterator.remove()
                 continue
             }
@@ -101,21 +130,22 @@ object RareMobHighlight {
             }
         }
 
-        val player = mc.player
-
         val iterator = rareMobs.entries.iterator()
         while (iterator.hasNext()) {
-            val (mob, type) = iterator.next()
+            val entry = iterator.next()
+            val mob = entry.key
+            //#if MC < 26.2
+            val type = entry.value
+            //#endif
 
-            if (!mob.isAlive || mob.level() != this) {
+            if (!RareMobs.HighlightRareMobs || player == null || !mob.isValidEntityInHub(checkInvisibility = false)) {
                 mob.isSboGlowing = false
                 iterator.remove()
                 continue
             }
 
             //#if MC < 26.2
-            val hasLineOfSight = player != null && player.hasLineOfSight(mob)
-            if (RareMobs.HighlightRareMobs && hasLineOfSight && !mob.isInvisible) {
+            if (player.hasLineOfSight(mob) && !mob.isInvisible) {
                 mob.isSboGlowing = true
                 mob.setSboGlowColor(Color(type.glowColor))
             } else {

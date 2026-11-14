@@ -4,6 +4,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.utils.Helper.fastForEach
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.guis.GuiMouseClickAfter
@@ -79,21 +80,20 @@ object OverlayManager {
         if (mc.options.hideGui || isTabListShown()) return
         if (!inEditScreen && renderScreen != null) return
 
-        // Without a screen (and while moving them) everything is at its saved position
-        overlays.forEach {
-            it.pushX = 0f
-            it.pushY = 0f
-            it.hideEye()
-        }
-        pushedLayout = null
-
         val scaleFactor = mc.window.guiScale
         val mouseX = mc.mouseHandler.xpos() / scaleFactor
         val mouseY = mc.mouseHandler.ypos() / scaleFactor
 
-        for (overlay in overlays) {
+        overlays.fastForEach { overlay ->
+            // Without a screen (and while moving them) everything is at its saved position
+            overlay.pushX = 0f
+            overlay.pushY = 0f
+            overlay.hideEye()
+
             overlay.render(drawContext, mouseX, mouseY)
         }
+
+        pushedLayout = null
     }
 
     /**

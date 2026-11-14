@@ -64,7 +64,12 @@ object CloudSync {
     private val gson = Gson()
 
     // Collecting and hashing all data is too slow for the client thread; one thread keeps the steps in order
-    private val worker = Executors.newSingleThreadExecutor { Thread(it, "SBO Cloud Sync").apply { isDaemon = true } }
+    private val worker = Executors.newSingleThreadExecutor {
+        Thread(it, "SBO Cloud Sync").apply {
+            isDaemon = true
+            priority = Thread.NORM_PRIORITY - 1 // background sync, little lower priority than normal
+        }
+    }
 
     enum class SyncState { NO_SAVE, NOT_USED_HERE, BOTH_CHANGED, CLOUD_NEWER, PC_CHANGED, SAME, ERROR }
 
@@ -373,9 +378,11 @@ object CloudSync {
         SBOKotlin.logger.info("[CloudSync] game close upload: ${if (finished) "done" else "timed out"}")
     }
 
+    @Suppress("StringShouldBeRawString")
     private fun canonical(files: Map<String, String>): String =
         files.toSortedMap().entries.joinToString("") { (name, content) -> "$name\n${content.length}\n$content\n" }
 
+    @Suppress("StringShouldBeRawString")
     private fun signedBytes(uuid: String, counter: Long, files: Map<String, String>): ByteArray =
         "sbo-cloud-v1\n$uuid\n$SLOT\n$counter\n${canonical(files)}".toByteArray(Charsets.UTF_8)
 

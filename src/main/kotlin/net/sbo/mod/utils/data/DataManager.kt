@@ -65,7 +65,10 @@ object DataManager {
     private const val MAX_BACKUPS = 10
 
     private val DATA_SAVER_EXECUTOR: ExecutorService = Executors.newSingleThreadExecutor { r ->
-        Thread(r, "sbo-data-saver-thread").apply { isDaemon = true }
+        Thread(r, "sbo-data-saver-thread").apply {
+            isDaemon = true
+            priority = Thread.NORM_PRIORITY - 1 // background save, have little less priority than normal
+        }
     }
 
     private val caseSensitive by lazy { isCaseSensitive(FabricLoader.getInstance().configDir.toFile().toPath()) }
@@ -291,17 +294,13 @@ object DataManager {
 
     private fun saveAllDataThreaded(modName: String) {
         DATA_SAVER_EXECUTOR.execute {
-            SBOKotlin.logger.info("[$modName] Saving all data to disk...")
             saveAllData()
-            SBOKotlin.logger.info("[$modName] All data saved successfully.")
         }
     }
 
     private fun saveAndBackupAllDataThreadedBlocking(modName: String) {
         DATA_SAVER_EXECUTOR.submit {
-            SBOKotlin.logger.info("Saving all data to disk and creating backup...")
             saveAllData()
-            SBOKotlin.logger.info("All data saved successfully.")
             // Backups hold the main data only
             if (!alphaActive) createBackup(modName)
         }.get()
