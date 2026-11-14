@@ -378,24 +378,20 @@ object SboBadges {
 
     /**
      * A name inside a message (or [everywhere]: menus, scoreboard) as the customizer's preview of other players shows it:
-     * [name] from char [from] on, [tagRank] the team tag in front (null for none). Built by the same code as in game.
+     * [name] from char [from] on. Built by the same code as in game.
      */
     fun previewMention(
-        badge: SboBadge?, base: Component, name: String, from: Int, tagRank: String?, animate: Boolean,
+        badge: SboBadge, base: Component, name: String, from: Int, animate: Boolean,
         moveChars: Boolean = animate, everywhere: Boolean = false,
     ): Component =
         safe(base) {
-            // Everywhere has no tag, keeps the width and colors the rank in front too, like replaceEverywhere
-            val tag = tagRank?.takeIf { !everywhere }?.let { TagLook(it, badge?.colorOf(BadgePart.TAG), animated = true) }
+            // Everywhere keeps the width and colors the rank in front too, like replaceEverywhere
             recolor(
-                base, name, badge, TeamTagPlace.CHAT, tag,
+                base, name, badge, TeamTagPlace.CHAT,
                 from = from, nameOnly = !everywhere, forceRank = everywhere, keepWidth = everywhere,
                 animate = animate, moveChars = moveChars && !everywhere,
             )
         }
-
-    /** A team rank with a tag, for the customizer's sample team member; null before the list loaded. */
-    fun sampleTeamRank(): String? = ranks.entries.firstOrNull { it.value.tag != null }?.key
 
     /** Whether the badge has a line above the head: the logo, the stat or both. */
     fun hasHeadLine(badge: SboBadge): Boolean =

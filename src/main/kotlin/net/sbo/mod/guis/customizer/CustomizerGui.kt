@@ -202,9 +202,9 @@ private fun NodeBuilder.failed(state: Load.Failed) {
         return
     }
     div(className = "cz-steps") {
-        div(className = "cz-steps-title") { +"For supporters (Patreon or Ko-fi), contributors, maintainers and moderators." }
+        div(className = "cz-steps-title") { +"For SBO supporters (Patreon or Ko-fi)." }
         div(className = "cz-step") { +"1. Link your Minecraft account: /link followed by your Minecraft name on the SBO Discord." }
-        div(className = "cz-step") { +"2. Use the Discord account with the supporter or team role." }
+        div(className = "cz-step") { +"2. Use the Discord account with the supporter role." }
         div(className = "cz-step") { +"3. Open this again with /${SboBadges.COMMAND}. New roles can take a few minutes." }
     }
 }

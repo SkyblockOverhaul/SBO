@@ -191,7 +191,7 @@ internal fun NodeBuilder.partPanel(badge: OwnBadgeResponse, settings: BadgeSetti
 }
 
 private val SHOWS_HINTS = mapOf(
-    BadgePart.TAG to "Your team tag in front of your name.",
+    BadgePart.TAG to "Your tag in front of your name.",
     BadgePart.LEVEL to "Your SkyBlock level in your colors.",
     BadgePart.RANK to "Your Hypixel rank, like [MVP+], in your colors where Hypixel shows it.",
     BadgePart.NAME to "Your name in your colors, with its symbols and style.",
@@ -201,7 +201,7 @@ private val COLOR_HINTS = mapOf(
     BadgePart.STAT to "The stat above your head.",
     BadgePart.NAME to "Your name where it is colored.",
     BadgePart.LEVEL to "Your SkyBlock level in front of your name.",
-    BadgePart.TAG to "Your team tag; others see the rank colors while your badge is hidden.",
+    BadgePart.TAG to "Your tag; others see the rank colors while your badge is hidden.",
     BadgePart.RANK to "Your Hypixel rank, like [MVP+].",
 )
 

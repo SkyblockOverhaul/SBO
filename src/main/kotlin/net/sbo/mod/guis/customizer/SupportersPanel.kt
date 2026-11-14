@@ -54,7 +54,7 @@ internal val Supporters = component<SupportersProps>("CustomizerSupporters") { (
         }
     }
     if (namesInChat != SboBadges.NAMES_OFF) {
-        row("Team tags on them", "Show the team tag, like [SBO Dev], in front of those names.") {
+        row("Tags on them", "Show their tag in front of those names.") {
             switch(checked = namesTag, onChange = { namesTag = it.checked; data.badgeNamesTag = it.checked; saved() })
         }
         row("Outside of chat", "Also color those names in menus, the scoreboard, titles and signs.") {
@@ -85,7 +85,7 @@ internal val Supporters = component<SupportersProps>("CustomizerSupporters") { (
     row("Player sizes", "The model size they picked.") {
         switch(checked = sizes, onChange = { sizes = it.checked; data.badgeSizesOfOthers = it.checked; saved() })
     }
-    section("Text above heads", "For every supporter and the team, yours too.")
+    section("Text above heads", "For every supporter, yours too.")
     row("Logo line", "The SBO logo and stat line on top.") {
         textSizeSlider(textSizes.tag) { onTextSizes(textSizes.copy(tag = it)); data.badgeLineSize = it; saved() }
     }

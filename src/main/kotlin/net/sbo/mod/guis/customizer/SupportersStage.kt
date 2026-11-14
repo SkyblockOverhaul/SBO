@@ -22,7 +22,6 @@ import kotlin.math.roundToInt
 internal data class SupportersStageProps(val textSizes: TextSizes, val changes: Int)
 
 private const val SAMPLE_NAME = "SkyblockOverhaul"
-private const val SAMPLE_TEAM_NAME = "SboDev"
 private const val SAMPLE_SIZE = 1.25f
 
 // Moving colors, letters, symbols, bold and a size, so every setting on Supporters changes something
@@ -67,23 +66,18 @@ internal val SupportersStage = component<SupportersStageProps>("CustomizerSuppor
         base("§f: Hello!")
     }
 
-    // Names inside a message, one line each so they fit: the supporter only for "Everyone", the team member with its tag while that is on
+    // Names inside a message get the supporter's look only for "Everyone"
     val namesMode = data.badgeNamesInChat
     fun message(text: String) = legacyText("§2Guild > §7Steve§f: $text")
     val messageStart = "Guild > Steve: ".length
     val mention = if (namesMode == SboBadges.NAMES_ALL && data.badgesInChat) {
-        SboBadges.previewMention(badge, message("gg $SAMPLE_NAME"), SAMPLE_NAME, messageStart, null, animate = chatMoves, moveChars = chatAllowed)
+        SboBadges.previewMention(badge, message("gg $SAMPLE_NAME"), SAMPLE_NAME, messageStart, animate = chatMoves, moveChars = chatAllowed)
     } else {
         message("gg $SAMPLE_NAME")
     }
-    val teamRank = SboBadges.sampleTeamRank()
-    val teamMention = teamRank?.let { rank ->
-        val line = message("ty $SAMPLE_TEAM_NAME")
-        if (data.badgeNamesTag) SboBadges.previewMention(null, line, SAMPLE_TEAM_NAME, messageStart, rank, animate = false) else line
-    }
     val elsewhereText = "§eParty Leader: $SAMPLE_RANK§b$SAMPLE_NAME"
     val elsewhere = if (data.badgeReplaceEverywhere && namesMode == SboBadges.NAMES_ALL && data.badgesInChat) {
-        SboBadges.previewMention(badge, legacyText(elsewhereText), SAMPLE_NAME, 0, null, animate = colors, everywhere = true)
+        SboBadges.previewMention(badge, legacyText(elsewhereText), SAMPLE_NAME, 0, animate = colors, everywhere = true)
     } else {
         legacyText(elsewhereText)
     }
@@ -109,10 +103,7 @@ internal val SupportersStage = component<SupportersStageProps>("CustomizerSuppor
         div(className = "cz-lines") {
             div(className = "cz-line cz-line-tab") { game(tab) }
             div(className = "cz-line cz-line-chat") { game(chat) }
-            if (namesMode != SboBadges.NAMES_OFF) {
-                div(className = "cz-line cz-line-chat") { game(mention) }
-                teamMention?.let { line -> div(className = "cz-line cz-line-chat") { game(line) } }
-            }
+            if (namesMode != SboBadges.NAMES_OFF) div(className = "cz-line cz-line-chat") { game(mention) }
             if (namesMode != SboBadges.NAMES_OFF && data.badgeReplaceEverywhere) div(className = "cz-line") { game(elsewhere) }
         }
         div(className = "cz-hint cz-status") { +"A sample supporter as you see other players." }
