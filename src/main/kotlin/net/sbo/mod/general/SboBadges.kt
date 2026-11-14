@@ -13,7 +13,7 @@ import net.minecraft.resources.Identifier
 import net.minecraft.util.FormattedCharSequence
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.guis.CustomizerGui
+import net.sbo.mod.guis.customizer.CustomizerGui
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.data.BadgeColors
 import net.sbo.mod.utils.data.BadgeEffect
@@ -188,7 +188,7 @@ object SboBadges {
         tabTags = byName(TeamTagPlace.TAB)
         chatTags = byName(TeamTagPlace.CHAT)
         fun movingAt(place: String, tagsAt: Map<String, TagLook>) = holders.filter { (uuid, badge) ->
-            animates(uuid) && listOf(BadgePart.NAME, BadgePart.LEVEL, BadgePart.RANK).any { badge.shows(it, place) && movesAt(badge.colorOf(it), it, place) }
+            listOf(BadgePart.NAME, BadgePart.LEVEL, BadgePart.RANK).any { badge.shows(it, place) && changesAt(badge.colorOf(it), it, place, animates(uuid)) }
         }.mapTo(HashSet()) { it.value.name.lowercase() } +
             tagsAt.filterValues { tag -> tag.animated && tag.color?.let { movesAt(it, BadgePart.TAG, place) } == true }.keys
         movingAtHead = movingAt(TeamTagPlace.HEAD, byName(TeamTagPlace.HEAD))
@@ -200,7 +200,7 @@ object SboBadges {
                 (it == BadgePart.RANK || badge.shows(it, TeamTagPlace.CHAT)) && movesAt(badge.colorOf(it), it, TeamTagPlace.CHAT)
             }
         }.mapTo(HashSet()) { it.value.name.lowercase() }
-        fixedLines = holders.filter { (uuid, badge) -> !moves(badge.colorOf(BadgePart.STAT), BadgePart.STAT) || !animates(uuid) }
+        fixedLines = holders.filter { (uuid, badge) -> !changesAt(badge.colorOf(BadgePart.STAT), BadgePart.STAT, TeamTagPlace.HEAD, animates(uuid)) }
             .mapValues { line(it.value, animate = false) }
         byUuid = holders
         byName = badges.associateBy { it.name.lowercase() }
@@ -228,6 +228,9 @@ object SboBadges {
         fun PartColor?.still() = this?.copy(motion = null)
         return copy(colors = BadgeColors(parts.stat.still(), parts.name.still(), parts.level.still(), parts.tag.still(), parts.rank.still()))
     }
+
+    /** [badge] with its chars standing still, for the customizer's sample supporter while Moving letters is off. */
+    fun withoutMotion(badge: SboBadge): SboBadge = badge.still()
 
     /** A team tag: the rank gives its text, the member's badge its colors (the rank's while their badge is off). */
     private class TagLook(val rank: String, val color: PartColor?, val animated: Boolean)
@@ -311,7 +314,7 @@ object SboBadges {
 
     private fun nameTagLineOf(uuid: UUID): Component? {
         val badge = byUuid[uuid]?.takeIf(::hasHeadLine) ?: return null
-        return fixedLines[uuid] ?: line(badge, animate = true)
+        return fixedLines[uuid] ?: line(badge, animate = animates(uuid), moveChars = true)
     }
 
     fun colorNameTag(uuid: UUID, nameTag: Component): Component = safe(nameTag) { colorNameTagOf(uuid, nameTag) }
@@ -358,24 +361,44 @@ object SboBadges {
      * A line as [badge] makes it at [place], for the customizer's preview: [base] is the line as Hypixel sends it,
      * [tagRank] the team rank whose tag shows there (null for none). Built by the same code as in game.
      */
-    fun previewLine(badge: SboBadge, base: Component, place: String, tagRank: String?, animate: Boolean): Component = safe(base) {
+    fun previewLine(
+        badge: SboBadge, base: Component, place: String, tagRank: String?, animate: Boolean,
+        moveChars: Boolean = animate && place != TeamTagPlace.TAB,
+    ): Component = safe(base) {
         val tag = tagRank?.let { TagLook(it, badge.colorOf(BadgePart.TAG), animated = true) }
         val logoAfterName = place == TeamTagPlace.CHAT && badge.shows(BadgePart.LOGO, place)
         val line = recolor(
             base, badge.name, badge, place, tag,
             afterName = if (logoAfterName) Component.literal(" ").append(logo()) else null,
             animate = animate,
-            moveChars = animate && place != TeamTagPlace.TAB,
+            moveChars = moveChars,
         )
         if (place == TeamTagPlace.TAB && badge.shows(BadgePart.LOGO, place)) line.copy().append(" ").append(logo()) else line
     }
+
+    /**
+     * A name inside a message (or [everywhere]: menus, scoreboard) as the customizer's preview of other players shows it:
+     * [name] from char [from] on. Built by the same code as in game.
+     */
+    fun previewMention(
+        badge: SboBadge, base: Component, name: String, from: Int, animate: Boolean,
+        moveChars: Boolean = animate, everywhere: Boolean = false,
+    ): Component =
+        safe(base) {
+            // Everywhere keeps the width and colors the rank in front too, like replaceEverywhere
+            recolor(
+                base, name, badge, TeamTagPlace.CHAT,
+                from = from, nameOnly = !everywhere, forceRank = everywhere, keepWidth = everywhere,
+                animate = animate, moveChars = moveChars && !everywhere,
+            )
+        }
 
     /** Whether the badge has a line above the head: the logo, the stat or both. */
     fun hasHeadLine(badge: SboBadge): Boolean =
         badge.shows(BadgePart.LOGO, TeamTagPlace.HEAD) || badge.shows(BadgePart.STAT, TeamTagPlace.HEAD) && badge.label != null && badge.value != null
 
     /** The line above the head: logo and stat where the badge shows them. */
-    fun line(badge: SboBadge, animate: Boolean): MutableComponent {
+    fun line(badge: SboBadge, animate: Boolean, moveChars: Boolean = animate): MutableComponent {
         // The logo is a child, the text after it would take over its font
         val line = Component.empty()
         val withLogo = badge.shows(BadgePart.LOGO, TeamTagPlace.HEAD)
@@ -383,7 +406,7 @@ object SboBadges {
         if (badge.shows(BadgePart.STAT, TeamTagPlace.HEAD) && badge.label != null && badge.value != null) {
             if (withLogo) line.append(" ")
             val (before, after) = symbolsOf(badge, BadgePart.STAT)
-            line.append(colored("$before${badge.label}: ${badge.value}$after", badge.colorOf(BadgePart.STAT), BadgePart.STAT, animate, stylesShown(badge)))
+            line.append(colored("$before${badge.label}: ${badge.value}$after", badge.colorOf(BadgePart.STAT), BadgePart.STAT, animate, stylesShown(badge), moveChars))
         }
         return line
     }
@@ -458,15 +481,19 @@ object SboBadges {
         val badge = byName[lower] ?: return false
         val uuid = uuidOf(badge.uuid) ?: return false
         val allowed = when (DataManager.sboData.badgeAnimationsInChat) {
-            NAMES_ALL -> animates(uuid)
+            NAMES_ALL -> true
             NAMES_OWN -> uuid == uuidOf(Player.accountUuid())
             else -> false
         }
         if (!allowed) return false
         val parts = listOf(BadgePart.NAME, BadgePart.LEVEL, BadgePart.RANK).filter { badge.shows(it, TeamTagPlace.CHAT) } +
             listOfNotNull(BadgePart.TAG.takeIf { lower in chatTags })
-        return parts.any { moves(badge.colorOf(it), it) }
+        // Chars move in chat too, so HEAD: colors only while the viewer allows them, chars always (Motion off already took them out)
+        return parts.any { changesAt(badge.colorOf(it), it, TeamTagPlace.HEAD, animates(uuid)) }
     }
+
+    /** Whether the colors of [name]'s badge move for the viewer; their chars can move without them. */
+    private fun colorsMove(name: String): Boolean = byName[name.lowercase()]?.let { uuidOf(it.uuid) }?.let(::animates) ?: true
 
     private class AnimatedMessage(val original: Component) {
         var frame = -1L
@@ -547,7 +574,7 @@ object SboBadges {
             afterName = badge?.takeIf { !nameOnly && it.shows(BadgePart.LOGO, TeamTagPlace.CHAT) }?.let { Component.literal(" ").append(logo()) },
             from = from,
             nameOnly = nameOnly,
-            animate = moving,
+            animate = moving && colorsMove(name),
             moveChars = moving,
         )
     }
@@ -665,7 +692,9 @@ object SboBadges {
         val lower = player.lowercase()
         // Moving colors change every frame, so those lines skip the cache
         if (lower in (if (place == TeamTagPlace.TAB) movingInTab else movingAtHead)) {
-            return recolor(line, player, byName[lower], place, tag, animate = true)
+            // Moving chars with colors turned off: the chars move, the colors stand still
+            val badge = byName[lower]
+            return recolor(line, player, badge, place, tag, animate = colorsMove(player), moveChars = place == TeamTagPlace.HEAD)
         }
         val key = Triple(line, lower, place)
         synchronized(recolorCache) { recolorCache[key]?.let { return it } }
@@ -735,7 +764,7 @@ object SboBadges {
         // Names recolored everywhere keep their width: no symbols, no bold
         keepWidth: Boolean = false,
         // Chars move above heads, and in chat while chat animations are on
-        moveChars: Boolean = place == TeamTagPlace.HEAD,
+        moveChars: Boolean = animate && place == TeamTagPlace.HEAD,
     ): Component {
         val read = ArrayList<StyledChar>()
         val readPlainBuilder = StringBuilder()
@@ -862,7 +891,7 @@ object SboBadges {
             val k = segmentIndex.takeIf { it < segments.size && i in segments[it].range } ?: -1
             val painted = if (k < 0) baseStyle else baseStyle.withColor(colorOf(k, i, char))
             val colored = if (k >= 0 && styles) segments[k].color.styled(painted, keepWidth) else painted
-            val style = if (k < 0 || !moveChars) colored else paints[k].moved(colored, i, char, animate, now)
+            val style = if (k < 0 || !moveChars) colored else paints[k].moved(colored, i, char, true, now)
             if (style != runStyle) {
                 flush()
                 runStyle = style
@@ -893,16 +922,17 @@ object SboBadges {
 
     fun logo(): MutableComponent = Component.literal(LOGO).withStyle(LOGO_STYLE)
 
-    private fun colored(text: String, color: PartColor, part: String, animate: Boolean, styled: Boolean = false): MutableComponent {
+    // animate moves the colors, moveChars the chars: the viewer can turn off one without the other
+    private fun colored(text: String, color: PartColor, part: String, animate: Boolean, styled: Boolean = false, moveChars: Boolean = animate): MutableComponent {
         fun look(style: Style) = if (styled) color.styled(style) else style
-        if (color.to == null && color.effectOf(part) == BadgeEffect.STATIC && (!animate || color.motion.isStill())) {
+        if (color.to == null && color.effectOf(part) == BadgeEffect.STATIC && (!moveChars || color.motion.isStill())) {
             return Component.literal(text).withStyle { look(it.withColor(parseHex(color.color))) }
         }
         val now = System.currentTimeMillis()
         val out = Component.empty()
         text.forEachIndexed { i, char ->
             out.append(Component.literal(char.toString()).withStyle {
-                moved(look(it.withColor(colorAt(color, part, i, text.length, animate, now))), color.motion, i, text.length, char, animate, now)
+                moved(look(it.withColor(colorAt(color, part, i, text.length, animate, now))), color.motion, i, text.length, char, moveChars, now)
             })
         }
         return out
@@ -948,6 +978,10 @@ object SboBadges {
     /** Whether the part changes over time at [place]; chars only move above heads, the tab list and chat only change colors. */
     private fun movesAt(color: PartColor, part: String, place: String): Boolean =
         if (place == TeamTagPlace.HEAD) moves(color, part) else colorMoves(color, part)
+
+    /** Whether the part changes over time at [place] for the viewer: its colors only while [colors] allows them, its chars always. */
+    private fun changesAt(color: PartColor, part: String, place: String, colors: Boolean): Boolean =
+        colors && colorMoves(color, part) || place == TeamTagPlace.HEAD && !color.motion.isStill()
 
     private fun colorMoves(color: PartColor, part: String): Boolean = when (color.effectOf(part)) {
         BadgeEffect.WAVE -> color.to != null

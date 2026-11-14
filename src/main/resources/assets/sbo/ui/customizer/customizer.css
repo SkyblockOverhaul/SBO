@@ -176,6 +176,7 @@ body { display: flex; align-items: center; justify-content: center; }
 .cz-muted { color: var(--muted); }
 .cz-hint { color: var(--muted); font-size: 7px; }
 .cz-note { margin: 0 4px 3px 4px; }
+.cz-section-hint { margin: 0 4px 2px 4px; }
 .cz-heading { margin: 5px 4px 1px 4px; color: var(--title); font-weight: bold; font-size: 7px; }
 .cz-footer { display: flex; justify-content: flex-end; padding: 4px 4px 0 4px; }
 .cz-error { margin: 4px; color: var(--bad); }

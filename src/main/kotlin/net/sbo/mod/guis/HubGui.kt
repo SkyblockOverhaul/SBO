@@ -27,6 +27,7 @@ import net.sbo.mod.config.ConfigGui
 import net.sbo.mod.general.SboBadges
 import net.sbo.mod.utils.data.cloud.CloudSync
 import net.sbo.mod.general.HelpCommand
+import net.sbo.mod.guis.customizer.CustomizerGui
 import net.sbo.mod.guis.look.SboLook
 import net.sbo.mod.guis.look.useFitScale
 import net.sbo.mod.guis.look.useSboScale
