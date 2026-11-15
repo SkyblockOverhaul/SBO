@@ -25,7 +25,7 @@ internal object StatItems {
     private val defs: Map<String, StatItem> by lazy {
         runCatching {
             val text = StatItems::class.java.getResourceAsStream("/assets/sbo/ui/stats/items.json")!!.use { it.readBytes().decodeToString() }
-            PartyFinderApi.json.decodeFromString(MapSerializer(String.serializer(), StatItem.serializer()), text)
+            PartyFinderApi.json.decodeFromString<Map<String, StatItem>>(text)
         }.getOrDefault(emptyMap())
     }
 
