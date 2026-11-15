@@ -395,7 +395,15 @@ repositories {
         }
     }
 
-    maven("https://jitpack.io")
+    exclusiveContent {
+        forRepository {
+            maven("https://jitpack.io")
+        }
+
+        filter {
+            includeGroup("com.github.replaymod")
+        }
+    }
 }
 
 val jarName = project.property("mod.name").toString() + "-" + project.property("mod.version").toString() + "+" + mcProject
