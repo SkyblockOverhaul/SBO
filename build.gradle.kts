@@ -151,9 +151,6 @@ private val versionedReplacements = buildList {
             "com.mojang.blaze3d.pipeline.RenderPipeline" to "com.mojang.renderpearl.api.pipeline.RenderPipeline",
             "com.mojang.blaze3d.pipeline.DepthStencilState" to "com.mojang.renderpearl.api.pipeline.DepthStencilState",
             "com.mojang.blaze3d.platform.CompareOp" to "com.mojang.renderpearl.api.pipeline.CompareOp",
-            "Util.getPlatform().openUri(url)" to "com.mojang.blaze3d.Blaze3D.openUri(java.net.URI(url))",
-            "Util.getPlatform().openPath(" to "com.mojang.blaze3d.Blaze3D.openPath(",
-            "Util.getPlatform().openFile(folder)" to "com.mojang.blaze3d.Blaze3D.openPath(folder.toPath())",
             // The legacy packet constructor copies particle speed to all three axes in 26.3.
             ".maxSpeed" to ".xMaxSpeed()",
             "InputConstants.Type.KEYSYM" to "InputConstants.Type.KEYBOARD",

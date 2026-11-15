@@ -6,7 +6,12 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.toasts.SystemToast
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
+//#if MC > 26.2
+//$$ import com.mojang.blaze3d.Blaze3D
+//$$ import java.net.URI
+//#else
 import net.minecraft.util.Util
+//#endif
 import net.sbo.mod.compat.IrisCompatibility
 import net.sbo.mod.diana.DianaMobDetect
 import net.sbo.mod.diana.tracker.MayorReset
@@ -58,7 +63,25 @@ import net.sbo.mod.utils.overlay.OverlayManager
 import net.sbo.mod.utils.version.UpdateChecker
 import net.sbo.mod.utils.waypoint.WaypointManager
 import org.slf4j.LoggerFactory
+import java.io.File
+import java.nio.file.Path
 import java.util.regex.Pattern
+
+fun openFolder(folder: File) {
+    //#if MC > 26.2
+    //$$ Blaze3D.openPath(folder.toPath())
+    //#else
+    Util.getPlatform().openFile(folder)
+    //#endif
+}
+
+fun openPath(path: Path) {
+    //#if MC > 26.2
+    //$$ Blaze3D.openPath(path)
+    //#else
+    Util.getPlatform().openPath(path)
+    //#endif
+}
 
 object SBOKotlin : ClientModInitializer {
 	@JvmField
@@ -89,7 +112,11 @@ object SBOKotlin : ClientModInitializer {
     }
 
     fun openInBrowser(url: String) {
+        //#if MC > 26.2
+        //$$ Blaze3D.openUri(URI(url))
+        //#else
         Util.getPlatform().openUri(url)
+        //#endif
     }
 
 	override fun onInitializeClient() {

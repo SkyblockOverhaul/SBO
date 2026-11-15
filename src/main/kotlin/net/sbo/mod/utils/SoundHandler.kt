@@ -4,7 +4,7 @@ import javazoom.jl.player.JavaSoundAudioDevice
 import com.google.gson.JsonParser
 import javazoom.jl.player.Player
 import net.fabricmc.loader.api.FabricLoader
-import net.minecraft.util.Util
+import net.sbo.mod.openPath
 import net.sbo.mod.SBOKotlin.MOD_ID
 import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.utils.data.DataManager
@@ -105,7 +105,7 @@ object SoundHandler {
 
     fun openSoundFolder() {
         val directory = File(SOUND_DIR_PATH).apply { mkdirs() }
-        runCatching { Util.getPlatform().openPath(directory.toPath()) }.onFailure { logger.error("[$MOD_ID] Failed to open the sound folder", it) }
+        runCatching { openPath(directory.toPath()) }.onFailure { logger.error("[$MOD_ID] Failed to open the sound folder", it) }
     }
 
     /**
