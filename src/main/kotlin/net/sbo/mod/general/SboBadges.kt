@@ -866,10 +866,10 @@ object SboBadges {
             // By the char, symbols can stand outside the brackets
             val tagBracket = segment.part == BadgePart.TAG && color.chain != true && (char == '[' || char == ']')
             return when {
-                char == '[' && color.open != null -> parseHex(color.open)
-                char == ']' && color.close != null -> parseHex(color.close)
+                char == '[' && color.open != null -> paints[k].at(i, color.open, animate, now)
+                char == ']' && color.close != null -> paints[k].at(i, color.close, animate, now)
                 tagBracket -> TAG_BRACKETS
-                char == '+' && color.plus != null -> parseHex(color.plus)
+                char == '+' && color.plus != null -> paints[k].at(i, color.plus, animate, now)
                 else -> paints[k].at(i, animate, now)
             }
         }
@@ -946,6 +946,18 @@ object SboBadges {
         private val length get() = range.last - range.first + 1
         fun at(i: Int, animate: Boolean, now: Long): Int =
             colorAt(color, part, i - colorRange.first, colorRange.last - colorRange.first + 1, animate, now)
+
+        /**
+         * A bracket or plus with its own color [hex] moves along with the part instead of standing still. A wave is
+         * the gradient itself moving, so there it takes the wave's color at its place to stay in step with the chars
+         * next to it; the other effects run from [hex].
+         */
+        fun at(i: Int, hex: String, animate: Boolean, now: Long): Int {
+            if (!animate || !colorMoves(color, part)) return parseHex(hex)
+            if (color.effectOf(part) == BadgeEffect.WAVE) return at(i, animate, now)
+            val own = color.copy(color = hex)
+            return colorAt(own, part, i - colorRange.first, colorRange.last - colorRange.first + 1, animate, now)
+        }
         fun moved(style: Style, i: Int, char: Char, animate: Boolean, now: Long): Style =
             moved(style, motion, i - range.first, length, char, animate, now)
         fun dropAt(i: Int, now: Long): Int = dropAt(motion, i - range.first, length, now)

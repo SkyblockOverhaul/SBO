@@ -77,6 +77,9 @@ object DataManager {
     private val dirtyConfigs = ConcurrentHashMap.newKeySet<String>()
     private val dirtySaveQueued = AtomicBoolean(false)
 
+    // What write() last put in each file, so saves of unchanged data don't touch the disk
+    private val lastWritten = ConcurrentHashMap<String, String>()
+
     // Gameplay data that gets its own copy on the Alpha Network (see AlphaData), in the "alpha" sub folder.
     // Overlay positions, party finder and sound settings stay shared.
     private val ALPHA_FILES = setOf(
@@ -170,7 +173,13 @@ object DataManager {
         val modConfigDir = File(FabricLoader.getInstance().configDir.toFile(), modName)
         val dataFile = File(modConfigDir, fileName)
         dataFile.parentFile.mkdirs()
-        writeJsonAtomically(dataFile, if (data is DianaTracker) sealedTree(data, fileName) else data as Any)
+        // Compared without the seal, its random IV would make every save of a tracker look changed
+        val tree = gson.toJsonTree(data as Any)
+        val content = tree.toString()
+        if (lastWritten[dataFile.path] == content && dataFile.exists()) return
+        if (writeJsonAtomically(dataFile, if (data is DianaTracker) TrackerSeal.sealed(tree.asJsonObject, fileName) else tree)) {
+            lastWritten[dataFile.path] = content
+        }
     }
 
     // The seal is made from the same tree that gets written, the timers change the tracker while it saves
@@ -516,7 +525,10 @@ object DataManager {
      * data loss if crash or power loss during the move.
      * Includes retry logic to handle transient Windows lock errors (AV, indexing, etc.)
      */
-    private fun writeJsonAtomically(file: File, data: Any) {
+    /** @return false when the file could not be written at all */
+    private fun writeJsonAtomically(file: File, data: Any): Boolean {
+        // write() records its content after this returns, any other write leaves the file unknown
+        lastWritten.remove(file.path)
         val parentDirectory = file.parentFile
 
         parentDirectory.listFiles { candidate ->
@@ -549,7 +561,7 @@ object DataManager {
                         StandardCopyOption.REPLACE_EXISTING
                     )
                 }
-                return
+                return true
             } catch (_: IOException) {
                 // AccessDeniedException, FileSystemException etc. land here (Windows AV/indexing lock)
                 if (attempt < maxAttempts) {
@@ -570,8 +582,10 @@ object DataManager {
                 gson.toJson(data, writer)
             }
             SBOKotlin.logger.info("[sbo] Direct write succeeded for ${file.name}")
+            return true
         } catch (e: IOException) {
             SBOKotlin.logger.error("[sbo] Direct write also failed for ${file.name}", e)
+            return false
         } finally {
             // Clean up temp file regardless of direct write outcome
             try {
