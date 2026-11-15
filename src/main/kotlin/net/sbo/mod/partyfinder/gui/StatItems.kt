@@ -1,8 +1,6 @@
 package net.sbo.mod.partyfinder.gui
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.MapSerializer
-import kotlinx.serialization.builtins.serializer
 import net.minecraft.world.item.ItemStack
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.guilib.core.dsl.item

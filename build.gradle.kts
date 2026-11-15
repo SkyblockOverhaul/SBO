@@ -318,9 +318,8 @@ if (enableDetekt) {
         config.setFrom(files("../../detekt.yml"))
         buildUponDefaultConfig = true
 
-        // Temporary to see compiler errors during analysis.
-        // FIXME: Remove after figuring out.
-        debug = true
+        // Temporarily enable to see compiler errors during analysis if needed.
+        //debug = true
     }
 
     tasks.named("compileKotlin") {
