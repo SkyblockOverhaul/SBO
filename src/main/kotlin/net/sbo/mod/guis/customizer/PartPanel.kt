@@ -166,6 +166,15 @@ internal fun NodeBuilder.partPanel(badge: OwnBadgeResponse, settings: BadgeSetti
     if (part in BadgePart.BRACKETS) {
         row("Brackets", "The [ and ] around it.") {
             div(className = "cz-inline") {
+                // Without their own colors the brackets flow with the part's gradient and effect again
+                if (color.open != null || color.close != null) {
+                    button(
+                        title = if (part == BadgePart.TAG) "Gray brackets again, or the tag's colors while it flows with the parts next to it"
+                        else "The brackets take the part's colors and effect again",
+                        onClick = { onChange(settings.withColor(part, color.copy(open = null, close = null))) },
+                        key = "reset-brackets-$part",
+                    ) { +"Reset" }
+                }
                 span(className = "cz-muted") { +"[" }
                 colorInput(value = argb(bracketOf(part, color, close = false)), onChange = { c -> onChange(settings.withColor(part, color.copy(open = hex(c)))) }, key = "open-$part")
                 span(className = "cz-muted") { +"]" }
@@ -175,7 +184,16 @@ internal fun NodeBuilder.partPanel(badge: OwnBadgeResponse, settings: BadgeSetti
     }
     if (part == BadgePart.RANK) {
         row("Plus", "The + of VIP+, MVP+ and MVP++.") {
-            colorInput(value = argb(color.plus ?: color.to ?: color.color), onChange = { c -> onChange(settings.withColor(part, color.copy(plus = hex(c)))) }, key = "plus")
+            div(className = "cz-inline") {
+                if (color.plus != null) {
+                    button(
+                        title = "The plus takes the rank's colors and effect again",
+                        onClick = { onChange(settings.withColor(part, color.copy(plus = null))) },
+                        key = "reset-plus",
+                    ) { +"Reset" }
+                }
+                colorInput(value = argb(color.plus ?: color.to ?: color.color), onChange = { c -> onChange(settings.withColor(part, color.copy(plus = hex(c)))) }, key = "plus")
+            }
         }
     }
     div(className = "cz-footer") {
