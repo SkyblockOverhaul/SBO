@@ -948,13 +948,14 @@ object SboBadges {
             colorAt(color, part, i - colorRange.first, colorRange.last - colorRange.first + 1, animate, now)
 
         /**
-         * A bracket or plus with its own color [hex] runs the part's effect from that color, so it moves along with
-         * the part instead of standing still. A gradient's other end is the one that differs from [hex].
+         * A bracket or plus with its own color [hex] moves along with the part instead of standing still. A wave is
+         * the gradient itself moving, so there it takes the wave's color at its place to stay in step with the chars
+         * next to it; the other effects run from [hex].
          */
         fun at(i: Int, hex: String, animate: Boolean, now: Long): Int {
             if (!animate || !colorMoves(color, part)) return parseHex(hex)
-            val other = color.to?.let { if (it.equals(hex, ignoreCase = true)) color.color else it }
-            val own = color.copy(color = hex, to = other)
+            if (color.effectOf(part) == BadgeEffect.WAVE) return at(i, animate, now)
+            val own = color.copy(color = hex)
             return colorAt(own, part, i - colorRange.first, colorRange.last - colorRange.first + 1, animate, now)
         }
         fun moved(style: Style, i: Int, char: Char, animate: Boolean, now: Long): Style =
