@@ -403,11 +403,7 @@ object Helper {
         }
         if (builder.isEmpty()) {
             if (decimalSeconds) {
-                val tenths = if (milliseconds < 100) {
-                    (milliseconds + 50) / 100
-                } else {
-                    milliseconds / 100
-                }
+                val tenths = (milliseconds + 50) / 100
                 builder.append(tenths / 10)
                     .append('.')
                     .append(tenths % 10)
