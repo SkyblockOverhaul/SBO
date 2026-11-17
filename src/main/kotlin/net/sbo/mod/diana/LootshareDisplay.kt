@@ -108,7 +108,7 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
 
             checkPendingMobs(now)
 
-            targets.values.toList().forEach { if (!it.mob.isValidEntityInHub(checkInvisibility = it.mob is Player)) removeTarget(it.mob.id) }
+            targets.values.toList().forEach { if (!it.mob.isValidEntityInHub(checkInvisibility = false)) removeTarget(it.mob.id) }
             removedTargets.removeIf { now - it.removedNanos > RESPAWN_WINDOW_NS }
             targets.values.forEach { it.updateNameStand() }
 
@@ -208,15 +208,14 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
         val iterator = pendingMobs.entries.iterator()
         while (iterator.hasNext()) {
             val (mob, loadNanos) = iterator.next()
-            val isPlayer = mob is Player
-            val name = if (isPlayer) mob.name else mob.customName
+            val name = if (mob is Player) mob.name else mob.customName
             val type = if (name != null) RareMob.fromName(name.string) else null
             if (type != null) {
                 targets[mob.id] = Target(mob, type, consumeOwnSpawn(type, mob, now)).apply {
                     takeOverRemoved(now)
                 }
                 iterator.remove()
-            } else if (!mob.isValidEntityInHub(checkInvisibility = isPlayer) || now - loadNanos > NAME_CHECK_TIMEOUT_NS) {
+            } else if (!mob.isValidEntityInHub(checkInvisibility = false) || now - loadNanos > NAME_CHECK_TIMEOUT_NS) {
                 iterator.remove()
             }
         }
