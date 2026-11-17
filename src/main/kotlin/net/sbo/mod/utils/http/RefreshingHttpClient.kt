@@ -1,5 +1,5 @@
 // TODO: Remove RefreshingHttpClient and its call-sites once all supported Minecraft versions
-// require Java 29+ (the next LTS after Java 25, which includes the HTTP/2 connection leak fix).
+// require Java 29+ (the next LTS after Java 25, which includes the HTTP/2 connection leak fix from Java 26 - Minecraft only updates between LTS Java versions).
 
 // Adapted from https://github.com/SkyblockerMod/Skyblocker/pull/2806
 
