@@ -610,7 +610,9 @@ object DataManager {
 
         return try {
             val typeToken = object : TypeToken<Map<String, Any>>() {}.type
-            val rawData: Map<String, Any> = gson.fromJson(FileReader(dataFile), typeToken)
+            val rawData: Map<String, Any> = FileReader(dataFile).use { reader ->
+                gson.fromJson(reader, typeToken)
+            }
 
             val foundUnlockedIds = mutableSetOf<Int>()
             var needsMigration = false
