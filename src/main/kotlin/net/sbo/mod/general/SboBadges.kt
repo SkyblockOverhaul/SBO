@@ -92,6 +92,9 @@ object SboBadges {
     private const val GLITCH_SPREAD = 1
     // The default font 1 to 3 pixels lower (assets/sbo/font/shift*.json), fonts cannot rise above the line
     private val SHIFT_FONTS = (1..3).map { FontDescription.Resource(Identifier.fromNamespaceAndPath("sbo", "shift$it")) }
+    // The badge symbols (BADGE_SYMBOLS on the backend) the shift fonts also draw lower; the ones vanilla takes from
+    // unifont come from sbo:font/symbols.png there, so they move with the chars around them
+    private const val MOVING_SYMBOLS = "✿❀☁❤♥★☆✦✧⚡☀☾♪♫❄☘♛♚⚔☠✪✔✌☕⚓✈∞☯♣♠♦☂"
 
     /** Pixels a char with this style sits lower through the motion fonts, 0 for every other style. */
     fun dropOf(style: Style): Int = SHIFT_FONTS.indexOf(style.font) + 1
@@ -1042,7 +1045,7 @@ object SboBadges {
 
     /** The style with the char moved by [motion]; only plain chars move, the shifted fonts only have those. */
     private fun moved(style: Style, motion: String?, i: Int, length: Int, char: Char, animate: Boolean, now: Long): Style {
-        if (!animate || motion.isStill() || char !in ' '..'~') return style
+        if (!animate || motion.isStill() || char !in ' '..'~' && char !in MOVING_SYMBOLS) return style
         if (glitchAt(motion, i, length, now)) return style.withObfuscated(true)
         val drop = dropAt(motion, i, length, now)
         return if (drop > 0) style.withFont(SHIFT_FONTS[drop - 1]) else style
