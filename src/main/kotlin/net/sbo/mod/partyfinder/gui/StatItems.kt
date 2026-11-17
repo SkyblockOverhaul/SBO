@@ -1,8 +1,6 @@
 package net.sbo.mod.partyfinder.gui
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.MapSerializer
-import kotlinx.serialization.builtins.serializer
 import net.minecraft.world.item.ItemStack
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.guilib.core.dsl.item
@@ -25,7 +23,7 @@ internal object StatItems {
     private val defs: Map<String, StatItem> by lazy {
         runCatching {
             val text = StatItems::class.java.getResourceAsStream("/assets/sbo/ui/stats/items.json")!!.use { it.readBytes().decodeToString() }
-            PartyFinderApi.json.decodeFromString(MapSerializer(String.serializer(), StatItem.serializer()), text)
+            PartyFinderApi.json.decodeFromString<Map<String, StatItem>>(text)
         }.getOrDefault(emptyMap())
     }
 

@@ -1,6 +1,5 @@
 package net.sbo.mod.guis.customizer
 
-import net.minecraft.network.chat.Style
 import net.sbo.guilib.core.dom.component
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.guilib.core.dsl.button
@@ -9,7 +8,6 @@ import net.sbo.guilib.core.dsl.select
 import net.sbo.guilib.core.dsl.slider
 import net.sbo.guilib.core.dsl.switch
 import net.sbo.mod.general.SboBadges
-import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.data.DataManager
 import java.util.Locale
 import kotlin.math.roundToInt

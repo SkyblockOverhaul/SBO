@@ -1,0 +1,125 @@
+
+style:
+  severity: warning
+  # All of these result in too many violations and not worth to change now.
+  WildcardImport:
+    active: false
+  ReturnCount:
+    active: false
+  MaxLineLength:
+    active: false
+  MagicNumber:
+    active: false
+  LoopWithTooManyJumpStatements:
+    active: false
+  ForbiddenComment:
+    active: false
+  DestructuringDeclarationWithTooManyEntries:
+    active: false
+  UnusedParameter:
+    active: true
+    ignoreAnnotated:
+      - 'net.sbo.mod.utils.events.annotations.SboEvent'
+  AlsoCouldBeApply:
+    active: true
+  CanBeNonNullable:
+    active: true
+  CollapsibleIfStatements:
+    active: true
+  DataClassShouldBeImmutable:
+    # Normally a good practice, but results in too many violations that we just can't change.
+    #active: true
+    active: false
+  ExplicitCollectionElementAccessMethod:
+    active: true
+  ExpressionBodySyntax:
+    active: true
+  ForbiddenMethodCall:
+    active: true
+  NullableBooleanCheck:
+    active: true
+  StringShouldBeRawString:
+    active: true
+  TrailingWhitespace:
+    active: true
+  UnnecessaryLet:
+    active: true
+  UnnecessaryParentheses:
+    active: true
+  UnusedImport:
+    active: true
+  UseEmptyCounterpart:
+    active: true
+
+potential-bugs:
+  severity: warning
+  # All of these result in too many violations and not worth to refactor now.
+  UnsafeCallOnNullableType:
+    active: false
+  IgnoredReturnValue:
+    active: false
+  DoubleMutabilityForCollection:
+    active: false
+  NullCheckOnMutableProperty:
+    active: true
+  UnconditionalJumpStatementInLoop:
+    active: true
+
+naming:
+  severity: warning
+  # All of these are good practices, but too many violations and not worth to change now.
+  NoNameShadowing:
+    active: false
+  MemberNameEqualsClassName:
+    active: false
+  MatchingDeclarationName:
+    active: false
+  FunctionNaming:
+    active: false
+  ConstructorParameterNaming:
+    active: false
+  ClassNaming:
+    active: false
+
+exceptions:
+  severity: warning
+  # We need to handle all types of failures in lot of cases resulting from code we don't have control over.
+  TooGenericExceptionCaught:
+    active: false
+
+complexity:
+  severity: warning
+  # All of these are good practices but results in too much violations and would need extensive refactor.
+  TooManyFunctions:
+    active: false
+  NestedBlockDepth:
+    active: false
+  LongParameterList:
+    active: false
+  LongMethod:
+    active: false
+  LargeClass:
+    active: false
+  CyclomaticComplexMethod:
+    active: false
+  ComplexCondition:
+    active: false
+
+coroutines:
+  severity: warning
+  InjectDispatcher:
+    # Not really relevant for us.
+    active: false
+
+comments:
+  severity: warning
+  OutdatedDocumentation:
+    # It results in false positives due to a bug.
+    #active: true
+    active: false
+
+performance:
+  severity: warning
+  CouldBeSequence:
+    active: true
+

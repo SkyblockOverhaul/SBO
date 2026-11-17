@@ -13,7 +13,9 @@ import net.sbo.mod.partyfinder.PartyFinderManager
 import net.sbo.mod.settings.categories.RareMobs
 import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.utils.Helper
+import net.sbo.mod.utils.Helper.isValidEntityInHub
 import net.sbo.mod.utils.Helper.removeFormatting
+import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
@@ -97,16 +99,16 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
 
     fun init() {
         Register.onTick(1) {
-            if (!RareMobs.lootshareDisplay) {
+            if (!RareMobs.lootshareDisplay || mc.level == null) {
                 clear()
                 return@onTick
             }
-            val world = mc.level ?: return@onTick
+
             val now = System.nanoTime()
 
             checkPendingMobs(now)
 
-            targets.values.toList().forEach { if (!it.mob.isAlive || it.mob.level() != world) removeTarget(it.mob.id) }
+            targets.values.toList().forEach { if (!it.mob.isValidEntityInHub(checkInvisibility = false)) removeTarget(it.mob.id) }
             removedTargets.removeIf { now - it.removedNanos > RESPAWN_WINDOW_NS }
             targets.values.forEach { it.updateNameStand() }
 
@@ -174,7 +176,7 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
 
     @SboEvent
     fun onEntityLoad(event: EntityLoadEvent) {
-        if (!RareMobs.lootshareDisplay) return
+        if (!RareMobs.lootshareDisplay || !World.isInHub()) return
         val entity = event.entity
         if (entity is ArmorStand) {
             // Damage splashes get their name a moment after spawning, so check them over the next ticks
@@ -213,7 +215,7 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
                     takeOverRemoved(now)
                 }
                 iterator.remove()
-            } else if (!mob.isAlive || now - loadNanos > NAME_CHECK_TIMEOUT_NS) {
+            } else if (!mob.isValidEntityInHub(checkInvisibility = false) || now - loadNanos > NAME_CHECK_TIMEOUT_NS) {
                 iterator.remove()
             }
         }
@@ -254,7 +256,7 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
     }
 
     private fun Target.updateNameStand() {
-        val stand = nameStand?.takeIf { it.isAlive } ?: findNameStand()?.also { nameStand = it } ?: return
+        val stand = nameStand?.takeIf { it.isValidEntityInHub(checkInvisibility = false) } ?: findNameStand()?.also { nameStand = it } ?: return
         val name = stand.customName ?: return
 
         val match = healthRegex.find(name.string.removeFormatting()) ?: return
@@ -285,7 +287,7 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
         val iterator = pendingSplashes.entries.iterator()
         while (iterator.hasNext()) {
             val (stand, loadNanos) = iterator.next()
-            if (!stand.isAlive || now - loadNanos > NAME_CHECK_TIMEOUT_NS) {
+            if (!stand.isValidEntityInHub(checkInvisibility = false) || now - loadNanos > NAME_CHECK_TIMEOUT_NS) {
                 iterator.remove()
                 continue
             }

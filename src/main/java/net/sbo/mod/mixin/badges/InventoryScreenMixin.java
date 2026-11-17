@@ -17,8 +17,8 @@ import org.spongepowered.asm.mixin.Mixin;
 @Mixin(InventoryScreen.class)
 final class InventoryScreenMixin {
     @WrapMethod(method = "extractRenderState(Lnet/minecraft/world/entity/LivingEntity;)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;", require = 0)
-    private static @NonNull EntityRenderState sbo$markMenuModel(@NonNull final LivingEntity entity, @NonNull final Operation<EntityRenderState> original) {
-        final boolean outer = SboBadges.INSTANCE.getMenuModel();
+    private static final @NonNull EntityRenderState sbo$markMenuModel(@NonNull final LivingEntity entity, @NonNull final Operation<EntityRenderState> original) {
+        final var outer = SboBadges.INSTANCE.getMenuModel();
         SboBadges.INSTANCE.setMenuModel(true);
         try {
             return original.call(entity);

@@ -18,16 +18,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 final class ScreenMixin {
     @Inject(method = "extractRenderState", at = @At("HEAD"))
     private final void sbo$onRender(@NonNull final GuiGraphicsExtractor context, final int mouseX, final int mouseY, final float delta, @NonNull final CallbackInfo ci) {
-        final Minecraft client = Minecraft.getInstance();
-        final Screen screen = (Screen)(Object)this;
-        SBOEvent.INSTANCE.emit(new GuiRenderEvent(client, screen, context, mouseX, mouseY));
+        SBOEvent.INSTANCE.emit(new GuiRenderEvent(Minecraft.getInstance(), (Screen)(Object)this, context, mouseX, mouseY));
     }
 
     @Inject(method = "keyPressed", at = @At("HEAD"), cancellable = true)
     private final void sbo$onKeyPressed(final KeyEvent input, @NonNull final CallbackInfoReturnable<Boolean> cir) {
-        final Minecraft client = Minecraft.getInstance();
-        final Screen screen = (Screen)(Object)this;
-        final int keyCode = input.key();
-        SBOEvent.INSTANCE.emit(new GuiKeyEvent(client, screen, keyCode));
+        SBOEvent.INSTANCE.emit(new GuiKeyEvent(Minecraft.getInstance(), (Screen)(Object)this, input.key()));
     }
 }

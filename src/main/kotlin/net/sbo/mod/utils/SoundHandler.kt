@@ -4,20 +4,22 @@ import javazoom.jl.player.JavaSoundAudioDevice
 import com.google.gson.JsonParser
 import javazoom.jl.player.Player
 import net.fabricmc.loader.api.FabricLoader
-import net.minecraft.util.Util
+import net.sbo.mod.openPath
 import net.sbo.mod.SBOKotlin.MOD_ID
 import net.sbo.mod.SBOKotlin.logger
-import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.game.World
 import java.io.File
 import java.io.FileInputStream
-import java.io.InputStream
 import java.lang.invoke.MethodHandles
 import java.lang.invoke.VarHandle
 import java.nio.file.Files
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.RejectedExecutionException
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.Semaphore
 import javax.sound.sampled.*
 import kotlin.math.log10
 
@@ -27,13 +29,29 @@ object SoundHandler {
     @Volatile
     private var availableSoundsWithExt: List<String> = emptyList()
 
+    // Up to 3 running and 17 queued tasks; for a total of 20.
+    private const val AUDIO_THREAD_COUNT = 3
+    private const val MAX_QUEUED_SOUNDS = 17
+
+    // Up to 9 sounds actively playing at the same time. Above this, the rest block until one of current ones finish.
+    private const val MAX_ACTIVE_PLAYBACKS = 9
+    private val ACTIVE_PLAYBACKS = Semaphore(MAX_ACTIVE_PLAYBACKS)
+
     // Thread pool for audio processing - bounded and daemon threads
-    private val AUDIO_EXECUTOR: ExecutorService = Executors.newFixedThreadPool(3) { r ->
-        Thread(r, "sbo-audio-thread").apply {
-            isDaemon = true
-            priority = Thread.NORM_PRIORITY + 1 // audio processing needs slightly more priority for less latency
-        }
-    }
+    private val AUDIO_EXECUTOR = ThreadPoolExecutor(
+        AUDIO_THREAD_COUNT,
+        AUDIO_THREAD_COUNT,
+        0L,
+        TimeUnit.MILLISECONDS,
+        ArrayBlockingQueue(MAX_QUEUED_SOUNDS),
+        { r ->
+            Thread(r, "sbo-audio-thread").apply {
+                isDaemon = true
+                priority = Thread.MAX_PRIORITY // audio processing needs significiantly more priority than other tasks for less latency
+            }
+        },
+        ThreadPoolExecutor.AbortPolicy()
+    )
 
     /**
      * Initializes sound system: extracts built-in sounds and scans for available sounds.
@@ -43,11 +61,12 @@ object SoundHandler {
         migrateMasterVolume()
         // Defer the expensive operations to avoid blocking game startup
         AUDIO_EXECUTOR.execute {
-            extractBuiltInSounds()
+            runCatching { extractBuiltInSounds() }
+                .onFailure { logger.error("[$MOD_ID] Failed to extract built-in sounds", it) }
+
             scanUserSounds()
         }
     }
-
 
     private var legacyMasterVolume: Float? = null
 
@@ -68,9 +87,25 @@ object SoundHandler {
         settings.save()
     }
 
+    private fun acquirePlaybackPermit(): Boolean {
+        return try {
+            ACTIVE_PLAYBACKS.acquire()
+            true
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
+            false
+        }
+    }
+
+    private fun releasePlaybackPermit(released: AtomicBoolean) {
+        if (released.compareAndSet(false, true)) {
+            ACTIVE_PLAYBACKS.release()
+        }
+    }
+
     fun openSoundFolder() {
         val directory = File(SOUND_DIR_PATH).apply { mkdirs() }
-        runCatching { Util.getPlatform().openPath(directory.toPath()) }.onFailure { logger.error("[$MOD_ID] Failed to open the sound folder", it) }
+        runCatching { openPath(directory.toPath()) }.onFailure { logger.error("[$MOD_ID] Failed to open the sound folder", it) }
     }
 
     /**
@@ -103,18 +138,23 @@ object SoundHandler {
             return
         }
 
-        // Dispatch to appropriate player using thread pool
-        if (soundFile.endsWith(".mp3", ignoreCase = true)) {
-            AUDIO_EXECUTOR.execute {
-                playMp3WithVolume(file, volumePercent)
-            }
-        } else {
-            AUDIO_EXECUTOR.execute {
-                playStandardAudio(file, volumePercent)
-            }
-        }
+        submitAudioTask(file, volumePercent, soundFile.endsWith(".mp3", ignoreCase = true))
     }
 
+    private fun submitAudioTask(file: File, volumePercent: Float, isMp3: Boolean) {
+        try {
+            // Dispatch to appropriate player using thread pool
+            AUDIO_EXECUTOR.execute {
+                if (isMp3) {
+                    playMp3WithVolume(file, volumePercent)
+                } else {
+                    playStandardAudio(file, volumePercent)
+                }
+            }
+        } catch (e: RejectedExecutionException) {
+            logger.error("[$MOD_ID] Audio queue is full; dropping sound: ${file.name}", e)
+        }
+    }
 
     /** Extracts built-in sounds from the mod JAR to the config directory */
     private fun extractBuiltInSounds() {
@@ -163,92 +203,91 @@ object SoundHandler {
 
     /** Plays standard audio formats (.ogg, .wav, .au, .aif, .aiff) */
     private fun playStandardAudio(file: File, volumePercent: Float) {
-        val clip = AudioSystem.getClip()
-        val inputStream = try {
-            AudioSystem.getAudioInputStream(file)
+        if (!acquirePlaybackPermit()) return
+
+        val permitReleased = AtomicBoolean()
+
+        val clip = try {
+            AudioSystem.getClip()
         } catch (e: Exception) {
-            logger.error("[$MOD_ID] Failed to read audio file: ${file.name}", e)
-            Chat.chat("§c[SBO] Something went wrong while reading the audio file ${file.name}! Please try using an another file format such as .mp3 and if the issue persists, please contact the developers.")
+            releasePlaybackPermit(permitReleased)
+            logger.error("[$MOD_ID] Failed to initialize audio playback: ${file.name}", e)
             return
         }
 
-        val stream = try {
-            // Skip expensive format conversion if it's already PCM
-            if (inputStream.format.encoding == AudioFormat.Encoding.PCM_SIGNED) {
-                inputStream
-            } else {
-                // Only convert if necessary
-                val decodedFormat = AudioFormat(
-                    AudioFormat.Encoding.PCM_SIGNED,
-                    inputStream.format.sampleRate,
-                    16,
-                    inputStream.format.channels,
-                    inputStream.format.channels * 2,
-                    inputStream.format.sampleRate,
-                    false
-                )
-                AudioSystem.getAudioInputStream(decodedFormat, inputStream)
-            }
-        } catch (e: Exception) {
-            logger.error("[$MOD_ID] Failed to process audio format: ${file.name}", e)
-            inputStream.closeQuietly()
-            return
-        }
+        val listener = object : LineListener {
+            override fun update(event: LineEvent) {
+                if (event.type == LineEvent.Type.STOP) {
+                    clip.removeLineListener(this)
 
-        try {
-            clip.open(stream)
-        } catch (e: Exception) {
-            logger.error("[$MOD_ID] Failed to open audio stream: ${file.name}", e)
-            clip.closeQuietly()
-            stream.closeQuietly()
-            inputStream.closeQuietly()
-            return
-        }
-
-        if (clip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
-            val gain = clip.getControl(FloatControl.Type.MASTER_GAIN) as FloatControl
-            gain.value = volumeToDecibels(volumePercent)
-        }
-
-        // Use separate function for cleanup to ensure all resources are closed
-        cleanupOnAudioStop(clip, stream, inputStream)
-        clip.start()
-    }
-
-    private fun AutoCloseable.closeQuietly() {
-        try {
-            close()
-        } catch (_: Exception) {
-        }
-    }
-
-    /**
-     * Clean up audio resources when playback stops
-     */
-    private fun cleanupOnAudioStop(clip: Clip, stream: AudioInputStream, inputStream: InputStream) {
-        clip.addLineListener { event ->
-            if (event.type == LineEvent.Type.STOP) {
-                try {
-                    clip.close()
-                    stream.close()
-                    inputStream.close()
-                } catch (e: Exception) {
-                    logger.error("[$MOD_ID] Error closing audio resources", e)
+                    try {
+                        clip.close()
+                    } catch (e: Exception) {
+                        logger.error("[$MOD_ID] Failed to close audio clip: ${file.name}", e)
+                    } finally {
+                        releasePlaybackPermit(permitReleased)
+                    }
                 }
             }
+        }
+
+        try {
+            AudioSystem.getAudioInputStream(file).use { inputStream ->
+                val stream = if (inputStream.format.encoding == AudioFormat.Encoding.PCM_SIGNED) {
+                    inputStream
+                } else {
+                    val decodedFormat = AudioFormat(
+                        AudioFormat.Encoding.PCM_SIGNED,
+                        inputStream.format.sampleRate,
+                        16,
+                        inputStream.format.channels,
+                        inputStream.format.channels * 2,
+                        inputStream.format.sampleRate,
+                        false
+                    )
+                    AudioSystem.getAudioInputStream(decodedFormat, inputStream)
+                }
+
+                // Clip.open() preloads the audio data, so the stream can be closed immediately
+                if (stream === inputStream) {
+                    clip.open(stream)
+                } else {
+                    stream.use { clip.open(it) }
+                }
+            }
+
+            if (clip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
+                val gain = clip.getControl(FloatControl.Type.MASTER_GAIN) as FloatControl
+                gain.value = volumeToDecibels(volumePercent)
+            }
+
+            // Close the clip and release its permit once playback stops
+            clip.addLineListener(listener)
+            clip.start()
+        } catch (e: Exception) {
+            clip.removeLineListener(listener)
+            runCatching { clip.close() }.onFailure(e::addSuppressed)
+            releasePlaybackPermit(permitReleased)
+            logger.error("[$MOD_ID] Failed to play audio file: ${file.name}", e)
         }
     }
 
     /** Plays MP3 with volume control via custom audio device */
     private fun playMp3WithVolume(file: File, volumePercent: Float) {
-        FileInputStream(file).use { fileStream ->
-            runCatching {
+        if (!acquirePlaybackPermit()) return
+
+        try {
+            FileInputStream(file).use { fileStream ->
                 val player = Player(fileStream, createVolumeAdjustedAudioDevice(volumePercent))
-                player.play()
-                player.close()
-            }.onFailure {
-                logger.error("[$MOD_ID] Failed to play MP3 sound: ${file.name}", it)
+
+                AutoCloseable { player.close() }.use {
+                    player.play()
+                }
             }
+        } catch (e: Exception) {
+            logger.error("[$MOD_ID] Failed to play MP3 sound: ${file.name}", e)
+        } finally {
+            ACTIVE_PLAYBACKS.release()
         }
     }
 
@@ -260,21 +299,27 @@ object SoundHandler {
 
     /** Creates a custom audio device that applies volume adjustment */
     private fun createVolumeAdjustedAudioDevice(volumePercent: Float): JavaSoundAudioDevice {
+        val loggedFailure = AtomicBoolean()
+
         return object : JavaSoundAudioDevice() {
             override fun writeImpl(samples: ShortArray, offs: Int, len: Int) {
                 super.writeImpl(samples, offs, len)
 
-                try {
+                runCatching {
                     val sourceLine = JAVA_SOUND_SOURCE_HANDLE.get(this) as? SourceDataLine
 
                     if (sourceLine != null && sourceLine.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
                         val gain = sourceLine.getControl(FloatControl.Type.MASTER_GAIN) as FloatControl
                         val targetGain = volumeToDecibels(volumePercent)
+
                         if (gain.value != targetGain) {
                             gain.value = targetGain
                         }
                     }
-                } catch (_: Exception) {
+                }.onFailure {
+                    if (loggedFailure.compareAndSet(false, true)) {
+                        logger.error("[$MOD_ID] Failed to adjust audio volume", it)
+                    }
                 }
             }
         }

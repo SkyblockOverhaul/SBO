@@ -17,7 +17,7 @@ final class StartAttackingMixin {
 
     @Inject(method = "startAttack", at = @At("HEAD"))
     private final void sbo$onStartAttack(@NonNull final CallbackInfoReturnable<Boolean> cir) {
-        final Minecraft mc = (Minecraft) (Object) this;
+        final var mc = (Minecraft) (Object) this;
         // Vanilla's early returns, clicks that do nothing don't emit
         if (this.missTime > 0 || mc.player == null || mc.level == null || mc.hitResult == null || mc.player.isHandsBusy()) return;
 

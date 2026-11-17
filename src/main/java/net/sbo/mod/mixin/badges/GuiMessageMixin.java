@@ -3,10 +3,11 @@ package net.sbo.mod.mixin.badges;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import java.util.List;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.multiplayer.chat.GuiMessage;
 import net.minecraft.network.chat.FormattedText;
-import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.network.chat.Component;
 import net.sbo.mod.general.SboBadges;
 import org.jspecify.annotations.NonNull;
 import org.spongepowered.asm.mixin.Mixin;
@@ -27,8 +28,8 @@ final class GuiMessageMixin {
             @NonNull final FormattedText text, final int width, @NonNull final Font font,
             @NonNull final Operation<List<FormattedCharSequence>> original
     ) {
-        final List<FormattedCharSequence> lines = original.call(text, width, font);
-        if (text instanceof final net.minecraft.network.chat.Component component) {
+        final var lines = original.call(text, width, font);
+        if (text instanceof final Component component) {
             SboBadges.INSTANCE.splitChatLines(component, width, lines);
         }
         return lines;

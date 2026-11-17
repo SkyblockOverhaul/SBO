@@ -31,7 +31,7 @@ class TimeLimitedSetTest {
         val set = TimeLimitedSet<String>(60.seconds)
         set.add("entry")
         val iterator = set.iterator()
-        iterator.next()
+        assertEquals("entry", iterator.next())
         iterator.remove()
         set.add("entry")
 
@@ -52,7 +52,7 @@ class TimeLimitedSetTest {
         val iterator = set.iterator()
 
         assertThrows(IllegalStateException::class.java) { iterator.remove() }
-        iterator.next()
+        assertEquals("entry", iterator.next())
         iterator.remove()
         assertThrows(IllegalStateException::class.java) { iterator.remove() }
     }

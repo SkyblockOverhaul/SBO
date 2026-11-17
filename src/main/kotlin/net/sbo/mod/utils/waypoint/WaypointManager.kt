@@ -124,7 +124,10 @@ object WaypointManager {
         }
 
         Register.onTick(1) { _ ->
-            if (RareMobs.receiveRareMob && World.isInHub()) {
+            val inHub = World.isInHub()
+            val hasSpade = Helper.hasSpade
+
+            if (inHub && hasSpade && RareMobs.receiveRareMob) {
                 updateRareMobWaypoints()
             }
 
@@ -161,93 +164,93 @@ object WaypointManager {
             expiredBurrowPositions.forEach(BurrowDetector::removeFromInternalState)
 
             // Remove all waypoints that are not in radius of typical burrow locations x y z
-            val invalidArrowPositions = mutableSetOf<SboVec>()
-            val invalidBurrowPositions = mutableSetOf<SboVec>()
+            if (inHub) {
+                val invalidArrowPositions = mutableSetOf<SboVec>()
+                val invalidBurrowPositions = mutableSetOf<SboVec>()
 
-            this.forEachWaypoint { waypoint ->
-                if (
-                    !World.isInHub() ||
-                    waypoint.preventInvalidRemoval ||
-                    waypoint.type == "world"
-                ) {
-                    return@forEachWaypoint false
-                }
-
-                val underWorld = waypoint.pos.y < 60
-                val aboveWorld = waypoint.pos.y > 105
-                val outsideZ = waypoint.pos.z > 205
-                val outsideX = waypoint.pos.x > 175
-                val outsideNegativeZ = waypoint.pos.z < 0 && -waypoint.pos.z > 208
-                val outsideNegativeX = waypoint.pos.x < 0 && -waypoint.pos.x > 283
-
-                if (
-                    underWorld || aboveWorld || outsideZ || outsideX ||
-                    outsideNegativeZ || outsideNegativeX
-                ) {
-                    when (waypoint.type) {
-                        "arrow" -> invalidArrowPositions.add(waypoint.pos.roundLocationToBlock())
-                        "burrow" -> invalidBurrowPositions.add(waypoint.pos.roundLocationToBlock())
+                this.forEachWaypoint { waypoint ->
+                    if (waypoint.preventInvalidRemoval || waypoint.type == "world") {
+                        return@forEachWaypoint false
                     }
-                    true
-                } else {
-                    false
+
+                    val underWorld = waypoint.pos.y < 60
+                    val aboveWorld = waypoint.pos.y > 105
+                    val outsideZ = waypoint.pos.z > 205
+                    val outsideX = waypoint.pos.x > 175
+                    val outsideNegativeZ = waypoint.pos.z < 0 && -waypoint.pos.z > 208
+                    val outsideNegativeX = waypoint.pos.x < 0 && -waypoint.pos.x > 283
+
+                    if (
+                        underWorld || aboveWorld || outsideZ || outsideX ||
+                        outsideNegativeZ || outsideNegativeX
+                    ) {
+                        when (waypoint.type) {
+                            "arrow" -> invalidArrowPositions.add(waypoint.pos.roundLocationToBlock())
+                            "burrow" -> invalidBurrowPositions.add(waypoint.pos.roundLocationToBlock())
+                        }
+                        true
+                    } else {
+                        false
+                    }
                 }
+
+                // Do not mutate waypoint lists until forEachWaypoint has finished.
+                invalidArrowPositions.forEach(ArrowGuessBurrow::removeOrMoveFromInternalState)
+                invalidBurrowPositions.forEach(BurrowDetector::removeFromInternalState)
             }
 
-            // Do not mutate waypoint lists until forEachWaypoint has finished.
-            invalidArrowPositions.forEach(ArrowGuessBurrow::removeOrMoveFromInternalState)
-            invalidBurrowPositions.forEach(BurrowDetector::removeFromInternalState)
-
             // Remove shovel guesses pointing to invalid burrow locations
-            val invalidShovelIterator = shovelGuesses.iterator()
-            while (invalidShovelIterator.hasNext()) {
-                val shovelGuess = invalidShovelIterator.next()
-                if (World.isInHub() && !ArrowGuessBurrow.isBlockValid(shovelGuess.pos)) {
-                    invalidShovelIterator.remove()
+            if (inHub) {
+                val invalidShovelIterator = shovelGuesses.iterator()
+                while (invalidShovelIterator.hasNext()) {
+                    val shovelGuess = invalidShovelIterator.next()
+                    if (!ArrowGuessBurrow.isBlockValid(shovelGuess.pos)) {
+                        invalidShovelIterator.remove()
+                    }
                 }
             }
 
             // Remove arrow guesses pointing to invalid burrow locations after being existing for over 15 seconds (During 15 seconds period, we hide them instead to give time for moveToNext to do its job)
-            val invalidBlockArrowPositions = mutableSetOf<SboVec>()
-            val invalidArrowIterator = arrowGuesses.iterator()
+            if (inHub) {
+                val invalidBlockArrowPositions = mutableSetOf<SboVec>()
+                val invalidArrowIterator = arrowGuesses.iterator()
 
-            while (invalidArrowIterator.hasNext()) {
-                val arrowGuess = invalidArrowIterator.next()
+                while (invalidArrowIterator.hasNext()) {
+                    val arrowGuess = invalidArrowIterator.next()
 
-                if (!World.isInHub()) continue
-
-                if (!ArrowGuessBurrow.isBlockValid(arrowGuess.pos)) {
-                    if (arrowGuess.isOlderThan(Duration.ofSeconds(15))) {
-                        invalidArrowIterator.remove()
-                        invalidBlockArrowPositions.add(arrowGuess.pos.roundLocationToBlock())
+                    if (!ArrowGuessBurrow.isBlockValid(arrowGuess.pos)) {
+                        if (arrowGuess.isOlderThan(Duration.ofSeconds(15))) {
+                            invalidArrowIterator.remove()
+                            invalidBlockArrowPositions.add(arrowGuess.pos.roundLocationToBlock())
+                        } else {
+                            arrowGuess.hidden = true
+                        }
                     } else {
-                        arrowGuess.hidden = true
+                        arrowGuess.hidden = false
                     }
-                } else {
-                    arrowGuess.hidden = false
                 }
-            }
 
-            // Perform state cleanup only after the iterator is no longer active.
-            invalidBlockArrowPositions.forEach(ArrowGuessBurrow::removeOrMoveFromInternalState)
+                // Perform state cleanup only after the iterator is no longer active.
+                invalidBlockArrowPositions.forEach(ArrowGuessBurrow::removeOrMoveFromInternalState)
+            }
 
             // Remove all invalid sub guesses as they can be under many grass blocks and unreachable often
-            val invalidSubGuessPositions = mutableListOf<SboVec>()
-            val invalidSubGuessIterator = subGuesses.iterator()
+            if (inHub) {
+                val invalidSubGuessPositions = mutableListOf<SboVec>()
+                val invalidSubGuessIterator = subGuesses.iterator()
 
-            while (invalidSubGuessIterator.hasNext()) {
-                val subGuess = invalidSubGuessIterator.next()
+                while (invalidSubGuessIterator.hasNext()) {
+                    val subGuess = invalidSubGuessIterator.next()
 
-                if (!World.isInHub()) continue
-
-                if (!ArrowGuessBurrow.isBlockValid(subGuess.pos)) {
-                    invalidSubGuessIterator.remove()
-                    invalidSubGuessPositions.add(subGuess.pos)
+                    if (!ArrowGuessBurrow.isBlockValid(subGuess.pos)) {
+                        invalidSubGuessIterator.remove()
+                        invalidSubGuessPositions.add(subGuess.pos)
+                    }
                 }
-            }
 
-            // Perform internal-state cleanup after the iterator finishes.
-            invalidSubGuessPositions.forEach(ArrowGuessBurrow::removeSubGuessFromInternalState)
+                // Perform internal-state cleanup after the iterator finishes.
+                invalidSubGuessPositions.forEach(ArrowGuessBurrow::removeSubGuessFromInternalState)
+            }
 
             // Remove the shovel guess if a known burrow, or an arrow guess exists at the same block, or 2 blocks near it (a shovel guess is exact or next to the burrow, so a farther one is a different burrow).
             // The old spade guess is less precise, 30 blocks for it
@@ -318,7 +321,12 @@ object WaypointManager {
                 false
             }
 
-            prepareGuessLines()
+            if (inHub && hasSpade) {
+                prepareGuessLines()
+            } else {
+                preparedSubGuessLines = emptyList()
+                preparedGuessChainLines = emptyList()
+            }
         }
 
         LevelRenderEvents.COLLECT_SUBMITS.register(WaypointRenderer)

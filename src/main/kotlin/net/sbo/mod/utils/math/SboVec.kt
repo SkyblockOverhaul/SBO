@@ -14,7 +14,7 @@ import kotlin.math.sqrt
  * A 3D vector class for mathematical operations and Minecraft world interactions.
  * The credits to this class go fully to the SkyHanni Mod: https://github.com/hannibal002/SkyHanni/blob/beta/src/main/java/at/hannibal2/skyhanni/utils/LorenzVec.kt
  */
-data class SboVec(val x: Double, val y: Double, val z: Double) : Comparable<SboVec> {
+data class SboVec(@JvmField val x: Double, @JvmField val y: Double, @JvmField val z: Double) : Comparable<SboVec> {
     fun distanceTo(other: SboVec): Double {
         val dx = other.x - x
         val dy = other.y - y
@@ -115,8 +115,10 @@ data class SboVec(val x: Double, val y: Double, val z: Double) : Comparable<SboV
 
         if (x != other.x) return false
         if (y != other.y) return false
-        if (z != other.z) return false
-        return cachedHashCode == other.cachedHashCode
+
+        // Don't compare cachedHashCode - equals() should return true even if hashCode was not called to compute the cached hash in one of the objects. The x, y and z must still be equal for it to return true.
+
+        return z == other.z
     }
 
     override fun compareTo(other: SboVec): Int {

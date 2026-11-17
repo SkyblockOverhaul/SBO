@@ -23,13 +23,15 @@ object RareMobKillTime {
         val mob: String
     )
 
-    internal val killTimeMessageRegex: Regex by lazy {
+    private val killTimeMessageRegex: Regex by lazy {
         val rareNamePattern = DianaMobDetect.rareMobNames.joinToString("|") { Regex.escape(it) }
         Regex("^(?<prefix>.*> )?(?<player>.+?): \\[SBO\\] Took (?<elapsed>.+?) to kill the (?<mob>$rareNamePattern)!.*$")
     }
 
     internal fun parseKillTimeMessage(message: String): KillTimeMessage? {
+        if (!message.contains("[SBO] ")) return null
         val match = killTimeMessageRegex.matchEntire(message) ?: return null
+
         return KillTimeMessage(
             prefix = match.groups["prefix"]?.value,
             player = match.groups["player"]?.value ?: return null,
@@ -37,6 +39,7 @@ object RareMobKillTime {
             mob = match.groups["mob"]?.value ?: return null
         )
     }
+
     private data class PendingCocoon(
         val mob: String,
         val caughtNs: Long,
@@ -82,7 +85,7 @@ object RareMobKillTime {
                 mob == pending.mob && !pending.knownEntityIds.contains(stand.id)
             }
             if (hatched != null) {
-                val hatchMs = ((now - pending.caughtNs).coerceAtLeast(0L) / 1_000_000L)
+                val hatchMs = (now - pending.caughtNs).coerceAtLeast(0L) / 1_000_000L
                 mobTimers.getOrPut(pending.mob) { mutableListOf() }.add(MobTimer(now, hatchMs, cocoon = true))
                 iterator.remove()
             } else if (now - pending.caughtNs >= HATCH_LOOKUP_TIMEOUT_NS) {

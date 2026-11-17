@@ -2,9 +2,7 @@ package net.sbo.mod.config
 
 import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty0
-
-fun <T> Collection<T>.asSet(): Set<T> =
-    this as? Set<T> ?: toSet()
+import java.util.EnumSet
 
 fun <T> Collection<T>.asList(): List<T> =
     this as? List<T> ?: toList()
@@ -63,13 +61,13 @@ open class EntriesBuilder {
 
     /** Any number of constants of [E], [value] is the default selection. */
     inline fun <reified E : Enum<E>> options(vararg value: E, noinline builder: TypeBuilder.() -> Unit = {}) =
-        EntryProvider(null, ::TypeBuilder, builder) { id, b -> OptionsEntry(id, value.toCollection(LinkedHashSet()), b.name, b.description, enumValues<E>().toList()) }
+        EntryProvider(null, ::TypeBuilder, builder) { id, b -> OptionsEntry(id, EnumSet.noneOf(E::class.java).apply { addAll(value.toSet()) }, b.name, b.description, enumValues<E>().toList(), E::class.java) }
 
     inline fun <reified E : Enum<E>> options(
         value: Collection<E>,
         noinline builder: TypeBuilder.() -> Unit = {},
     ) = EntryProvider(null, ::TypeBuilder, builder) { id, b ->
-        OptionsEntry(id, value.asSet(), b.name, b.description, enumValues<E>().asList())
+        OptionsEntry(id, EnumSet.noneOf(E::class.java).apply { addAll(value) }, b.name, b.description, enumValues<E>().asList(), E::class.java)
     }
 
     fun button(builder: ButtonBuilder.() -> Unit) {

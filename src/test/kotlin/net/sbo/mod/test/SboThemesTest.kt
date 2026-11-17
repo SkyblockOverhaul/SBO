@@ -72,7 +72,16 @@ class SboThemesTest {
     @Test
     fun cssThemeTakesItsSettingsFromTheTopComment() {
         val file = File(dir, "mine.css")
-        file.writeText("/*\nname: Mine\n * base: minecraft\nmarks: true\n*/\nbody.sbo { --accent: #ff8800; }\n")
+        file.writeText(
+            """
+            /*
+            name: Mine
+             * base: minecraft
+            marks: true
+            */
+            body.sbo { --accent: #ff8800; }
+            """.trimIndent() + "\n"
+        )
         val theme = SboThemes.load(file)!!
         assertEquals("Mine", theme.label)
         assertEquals("minecraft", theme.base)

@@ -38,7 +38,7 @@ internal val Stage = component<StageProps>("CustomizerStage") { (badge, settings
     val preview = if (badge != null && settings != null) previewOf(badge, settings) else null
     val name = Player.accountName()
     val size = settings?.look?.scale ?: 1f
-    val prefix = (badge?.level?.let { "§8[§b$it§8] " } ?: "") + SAMPLE_RANK
+    val prefix = badge?.level?.let { "§8[§b$it§8] " }.orEmpty() + SAMPLE_RANK
     fun base(after: String) = legacyText("$prefix§b$name$after")
     fun shown(place: String, after: String = ""): Component =
         preview?.let { SboBadges.previewLine(it.badge, base(after), place, it.tagAt(place), it.animates(place)) } ?: base(after)

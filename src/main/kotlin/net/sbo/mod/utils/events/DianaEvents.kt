@@ -62,7 +62,7 @@ object DianaEvents {
     }
 
     private fun registerBurrowDug() {
-        Register.onChatMessageCancelable(Pattern.compile("^§eYou (.*?) Griffin [Bb]urrow(.*?) §7\\((.*?)/(.*?)\\)$", Pattern.DOTALL)) { _, matchResult ->
+        Register.onChatMessageCancelable(Pattern.compile("^§eYou (.*?) Griffin [Bb]urrow(.*?) §7\\((.*?)/(.*?)\\)$")) { _, matchResult ->
             val currentBurrow = matchResult.group(3).toIntOrNull() ?: return@onChatMessageCancelable true
             val maxBurrow = matchResult.group(4).toIntOrNull() ?: return@onChatMessageCancelable true
             SBOEvent.emit(BurrowDugEvent(

@@ -2,13 +2,16 @@ package net.sbo.mod.diana
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
+import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.decoration.ArmorStand
 import net.minecraft.world.entity.player.Player
 import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.diana.tracker.Tracker
 import net.sbo.mod.settings.categories.RareMobs
 import net.sbo.mod.utils.Helper
+import net.sbo.mod.utils.Helper.isValidEntityInHub
 import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.Helper.showTitle
 import net.sbo.mod.utils.Helper.sleep
@@ -38,8 +41,6 @@ object DianaMobDetect {
 
     private val NAME_CHECK_TIMEOUT_NS = TimeUnit.SECONDS.toNanos(1L)
 
-    private val healthRegex = """([0-9]+(?:\.[0-9]+)?[MK]?)§f/""".toRegex()
-
     private data class UnconfirmedMob(val entity: ArmorStand, val spawnTimeNs: Long)
 
     private val unconfirmed = Int2ObjectOpenHashMap<UnconfirmedMob>()
@@ -51,8 +52,6 @@ object DianaMobDetect {
     private val noShurikenOverlay: Overlay = Overlay(name = "noShuriken", x = 10f, y = 10f, scale = 3f, exampleView = OverlayExamples.dianaStarlessMobExample).setCondition { RareMobs.noShurikenOverlay }
 
     private val kingHitsRegex = """(?:§[0-9a-fk-or])*.*?(\d+)\s+Hits.*""".toRegex()
-
-    private var wasInHub = false
 
     internal val rareMobNames: Set<String> = RareMob.entries.mapTo(mutableSetOf()) { it.display }
     private val prefixes = setOf("Empyrean", "Exalted", "Runic", "Venerable", "Stalwart", "Blessed")
@@ -73,21 +72,110 @@ object DianaMobDetect {
     private fun isKingHitPhase(name: String) =
         findKingHits(name) != null
 
-    private fun parseKingHits(name: String) =
-        findKingHits(name)?.groupValues?.getOrNull(1)?.toIntOrNull()
+    private class HealthCache(private val name: String) {
+        private var parsed = false
+        private var cached: Double? = null
 
-    private fun parseHealthFromName(name: String): Double? =
-        healthRegex.find(name)?.groupValues?.get(1)?.let { raw ->
-            when {
-                raw.endsWith("M") -> raw.dropLast(1).toDoubleOrNull()?.times(1_000_000)
-                raw.endsWith("K") -> raw.dropLast(1).toDoubleOrNull()?.times(1_000)
-                else -> raw.toDoubleOrNull()
+        fun get(): Double? {
+            if (!parsed) {
+                cached = parseHealthFromName(name)
+                parsed = true
             }
+
+            return cached
         }
+    }
+
+    /**
+     * Essentially equal to the old version based on healthRegex = """([0-9]+(?:\.[0-9]+)?[MK]?)§f/""".toRegex(), but without the expensive Regex machinery.
+     */
+    private fun parseHealthFromName(name: String): Double? {
+        var i = 0
+
+        while (i < name.length) {
+            if (name[i] !in '0'..'9') {
+                i++
+                continue
+            }
+
+            val start = i
+
+            // Integer portion.
+            while (i < name.length && name[i] in '0'..'9') {
+                i++
+            }
+
+            // Optional decimal portion.
+            if (i + 1 < name.length && name[i] == '.' && name[i + 1] in '0'..'9') {
+                i++
+
+                while (i < name.length && name[i] in '0'..'9') {
+                    i++
+                }
+            }
+
+            val numberEnd = i
+
+            // Optional multiplier.
+            val multiplier = when {
+                i < name.length && name[i] == 'M' -> {
+                    i++
+                    1_000_000.0
+                }
+                i < name.length && name[i] == 'K' -> {
+                    i++
+                    1_000.0
+                }
+                else -> 1.0
+            }
+
+            if (name.startsWith("§f/", i)) {
+                return name.substring(start, numberEnd).toDoubleOrNull()?.times(multiplier)
+            }
+
+            // Regex.find also tries matches beginning inside the previous candidate.
+            i = start + 1
+        }
+
+        return null
+    }
 
     private fun parseStarFromName(name: String): Boolean = name.contains("") || name.contains("✯") // mf rework update changes the shuriken icon to depend on resourcepack. still check for legacy since that's only on alpha and to keep compatibility with RitualPractice
 
     private fun shouldAlertForMob(name: String) = RareMob.fromName(name) != null && (RareMobs.hpAlert > 0.0 || RareMobs.soundHpAlert > 0.0)
+
+    fun Entity.toDebugString(): String {
+        val livingEntity = this as? LivingEntity
+
+        val health = livingEntity?.let {
+            " with health ${it.health}/${it.maxHealth}"
+        }.orEmpty()
+
+        val dead = livingEntity?.dead
+
+        val passengers = passengers
+            .takeIf { it.isNotEmpty() }
+            ?.joinToString(", ") { passenger ->
+                "${passenger.javaClass.simpleName} (${passenger.name.string})"
+            }
+            ?.let { " with passengers [$it]" }
+            .orEmpty()
+
+        val rider = vehicle
+            ?.let {
+                " riding ${it.javaClass.simpleName} (${it.name.string})"
+            }
+            .orEmpty()
+
+        return "Entity with type ${javaClass.simpleName} " +
+            "with name ${name.string} " +
+            "uuidVersion=${uuid.version()}, " +
+            "dead=$dead, " +
+            "isAlive=$isAlive, " +
+            "isInvisible=$isInvisible" +
+            "$health$passengers$rider " +
+            "at x=$x,y=$y,z=$z"
+    }
 
     fun init() {
         mobHpOverlay.init()
@@ -97,29 +185,7 @@ object DianaMobDetect {
             val level = mc.level ?: return@command
 
             level.entitiesForRendering().forEach { entity ->
-                val health = (entity as? LivingEntity)?.let {
-                    " with health ${it.health}/${it.maxHealth}"
-                }.orEmpty()
-
-                val passengers = entity.passengers
-                    .takeIf { it.isNotEmpty() }
-                    ?.joinToString(", ") { passenger ->
-                        "${passenger.javaClass.simpleName} (${passenger.name.string})"
-                    }
-                    ?.let { " with passengers [$it]" }
-                    .orEmpty()
-
-                val rider = entity.vehicle
-                    ?.let {
-                        " riding ${it.javaClass.simpleName} (${it.name.string})"
-                    }
-                    .orEmpty()
-
-                Chat.chat(
-                    "§6[SBO] §eEntity with type ${entity.javaClass.simpleName} " +
-                    "with name ${entity.name.string}$health$passengers$rider " +
-                    "at x=${entity.x},y=${entity.y},z=${entity.z}"
-                )
+                Chat.chat("§6[SBO] §e${entity.toDebugString()}")
             }
         }
 
@@ -154,13 +220,19 @@ object DianaMobDetect {
 
         Register.onTick(1) {
             val world = mc.level
-            if (world == null) {
+            val player = mc.player
+            val inHub = World.isInHub()
+
+            if (player == null || world == null || !inHub) {
                 unconfirmed.clear()
+                tracked.clear()
+                defeated.clear()
+                warned.clear()
+                mobHpOverlay.clearLines()
+                noShurikenOverlay.clearLines()
                 return@onTick
             }
 
-            // Runs in every world: onEntityLoad adds armor stands everywhere, and entities can load before the tab list says Hub
-            val inHub = World.isInHub()
             val unconfirmedIterator = unconfirmed.int2ObjectEntrySet().fastIterator()
             val now = System.nanoTime()
 
@@ -171,8 +243,7 @@ object DianaMobDetect {
                 val entity = data.entity
                 val spawnTime = data.spawnTimeNs
 
-                val entityWorld = entity.level()
-                if (entityWorld != world || entity.dead || !entity.isAlive) {
+                if (!entity.isValidEntityInHub(checkInvisibility = false)) {
                     unconfirmedIterator.remove()
                     continue
                 }
@@ -186,22 +257,6 @@ object DianaMobDetect {
                 }
             }
 
-            if (!inHub) {
-                if (wasInHub) {
-                    wasInHub = false
-                    tracked.clear()
-                    defeated.clear()
-                    warned.clear()
-                    mobHpOverlay.clearLines()
-                    noShurikenOverlay.clearLines()
-                }
-
-                return@onTick
-            }
-
-            wasInHub = true
-
-            val player = mc.player ?: return@onTick
             val overlayLines = mutableListOf<OverlayTextLine>()
 
             var closestStarlessMob: ArmorStand? = null
@@ -213,21 +268,49 @@ object DianaMobDetect {
                 val id = entry.intKey
                 val armorStand = entry.value
 
-                val entityWorld = armorStand.level()
-                if (entityWorld != world || armorStand.dead || !armorStand.isAlive) {
+                if (!armorStand.isValidEntityInHub(checkInvisibility = false)) {
                     trackedIterator.remove()
                     warned.remove(id)
                     defeated.remove(id)
                     continue
                 }
 
-                val name = armorStand.customName?.formattedString() ?: continue
-                checkDianaMob(armorStand, name, id)?.let { line ->
-                    overlayLines.add(line)
-                    LootshareDisplay.overlayStatus(armorStand)?.let { overlayLines.add(OverlayTextLine(it, centered = true)) }
+                val name = armorStand.customName?.formattedString()
+                if (name == null) {
+                    trackedIterator.remove()
+                    warned.remove(id)
+                    defeated.remove(id)
+                    continue
                 }
 
-                val result = checkStarlessMob(armorStand, name, id, player, closestStarlessMob, closestDistanceSq)
+                val hasMythoType = hasMythoMobTypeChar(name)
+                val kingHitsMatch = findKingHits(name)
+
+                if (!hasMythoType && kingHitsMatch == null) {
+                    trackedIterator.remove()
+                    warned.remove(id)
+                    defeated.remove(id)
+                    continue
+                }
+
+                val health = HealthCache(name)
+
+                checkDianaMob(armorStand, name, id, hasMythoType, kingHitsMatch, health)?.let { line ->
+                    overlayLines.add(line)
+                    LootshareDisplay.overlayStatus(armorStand)?.let {
+                        overlayLines.add(OverlayTextLine(it, centered = true))
+                    }
+                }
+
+                val result = checkStarlessMob(
+                    armorStand,
+                    name,
+                    id,
+                    player,
+                    closestStarlessMob,
+                    closestDistanceSq,
+                    health
+                )
                 closestStarlessMob = result.first
                 closestDistanceSq = result.second
             }
@@ -246,8 +329,18 @@ object DianaMobDetect {
 
     @SboEvent
     fun onEntityLoad(event: EntityLoadEvent) {
-        if (event.entity is ArmorStand) {
-            unconfirmed[event.entity.id] = UnconfirmedMob(event.entity, System.nanoTime())
+        val entity = event.entity as? ArmorStand ?: return
+        val id = entity.id
+
+        // Remove on spawn, in case a newly-spawned mob has the same id as a previously-despawned mob. IDs are only guaranteed unique in the sense that two loaded entities can not have the same ID - a newly spawned one can get a previously despawned entity's ID.
+        unconfirmed.remove(id)
+        tracked.remove(id)
+        warned.remove(id)
+        defeated.remove(id)
+
+        // Missing rare mobs spawned directly after warping to Hub is an acceptable trade-off compared to pointlessly tracking unconfirmed mobs in every other island and risking memory leaks.
+        if (World.isInHub()) {
+            unconfirmed[id] = UnconfirmedMob(entity, System.nanoTime())
         }
     }
 
@@ -263,21 +356,28 @@ object DianaMobDetect {
 
     private fun hasMythoMobTypeChar(name: String): Boolean = name.contains("§2$MYTHO_MOB_TYPE_CHAR") || name.contains("§2✿")
 
-    private fun checkDianaMob(entity: ArmorStand, name: String, id: Int) : OverlayTextLine? {
+    private fun checkDianaMob(
+        entity: ArmorStand,
+        name: String,
+        id: Int,
+        hasMythoType: Boolean,
+        kingHitsMatch: MatchResult?,
+        health: HealthCache
+    ): OverlayTextLine? {
         if (name.isEmpty()) return null
 
-        parseKingHits(name)?.let {
+        kingHitsMatch?.groupValues?.getOrNull(1)?.toIntOrNull()?.let {
             return OverlayTextLine("§6King Minos §7- §5$it Hits", centered = true)
         }
 
-        if (!hasMythoMobTypeChar(name)) return null
+        if (!hasMythoType) return null
 
-        val health = parseHealthFromName(name)
+        val parsedHealth = health.get()
 
-        if (health != null) {
-            maybeTriggerHealthAlert(name, id, health)
+        if (parsedHealth != null) {
+            maybeTriggerHealthAlert(name, id, parsedHealth)
 
-            if (health <= 0.0 && id !in defeated) {
+            if (parsedHealth <= 0.0 && id !in defeated) {
                 defeated.add(id)
                 warned.remove(id)
                 SBOEvent.emit(DianaMobDeathEvent(name, entity))
@@ -293,7 +393,8 @@ object DianaMobDetect {
         id: Int,
         player: Player,
         currentClosest: ArmorStand?,
-        currentDistanceSq: Double
+        currentDistanceSq: Double,
+        health: HealthCache
     ): Pair<ArmorStand?, Double> {
         if (id in defeated) return currentClosest to currentDistanceSq
         val mobType = RareMob.fromName(name) ?: return currentClosest to currentDistanceSq
@@ -303,8 +404,8 @@ object DianaMobDetect {
         if (!shouldCheck) return currentClosest to currentDistanceSq
         if (parseStarFromName(name)) return currentClosest to currentDistanceSq
 
-        val health = parseHealthFromName(name)
-        if (health != null && health <= 0.0) return currentClosest to currentDistanceSq
+        val parsedHealth = health.get()
+        if (parsedHealth != null && parsedHealth <= 0.0) return currentClosest to currentDistanceSq
 
         val distSq = player.distanceToSqr(entity)
         return if (distSq < currentDistanceSq) {

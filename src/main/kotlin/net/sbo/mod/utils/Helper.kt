@@ -3,6 +3,7 @@ package net.sbo.mod.utils
 import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.entity.LivingEntity
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.tracker.Tracker
@@ -76,6 +77,32 @@ object Helper {
             .factory() // virtual threads are daemon by default
     )
 
+    /**
+     * Checks whether a mob is a valid entity in the hub. Checks that player is not null, level is not null and equal to the entity's level (reference equality), the entity must not be dead, the entity must be alive (different check than dead), and belong exactly to the current level (where a getEntity query with its entity ID returns exactly the same Entity instance with reference equality). Additionally performs invisibility check based on the parameter, although you usually do not want that.
+     *
+     * @param checkInvisibility whether or not a valid entity must not be invisible. Usually pass false for this, as Hypixel might hide and unhide the entity, and this checks the entity itself being invisible, not it is nametag; so for example an ArmorStand used only for its nametag counts as invisible, which would return as an invalid entity if this parameter was passed as true. Even for player entities; for example the Sphinx Diana mob becomes invisible whilst the question is pending an answer, then becomes visible again; only pass true into checkInvisibility if absolutely sure about it.
+     */
+    fun LivingEntity.isValidEntityInHub(checkInvisibility: Boolean): Boolean {
+        val level = mc.level
+
+        // Intentional reference equality; Entity#level() should return exactly mc.level, and ClientLevel#getEntity(I) should return exactly this entity; otherwise the entity does not belong to the current level.
+        return mc.player != null && level != null && this.level() === mc.level && !this.dead && World.isInHub() && this.isAlive && (!checkInvisibility || !this.isInvisible) && level.getEntity(this.id) === this
+    }
+
+    /**
+     * Essentially .forEach, but without the extra overhead from allocating an Iterator object.
+     *
+     * JIT compiler can usually optimize the iteration, but it does not prevent the Iterator object allocation itself.
+     * If any iterator allocations shows up in an allocation profiler report, switching to this can improve performance.
+     *
+     * Note that if the list is a LinkedList, you should keep using .forEach / for (item in list), as algorithmic complexity grows with indexed access.
+     */
+    inline fun <T> List<T>.fastForEach(action: (T) -> Unit) {
+        for (i in 0..<size) {
+            action(this[i])
+        }
+    }
+
     private fun onLootShare() {
         lastLootShare = System.nanoTime()
     }
@@ -87,7 +114,7 @@ object Helper {
     }
 
     fun init() {
-        Register.onChatMessageCancelable(Pattern.compile("^§e§lLOOT SHARE §fYou received .*? for assisting .*?!?$", Pattern.DOTALL)) { _, _ ->
+        Register.onChatMessageCancelable(Pattern.compile("^§e§lLOOT SHARE §fYou received .*? for assisting .*?!?$")) { _, _ ->
             onLootShare()
             true
         }
@@ -358,7 +385,7 @@ object Helper {
             return "0s"
         }
 
-        val totalSeconds = (milliseconds / 1000).toInt()
+        val totalSeconds = milliseconds / 1000
         val totalMinutes = totalSeconds / 60
         val totalHours = totalMinutes / 60
         val days = totalHours / 24
@@ -369,23 +396,29 @@ object Helper {
         val builder = StringBuilder()
 
         if (days > 0) {
-            builder.append("${days}d ")
+            builder.append(days).append('d')
         }
         if (hours > 0 || days > 0) {
-            builder.append("${hours}h ")
+            if (builder.isNotEmpty()) builder.append(' ')
+            builder.append(hours).append('h')
         }
         if (minutes > 0 || hours > 0 || days > 0) {
-            builder.append("${minutes}m ")
+            if (builder.isNotEmpty()) builder.append(' ')
+            builder.append(minutes).append('m')
         }
         if (builder.isEmpty()) {
             if (decimalSeconds) {
-                builder.append("${"%.1f".format(Locale.ROOT, milliseconds / 1000.0)}s")
+                val tenths = (milliseconds + 50) / 100
+                builder.append(tenths / 10)
+                    .append('.')
+                    .append(tenths % 10)
+                    .append('s')
             } else {
-                builder.append("${seconds}s")
+                builder.append(seconds).append('s')
             }
         }
 
-        return builder.toString().trim()
+        return builder.toString()
     }
 
     /**

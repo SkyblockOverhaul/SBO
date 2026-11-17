@@ -177,12 +177,12 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Trackers.TrackerLo
     fun shurikenUse(event: PlayerInteractEvent) {
         // useItemOn falls through to useItem when the block does nothing, so only watch useItem
         if (event.action != "useItem") return
-        if (event.player.mainHandItem.isShuriken() && isDiana()) onShurikenClick()
+        if (isDiana() && event.player.mainHandItem.isShuriken()) onShurikenClick()
     }
 
     @SboEvent
     fun shurikenAttack(event: StartAttackingEvent) {
-        if (event.getMainHandItem().isShuriken() && isDiana()) onShurikenClick()
+        if (isDiana() && event.getMainHandItem().isShuriken()) onShurikenClick()
     }
 
     @SboEvent

@@ -1,6 +1,5 @@
 package net.sbo.mod.guis.customizer
 
-import net.minecraft.network.chat.Style
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.guilib.core.dsl.button
 import net.sbo.guilib.core.dsl.chips
