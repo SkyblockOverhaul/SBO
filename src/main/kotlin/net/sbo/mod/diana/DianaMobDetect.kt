@@ -244,7 +244,6 @@ object DianaMobDetect {
                 val spawnTime = data.spawnTimeNs
 
                 if (!entity.isValidEntityInHub(checkInvisibility = false)) {
-                    logger.info("Removed invalid unconfirmed mob: ${entity.toDebugString()}")
                     unconfirmedIterator.remove()
                     continue
                 }
