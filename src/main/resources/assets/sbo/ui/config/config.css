@@ -276,6 +276,7 @@ body {
 
 .cfg-strings { display: flex; align-items: flex-start; gap: 2px; }
 .cfg-textarea { width: 160px; }
+.cfg-strings-actions { display: flex; flex-direction: column; gap: 2px; }
 .cfg-strings-expand { padding: 0 4px; color: var(--subtle); background-color: transparent; border-color: transparent; }
 .cfg-strings-expand:hover { color: var(--text-strong); background-color: var(--tint); }
 

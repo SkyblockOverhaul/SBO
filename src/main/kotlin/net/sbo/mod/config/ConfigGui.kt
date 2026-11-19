@@ -571,7 +571,15 @@ private fun NodeBuilder.strings(entry: StringsEntry, ui: Ui, refresh: () -> Unit
             entry.set(it.value.split("\n").toTypedArray())
             refresh()
         })
-        button(className = "cfg-strings-expand", title = "Edit in a bigger field", onClick = { ui.edit(entry) }) { +"⤢" }
+        div(className = "cfg-strings-actions") {
+            button(className = "cfg-strings-expand", title = "Edit in a bigger field", onClick = { ui.edit(entry) }) { +"⤢" }
+            entry.template?.let { template ->
+                button(className = "cfg-strings-expand", title = "Insert the template", onClick = {
+                    entry.set(template.split("\n").toTypedArray())
+                    refresh()
+                }) { +"↺" }
+            }
+        }
     }
 }
 

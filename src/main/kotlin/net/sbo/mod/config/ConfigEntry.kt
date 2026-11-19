@@ -322,7 +322,7 @@ class ChoiceEntry internal constructor(
     override fun parse(json: JsonElement) = (json as? JsonPrimitive)?.takeIf { it.isString }?.asString
 }
 
-class StringsEntry internal constructor(id: String, default: Array<String>, name: String, description: String) :
+class StringsEntry internal constructor(id: String, default: Array<String>, name: String, description: String, val template: String? = null) :
     ConfigEntry<Array<String>>(id, default, name, description) {
 
     override fun same(a: Array<String>, b: Array<String>) = a.contentEquals(b)

@@ -52,8 +52,8 @@ open class EntriesBuilder {
     fun choice(value: String, builder: ChoiceBuilder.() -> Unit = {}) =
         EntryProvider(null, ::ChoiceBuilder, builder) { id, b -> ChoiceEntry(id, value, b.name, b.description, b.options) }
 
-    fun strings(vararg value: String, builder: TypeBuilder.() -> Unit = {}) =
-        EntryProvider(null, ::TypeBuilder, builder) { id, b -> StringsEntry(id, arrayOf(*value), b.name, b.description) }
+    fun strings(vararg value: String, builder: StringsBuilder.() -> Unit = {}) =
+        EntryProvider(null, ::StringsBuilder, builder) { id, b -> StringsEntry(id, arrayOf(*value), b.name, b.description, b.template) }
 
     /** One constant of [E], options show the [Option] label and description. */
     inline fun <reified E : Enum<E>> option(value: E, noinline builder: TypeBuilder.() -> Unit = {}) =
@@ -168,6 +168,11 @@ class NumberBuilder<T>(id: String) : TypeBuilder(id) where T : Number, T : Compa
 class ColorBuilder(id: String) : TypeBuilder(id) {
     var allowAlpha: Boolean = false
     var presets: IntArray = intArrayOf()
+}
+
+class StringsBuilder(id: String) : TypeBuilder(id) {
+    /** Text the settings screen can put into the field with its template button, one line per entry. Null: no button. */
+    var template: String? = null
 }
 
 class ChoiceBuilder(id: String) : TypeBuilder(id) {
