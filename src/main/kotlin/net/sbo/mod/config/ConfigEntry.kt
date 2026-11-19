@@ -3,6 +3,7 @@ package net.sbo.mod.config
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonPrimitive
+import com.mojang.blaze3d.platform.InputConstants
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.Locale
@@ -331,6 +332,34 @@ class StringsEntry internal constructor(id: String, default: Array<String>, name
     override fun parse(json: JsonElement): Array<String>? {
         val array = json as? JsonArray ?: return null
         return array.mapNotNull { (it as? JsonPrimitive)?.takeIf { p -> p.isString }?.asString }.toTypedArray()
+    }
+}
+
+/**
+ * A key or mouse button, saved by Minecraft's name for it ("key.keyboard.g", "key.mouse.4") like options.txt does, so
+ * the same file works with GLFW and SDL key codes. Unbound while its [sub] is off or a requirement isn't met.
+ *
+ * @property menuOnly true for a key that only works in a menu, it can share its key with Minecraft's keys
+ */
+class KeybindEntry internal constructor(id: String, default: String, name: String, description: String, val menuOnly: Boolean) :
+    ConfigEntry<String>(id, default, name, description) {
+
+    /** The names of everything else bound to the same key, shown on the key in the settings screen. */
+    var conflicts: () -> List<String> = { emptyList() }
+
+    override val effectiveValue: String
+        get() = if (sub?.enabled == false || !requirementsMet) UNBOUND else value
+
+    override fun toJson() = JsonPrimitive(value)
+    override fun parse(json: JsonElement) = (json as? JsonPrimitive)?.takeIf { it.isString }?.asString
+
+    companion object {
+        /** The saved name of no key. */
+        val UNBOUND: String = InputConstants.UNKNOWN.name
+
+        /** The key [name] stands for, [InputConstants.UNKNOWN] for unbound and names Minecraft doesn't know. */
+        fun keyOf(name: String): InputConstants.Key =
+            runCatching { InputConstants.getKey(name) }.getOrDefault(InputConstants.UNKNOWN)
     }
 }
 

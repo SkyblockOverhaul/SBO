@@ -1,5 +1,6 @@
 package net.sbo.mod.config
 
+import com.mojang.blaze3d.platform.InputConstants
 import net.sbo.guilib.core.dom.component
 import net.sbo.guilib.core.dom.createContext
 import net.sbo.guilib.core.dsl.NodeBuilder
@@ -498,6 +499,7 @@ private fun NodeBuilder.control(entry: ConfigEntry<*>, ui: Ui, refresh: () -> Un
             refresh()
         })
         is StringsEntry -> strings(entry, ui, refresh)
+        is KeybindEntry -> KeybindControl(KeybindProps(entry, entry.value, entry.conflicts(), locked, ui.changed))
         is ChoiceEntry -> {
             val options = entry.options()
             select(value = entry.value, className = "cfg-select", onChange = { event ->
@@ -599,6 +601,89 @@ private fun NodeBuilder.strings(entry: StringsEntry, ui: Ui, refresh: () -> Unit
         }
     }
 }
+
+/**
+ * The props change with the key and its conflicts, GuiLib only draws the control again when they do.
+ *
+ * @property entry the key setting the control changes
+ * @property value the key of [entry]
+ * @property conflicts everything else bound to [value], see [KeybindEntry.conflicts]
+ * @property locked true while a requirement of [entry] isn't met, the control is disabled then
+ * @property changed called after [entry] got a new key
+ */
+private data class KeybindProps(
+    val entry: KeybindEntry,
+    val value: String,
+    val conflicts: List<String>,
+    val locked: Boolean,
+    val changed: () -> Unit,
+)
+
+/** The key of a [KeybindEntry]: click it, then press a key or click it again with a mouse button. Escape unbinds. */
+private val KeybindControl = component<KeybindProps>("ConfigKeybind") { (entry, value, conflicts, locked, changed) ->
+    var listening by useState(false)
+    // The click after binding the left button must not start listening again
+    val boundByClick = useRef(false)
+
+    fun bind(key: InputConstants.Key) {
+        listening = false
+        entry.set(key.name)
+        changed()
+    }
+
+    div(className = "cfg-keybind") {
+        // Left of the key, so the keys of every row stay lined up
+        val conflictText = if (conflicts.isEmpty()) null else "Also bound to: ${conflicts.joinToString(", ")}"
+        if (conflictText != null) span(className = "cfg-keybind-conflict", title = conflictText) { +"⚠" }
+        if (value != entry.default) {
+            button(className = "cfg-strings-action", title = "Reset to default", disabled = locked, onClick = {
+                listening = false
+                entry.reset()
+                changed()
+            }) { img("sbo:ui/config/reset.svg", className = "cfg-strings-icon") }
+        }
+        val label = if (listening) "> Press a key <" else KeybindEntry.keyOf(value).displayName.string
+        button(
+            className = listOfNotNull("cfg-button cfg-keybind-button", "listening".takeIf { listening }, "conflict".takeIf { conflictText != null })
+                .joinToString(" "),
+            title = conflictText,
+            disabled = locked,
+            onClick = {
+                if (boundByClick.current) boundByClick.current = false
+                else listening = true
+            },
+            onMouseDown = { e ->
+                if (listening) {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    boundByClick.current = e.button == 0
+                    bind(InputConstants.Type.MOUSE.getOrCreate(minecraftButton(e.button)))
+                }
+            },
+            onKeyDown = { e ->
+                if (listening) {
+                    // Also keeps Escape from going back
+                    e.preventDefault()
+                    e.stopPropagation()
+                    bind(if (e.key == "Escape") InputConstants.UNKNOWN else InputConstants.Type.KEYSYM.getOrCreate(e.keyCode))
+                }
+            },
+            onBlur = { listening = false },
+        ) { +label }
+    }
+}
+
+/** GuiLib's [domButton] (0 left, 1 middle, 2 right, like the DOM) as Minecraft's button number (GLFW, SDL from 26.3). */
+private fun minecraftButton(domButton: Int): Int =
+    //#if MC >= 26.3
+    //$$ domButton + 1
+    //#else
+    when (domButton) {
+        1 -> 2
+        2 -> 1
+        else -> domButton
+    }
+    //#endif
 
 private data class EditorProps(val entry: StringsEntry, val close: () -> Unit)
 

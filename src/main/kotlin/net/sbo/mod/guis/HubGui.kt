@@ -63,8 +63,13 @@ object HubGui {
         ConfigGui.open(Settings, "SBO Settings", onBack = ::open, whatsNew = SettingsChanges.whatsNew(), page = page, query = if (page == null) arg else "")
     }
 
-    // "Rare Mobs", "rare_mobs" and "raremobs" all name the same category
+    /** [name] in lower case without spaces or "_", so "Rare Mobs", "rare_mobs" and "raremobs" name the same category. */
     private fun pageKey(name: String) = name.lowercase().filter { it.isLetterOrDigit() }
+
+    /** Opens the settings on [page], back goes to [onBack]. */
+    fun openSettings(page: Category, onBack: () -> Unit) {
+        ConfigGui.open(Settings, "SBO Settings", onBack = onBack, whatsNew = SettingsChanges.whatsNew(), page = page)
+    }
 
     fun settingsScreen(): GuiLibScreen = ConfigGui.screen(Settings, "SBO Settings", onBack = ::open, whatsNew = SettingsChanges.whatsNew())
 

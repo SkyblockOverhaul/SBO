@@ -46,6 +46,7 @@ import net.sbo.mod.partyfinder.StatReporter
 import net.sbo.mod.partyfinder.gui.PartyFinderGui
 import net.sbo.mod.profileviewer.ProfileViewerGui
 import net.sbo.mod.partyfinder.PartyPlayer
+import net.sbo.mod.qol.LoadoutKeybinds
 import net.sbo.mod.qol.MessageHider
 import net.sbo.mod.settings.Settings
 import net.sbo.mod.settings.SettingsChanges
@@ -58,6 +59,7 @@ import net.sbo.mod.utils.game.InventoryUtils
 import net.sbo.mod.utils.game.Mayor
 import net.sbo.mod.utils.game.TabList
 import net.sbo.mod.utils.game.World
+import net.sbo.mod.utils.input.KeybindConflicts
 import net.sbo.mod.utils.time.TimeUtil
 import net.sbo.mod.utils.overlay.OverlayManager
 import net.sbo.mod.utils.version.UpdateChecker
@@ -182,6 +184,8 @@ object SBOKotlin : ClientModInitializer {
 		ModConflicts.init()
 		ClickActionManager.init()
 		SboKeyBinds.init()
+		LoadoutKeybinds.init()
+		KeybindConflicts.init()
 		WaypointManager.init()
 		HypixelModApi.init()
 		PartyFinderManager.init()

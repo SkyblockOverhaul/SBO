@@ -1,136 +1,67 @@
 package net.sbo.mod.utils
 
-import com.mojang.blaze3d.platform.InputConstants
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
-import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper
-import net.minecraft.client.KeyMapping
-import net.minecraft.client.Minecraft
-import net.sbo.mod.SBOKotlin
+import net.minecraft.client.gui.components.Button
+import net.minecraft.client.gui.components.Tooltip
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.network.chat.Component
+import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.sphinx.SphinxSolver
+import net.sbo.mod.guis.HubGui
+import net.sbo.mod.settings.categories.Keybinds
 import net.sbo.mod.utils.chat.Chat
+import net.sbo.mod.utils.input.KeyInput
 import net.sbo.mod.utils.waypoint.WaypointManager
-import org.lwjgl.glfw.GLFW
-import java.util.concurrent.TimeUnit
 
+/** The keys from the Keybinds settings that work outside of menus, each fires once per press. */
 object SboKeyBinds {
-    private data class KeyPressState(
-        var isHeldDown: Boolean = false,
-        var lastActivationNanos: Long = 0L
-    )
+    /**
+     * @property key the name of the bound key, read from the settings every tick
+     * @property cooldownMs the least time between two runs, also when pressed again
+     */
+    private class Action(val key: () -> String, val cooldownMs: Long = 0L, val run: () -> Unit) {
+        var held = false
+        var lastRun = 0L
+    }
 
-    private val keyStates = mutableMapOf<String, KeyPressState>()
-    private val SBO_CATEGORY = KeyMapping.Category(SBOKotlin.id(owner = "sbo-kotlin", path = "keybinds"))
+    private val actions = listOf(
+        Action({ Keybinds.rareMobWarpKey }) { WaypointManager.warpToRareMob() },
+        Action({ Keybinds.guessWarpKey }) { WaypointManager.warpToGuess() },
+        Action({ Keybinds.generalWarpKey }) { WaypointManager.warpBoth() },
+        Action({ Keybinds.sendCoordsKey }, cooldownMs = 500L) {
+            val playerPos = Player.getLastPosition()
+            Chat.say("x: ${playerPos.x.toInt()}, y: ${playerPos.y.toInt() - 1}, z: ${playerPos.z.toInt()} ") // patcher sendcoords format
+        },
+        Action({ Keybinds.sphinxSolverKey }) { SphinxSolver.solve() },
+        Action({ Keybinds.clearRareMobWorldWaypointsKey }) { WaypointManager.removeRareMobAndWorldWaypoints() },
+    )
 
     fun init() {
-        register()
-        registerKeyBindListener()
+        ClientTickEvents.END_CLIENT_TICK.register { tick() }
     }
 
-    private val guessWarpKey: KeyMapping = KeyMapping(
-        "key.sbo-kotlin.guess_warp",
-        InputConstants.Type.KEYSYM,
-        GLFW.GLFW_KEY_UNKNOWN,
-        SBO_CATEGORY
-    )
-
-    private val rareMobWarpKey: KeyMapping = KeyMapping(
-        "key.sbo-kotlin.rare_mob_warp",
-        InputConstants.Type.KEYSYM,
-        GLFW.GLFW_KEY_UNKNOWN,
-        SBO_CATEGORY
-    )
-
-    private val generalWarpKey: KeyMapping = KeyMapping(
-        "key.sbo-kotlin.general_warp",
-        InputConstants.Type.KEYSYM,
-        GLFW.GLFW_KEY_UNKNOWN,
-        SBO_CATEGORY
-    )
-
-    private val sendCoordsKey: KeyMapping = KeyMapping(
-        "key.sbo-kotlin.send_coords",
-        InputConstants.Type.KEYSYM,
-        GLFW.GLFW_KEY_UNKNOWN,
-        SBO_CATEGORY
-    )
-
-    private val sphinxSolverKey: KeyMapping = KeyMapping(
-        "key.sbo-kotlin.sphinx_solver",
-        InputConstants.Type.KEYSYM,
-        GLFW.GLFW_KEY_UNKNOWN,
-        SBO_CATEGORY
-    )
-
-    private val clearRareMobWorldWaypointsKey: KeyMapping = KeyMapping(
-        "key.sbo-kotlin.clear_rare_mob_world_waypoints",
-        InputConstants.Type.KEYSYM,
-        GLFW.GLFW_KEY_UNKNOWN,
-        SBO_CATEGORY
-    )
-
-    fun register() {
-        KeyMappingHelper.registerKeyMapping(guessWarpKey)
-        KeyMappingHelper.registerKeyMapping(rareMobWarpKey)
-        KeyMappingHelper.registerKeyMapping(generalWarpKey)
-        KeyMappingHelper.registerKeyMapping(sendCoordsKey)
-        KeyMappingHelper.registerKeyMapping(sphinxSolverKey)
-        KeyMappingHelper.registerKeyMapping(clearRareMobWorldWaypointsKey)
-    }
-
-    private fun handlePressAction(keyBinding: KeyMapping, action: () -> Unit) {
-        handlePressAction(keyBinding, 0L, action)
-    }
-
-    private fun handlePressAction(
-        keyBinding: KeyMapping,
-        cooldownMillis: Long,
-        action: () -> Unit
-    ) {
-        val state = keyStates.getOrPut(keyBinding.name) { KeyPressState() }
-
-        if (keyBinding.isDown) {
-            val currentTimeNanos = System.nanoTime()
-
-            if (
-                !state.isHeldDown &&
-                currentTimeNanos - state.lastActivationNanos >=
-                TimeUnit.MILLISECONDS.toNanos(cooldownMillis)
-            ) {
-                action()
-                state.lastActivationNanos = currentTimeNanos
-                state.isHeldDown = true
+    private fun tick() {
+        for (action in actions) {
+            val down = KeyInput.isDown(action.key())
+            if (down && !action.held) {
+                val now = System.currentTimeMillis()
+                if (now - action.lastRun >= action.cooldownMs) {
+                    action.lastRun = now
+                    action.run()
+                }
             }
-        } else {
-            state.isHeldDown = false
+            action.held = down
         }
     }
 
-    private fun registerKeyBindListener() {
-        ClientTickEvents.END_CLIENT_TICK.register(ClientTickEvents.EndTick { _: Minecraft ->
-            handlePressAction(rareMobWarpKey) {
-                WaypointManager.warpToRareMob()
-            }
-
-            handlePressAction(guessWarpKey) {
-                WaypointManager.warpToGuess()
-            }
-
-            handlePressAction(generalWarpKey) {
-                WaypointManager.warpBoth()
-            }
-
-            handlePressAction(sendCoordsKey, 500L) {
-                val playerPos = Player.getLastPosition()
-                Chat.say("x: ${playerPos.x.toInt()}, y: ${playerPos.y.toInt() - 1}, z: ${playerPos.z.toInt()} ") // patcher sendcoords format
-            }
-
-            handlePressAction(sphinxSolverKey) {
-                SphinxSolver.solve()
-            }
-
-            handlePressAction(clearRareMobWorldWaypointsKey) {
-                WaypointManager.removeRareMobAndWorldWaypoints()
-            }
-        })
-    }
+    /**
+     * The button KeyBindsScreenMixin adds to Minecraft's Key Binds screen, the SBO keys used to be there.
+     *
+     * @param screen the Key Binds screen, back in the settings returns to it
+     */
+    @JvmStatic
+    fun controlsButton(screen: Screen): Button =
+        Button.builder(Component.translatable("sbo.controls.keybinds")) { HubGui.openSettings(Keybinds) { mc.setScreen(screen) } }
+            .tooltip(Tooltip.create(Component.translatable("sbo.controls.keybinds.tooltip")))
+            .build()
 }

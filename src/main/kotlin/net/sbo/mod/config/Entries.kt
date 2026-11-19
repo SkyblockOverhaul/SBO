@@ -49,6 +49,10 @@ open class EntriesBuilder {
     fun string(value: String, builder: TypeBuilder.() -> Unit = {}) =
         EntryProvider(null, ::TypeBuilder, builder) { id, b -> StringEntry(id, value, b.name, b.description) }
 
+    /** A key or mouse button, [default] is Minecraft's name for it ("key.keyboard.1"), unbound when left out. */
+    fun keybind(default: String = KeybindEntry.UNBOUND, builder: KeybindBuilder.() -> Unit = {}) =
+        EntryProvider(null, ::KeybindBuilder, builder) { id, b -> KeybindEntry(id, default, b.name, b.description, b.menuOnly) }
+
     fun choice(value: String, builder: ChoiceBuilder.() -> Unit = {}) =
         EntryProvider(null, ::ChoiceBuilder, builder) { id, b -> ChoiceEntry(id, value, b.name, b.description, b.options) }
 
@@ -168,6 +172,11 @@ class NumberBuilder<T>(id: String) : TypeBuilder(id) where T : Number, T : Compa
 class ColorBuilder(id: String) : TypeBuilder(id) {
     var allowAlpha: Boolean = false
     var presets: IntArray = intArrayOf()
+}
+
+class KeybindBuilder(id: String) : TypeBuilder(id) {
+    /** True for a key that only works in a menu, it can share its key with Minecraft's keys then. */
+    var menuOnly: Boolean = false
 }
 
 class StringsBuilder(id: String) : TypeBuilder(id) {

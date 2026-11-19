@@ -19,6 +19,7 @@ object Settings : Config("sbo/config") {
         category(Trackers)
         category(Drops)
         category(General)
+        category(Keybinds)
         category(PartyCommands)
         category(Themes)
         category(Debug)

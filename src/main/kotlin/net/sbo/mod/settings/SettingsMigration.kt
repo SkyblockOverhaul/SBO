@@ -4,17 +4,47 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonPrimitive
+import net.fabricmc.loader.api.FabricLoader
 import net.sbo.mod.config.Category
 import net.sbo.mod.config.Config
+import net.sbo.mod.settings.categories.Keybinds
+import java.nio.file.Files
 
 // Moves the values of an older config.jsonc to where the settings are now, before the categories load it
 internal object SettingsMigration {
-    const val VERSION = 1
+    const val VERSION = 2
 
     fun migrate(json: JsonObject) {
         val version = (json.get(Config.VERSION_KEY) as? JsonPrimitive)?.takeIf { it.isNumber }?.asInt ?: 0
         if (version < 1) toV1(json)
+        if (version < 2) toV2(json)
     }
+
+    /**
+     * Takes the SBO keys over from options.txt into the Keybinds category. Until 0.7.3 they were Minecraft key mappings,
+     * saved there as "key_<mapping>:<key>", and Minecraft drops them the next time it saves its options.
+     */
+    private fun toV2(json: JsonObject) {
+        val options = FabricLoader.getInstance().gameDir.resolve("options.txt")
+        val lines = runCatching { Files.readAllLines(options) }.getOrNull() ?: return
+        val keybinds = json.get(Keybinds.id) as? JsonObject ?: JsonObject().also { json.add(Keybinds.id, it) }
+        for (line in lines) {
+            val mapping = line.substringBefore(':').removePrefix("key_")
+            val id = OLD_KEY_MAPPINGS[mapping] ?: continue
+            val key = line.substringAfter(':', "").trim()
+            if (key.isNotEmpty() && !keybinds.has(id)) keybinds.addProperty(id, key)
+        }
+    }
+
+    /** Old Minecraft key mapping name to the id of its setting in [Keybinds]. */
+    private val OLD_KEY_MAPPINGS = mapOf(
+        "key.sbo-kotlin.guess_warp" to "guessWarpKey",
+        "key.sbo-kotlin.rare_mob_warp" to "rareMobWarpKey",
+        "key.sbo-kotlin.general_warp" to "generalWarpKey",
+        "key.sbo-kotlin.send_coords" to "sendCoordsKey",
+        "key.sbo-kotlin.sphinx_solver" to "sphinxSolverKey",
+        "key.sbo-kotlin.clear_rare_mob_world_waypoints" to "clearRareMobWorldWaypointsKey",
+    )
 
     // The Diana category was split into Burrows, Waypoints, Warps, Rare Mobs, Trackers and Drops.
     // Customization, Medal and QOL went into those and General. Every setting kept its id, so it is
