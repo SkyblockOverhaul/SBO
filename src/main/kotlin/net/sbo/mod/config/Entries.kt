@@ -49,6 +49,10 @@ open class EntriesBuilder {
     fun string(value: String, builder: TypeBuilder.() -> Unit = {}) =
         EntryProvider(null, ::TypeBuilder, builder) { id, b -> StringEntry(id, value, b.name, b.description) }
 
+    /** A key or mouse button, [default] is Minecraft's name for it ("key.keyboard.1"), unbound when left out. */
+    fun keybind(default: String = KeybindEntry.UNBOUND, builder: TypeBuilder.() -> Unit = {}) =
+        EntryProvider(null, ::TypeBuilder, builder) { id, b -> KeybindEntry(id, default, b.name, b.description) }
+
     fun choice(value: String, builder: ChoiceBuilder.() -> Unit = {}) =
         EntryProvider(null, ::ChoiceBuilder, builder) { id, b -> ChoiceEntry(id, value, b.name, b.description, b.options) }
 

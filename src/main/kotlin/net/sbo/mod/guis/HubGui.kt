@@ -52,6 +52,11 @@ object HubGui {
         ConfigGui.open(Settings, "SBO Settings", onBack = ::open, whatsNew = SettingsChanges.whatsNew(force = whatsNew))
     }
 
+    /** Opens the settings on [page], back goes to [onBack]. */
+    fun openSettings(page: Category, onBack: () -> Unit) {
+        ConfigGui.open(Settings, "SBO Settings", onBack = onBack, whatsNew = SettingsChanges.whatsNew(), page = page)
+    }
+
     fun settingsScreen(): GuiLibScreen = ConfigGui.screen(Settings, "SBO Settings", onBack = ::open, whatsNew = SettingsChanges.whatsNew())
 
     private class Tile(

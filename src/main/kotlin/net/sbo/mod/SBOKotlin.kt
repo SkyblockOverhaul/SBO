@@ -46,6 +46,7 @@ import net.sbo.mod.partyfinder.StatReporter
 import net.sbo.mod.partyfinder.gui.PartyFinderGui
 import net.sbo.mod.profileviewer.ProfileViewerGui
 import net.sbo.mod.partyfinder.PartyPlayer
+import net.sbo.mod.qol.LoadoutKeybinds
 import net.sbo.mod.qol.MessageHider
 import net.sbo.mod.settings.Settings
 import net.sbo.mod.settings.SettingsChanges
@@ -174,6 +175,7 @@ object SBOKotlin : ClientModInitializer {
 		ModConflicts.init()
 		ClickActionManager.init()
 		SboKeyBinds.init()
+		LoadoutKeybinds.init()
 		WaypointManager.init()
 		HypixelModApi.init()
 		PartyFinderManager.init()

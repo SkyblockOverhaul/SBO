@@ -4,7 +4,7 @@ import net.sbo.mod.config.Category
 import net.sbo.mod.utils.waypoint.AdditionalHubWarps
 
 object Warps : Category("Warps") {
-    override val description = "The guess and rare mob warp keys. Set the keys in (ESC) -> Options -> Controls -> Key Binds..., under SBO - Keybinds."
+    override val description = "The guess and rare mob warp keys. Set the keys in the Keybinds category."
 
     init {
         sub {
