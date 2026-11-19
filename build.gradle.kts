@@ -79,6 +79,13 @@ afterEvaluate {
     tasks.withType<PreprocessTask>().configureEach {
         sourceMappings = null
         destinationMappings = null
+
+        // The preprocessor copies every "*kotlin" source dir of the previous version, which includes that version's KSP
+        // output. Each version runs KSP on its own sources anyway, so skip those dirs; then preprocessCode no longer has to
+        // wait for the previous version's kspKotlin and the versions build in parallel.
+        entries = entries.mapTo(mutableListOf()) { entry ->
+            entry.copy(source = files(entry.source.files.filterNot { it.invariantSeparatorsPath.contains("/build/generated/ksp/") }))
+        }
     }
 }
 
@@ -631,19 +638,4 @@ dependencies {
     }
 }
 
-tasks.findByName("preprocessCode")?.apply {
-    when (mcProject) {
-        "26.3-fabric" -> dependsOn(":26.2-fabric:kspKotlin")
-        "26.2-fabric" -> dependsOn(":26.1.2-fabric:kspKotlin")
-        else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")
-    }
-}
-
-tasks.findByName("preprocessTestCode")?.apply {
-    when (mcProject) {
-        "26.3-fabric" -> dependsOn(":26.2-fabric:kspTestKotlin")
-        "26.2-fabric" -> dependsOn(":26.1.2-fabric:kspTestKotlin")
-        else -> throw AssertionError("build.gradle.kts needs updating for $mcProject")
-    }
-}
 
