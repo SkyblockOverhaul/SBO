@@ -1,6 +1,5 @@
-package net.sbo.mod.utils
+package net.sbo.mod.utils.input
 
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.gui.components.Button
 import net.minecraft.client.gui.components.Tooltip
 import net.minecraft.client.gui.screens.Screen
@@ -9,8 +8,10 @@ import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.sphinx.SphinxSolver
 import net.sbo.mod.guis.HubGui
 import net.sbo.mod.settings.categories.Keybinds
+import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.input.KeyInput
+import net.sbo.mod.utils.events.annotations.SboEvent
+import net.sbo.mod.utils.events.impl.game.TickEvent
 import net.sbo.mod.utils.waypoint.WaypointManager
 
 /** The keys from the Keybinds settings that work outside of menus, each fires once per press. */
@@ -36,11 +37,8 @@ object SboKeyBinds {
         Action({ Keybinds.clearRareMobWorldWaypointsKey }) { WaypointManager.removeRareMobAndWorldWaypoints() },
     )
 
-    fun init() {
-        ClientTickEvents.END_CLIENT_TICK.register { tick() }
-    }
-
-    private fun tick() {
+    @SboEvent
+    fun onTick(event: TickEvent) {
         for (action in actions) {
             val down = KeyInput.isDown(action.key())
             if (down && !action.held) {

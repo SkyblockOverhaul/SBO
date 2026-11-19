@@ -183,7 +183,6 @@ object SBOKotlin : ClientModInitializer {
 		SboBadges.init()
 		ModConflicts.init()
 		ClickActionManager.init()
-		SboKeyBinds.init()
 		LoadoutKeybinds.init()
 		KeybindConflicts.init()
 		WaypointManager.init()

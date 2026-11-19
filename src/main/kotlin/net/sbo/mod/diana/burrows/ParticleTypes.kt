@@ -1,7 +1,7 @@
 package net.sbo.mod.diana.burrows
 
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
-import net.sbo.mod.utils.NumberUtil.roundTo
+import net.sbo.mod.utils.math.NumberUtil.roundTo
 import net.minecraft.core.particles.ParticleTypes as MCParticleTypes
 
 internal object ParticleTypes {
