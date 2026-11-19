@@ -25,6 +25,9 @@ private const val MAX_OPACITY = 1.0f
 private const val FADE_START_DISTANCE = 4.5
 private const val FADE_END_DISTANCE = 100.0
 
+private val EMPTY_COMPONENT = Component.nullToEmpty("")
+private val EMPTY_FORMATTED_CHAR_SEQUENCE = EMPTY_COMPONENT.visualOrderText
+
 internal fun calculateDynamicOpacity(distance: Double): Float = when {
     !distance.isFinite() -> MAX_OPACITY
     Waypoints.lookAlike -> (0.1f + 0.005f * (distance * distance).toFloat()).coerceIn(MIN_OPACITY, MAX_OPACITY)
@@ -63,36 +66,43 @@ class Waypoint(
     private var formatted: Boolean = false
     private var distanceRaw: Double = 0.0
     private var distanceText: String = ""
-    private var component: Component = Component.nullToEmpty(text)
-    private var formattedText: String = text
+    private var component: Component = EMPTY_COMPONENT
+    private var formattedText: String = ""
         set(value) {
+            if (field == value) return
+
             field = value
             hasText = value.isNotEmpty()
-
-            component = Component.nullToEmpty(value)
-
-            visualOrderText = component.visualOrderText
-            textWidth = mc.font.width(visualOrderText)
+            visualTextDirty = true
         }
-    // Font.width may lazily bake and upload glyphs, which is render-thread only.
-    // A waypoint is sometimes constructed while handling a network packet, before
-    // format() runs on the client thread and fills this cache.
+    // Font.width may lazily bake and upload glyphs, so visual text is prepared
+    // lazily on the render thread rather than while formatting hidden waypoints.
     private var textWidth = 0
     private var hasText = text.isNotEmpty()
+    private var visualTextDirty = true
 
     var isClosest = false
+
+    private companion object {
+        /** The warp title and subtitle set last, so the next tick knows the title on screen is its own and may replace it. */
+        var lastWarpTitle = ""
+        var lastWarpSubtitle = ""
+    }
     var timesDug = 0
     var userInteractedWith = false
     private var dynamicOpacity = 1.0f
+    @JvmField
     var preventInvalidRemoval = false
     var rareMobMissingTicks: Int = 0
     var preventStaleRareMobRemoval = false
 
-    private var visualOrderText = Component.nullToEmpty(text).visualOrderText
+    private var visualOrderText = EMPTY_FORMATTED_CHAR_SEQUENCE
 
+    private var secondaryTextSource: String? = null
     private var secondaryText: Component? = null
     private var secondaryTextWidth = 0
     private var secondaryVisualOrderText: FormattedCharSequence? = null
+    private var secondaryVisualTextDirty = false
 
     fun hasStrongerStateThan(other: Waypoint): Boolean =
         this.timesDug > other.timesDug || this.userInteractedWith && !other.userInteractedWith
@@ -129,28 +139,49 @@ class Waypoint(
         } else {
             ""
         }
-
-        clearSecondaryText()
     }
 
     private fun getWaypointDistanceText(): String = if (Waypoints.lookAlike) "" else distanceText
 
-    private fun setSecondaryDistanceText() {
-        if (!Waypoints.lookAlike || distanceText.isEmpty()) return
+    private fun updateSecondaryDistanceText(show: Boolean) {
+        val newText = if (show && Waypoints.lookAlike && distanceText.isNotEmpty()) {
+            distanceText.trim()
+        } else {
+            null
+        }
 
-        val component = Component.nullToEmpty(distanceText.trim())
+        if (newText == secondaryTextSource) return
 
-        secondaryText = component
-        val visualOrderText = component.visualOrderText
+        secondaryTextSource = newText
 
-        secondaryTextWidth = mc.font.width(visualOrderText)
-        secondaryVisualOrderText = visualOrderText
+        if (newText == null) {
+            secondaryText = null
+            secondaryTextWidth = 0
+            secondaryVisualOrderText = null
+            secondaryVisualTextDirty = false
+            return
+        }
+
+        secondaryVisualTextDirty = true
     }
 
-    private fun clearSecondaryText() {
-        secondaryText = null
-        secondaryTextWidth = 0
-        secondaryVisualOrderText = null
+    private fun updateVisualText() {
+        if (visualTextDirty) {
+            component = Component.nullToEmpty(formattedText)
+            visualOrderText = component.visualOrderText
+            textWidth = mc.font.width(visualOrderText)
+            visualTextDirty = false
+        }
+
+        if (secondaryVisualTextDirty) {
+            val component = Component.nullToEmpty(secondaryTextSource!!)
+            val visualOrderText = component.visualOrderText
+
+            secondaryText = component
+            secondaryVisualOrderText = visualOrderText
+            secondaryTextWidth = mc.font.width(visualOrderText)
+            secondaryVisualTextDirty = false
+        }
     }
 
     private fun setWarpText() {
@@ -182,14 +213,23 @@ class Waypoint(
 
                 val text = "§" + (if (this.type == "rareMob") "d" else "b") + "Warp §e$warpName${if (Waypoints.lookAlike) " §b[${distanceRaw.roundToInt()}m]" else distanceText}"
                 val asSubtitle = Warps.warpTitleAsSubtitle
+                val title = if (asSubtitle) "" else text
+                val subtitle = if (asSubtitle) text else ""
 
-                val titleBusy = !mc.gui.title?.string.isNullOrEmpty() && mc.gui.titleTime > 0 // When asSubtitle is disabled, Helper.showTitle checks internally if busy or not; but when its subtitle, it appends warp subtitle inside another one, e.g. Use Spade one, with higher duration, causing warp title to keep showing as subtitle even after warping till the main title (e.g., Use Spade one) expires; this makes it delay warp title till the original title disappears which fixes the issue.
+                // Another title (Use Spade, rare mob, drops, Hypixel) is showing: wait until it is gone, so the warp text is not mixed into it.
+                // A title we set ourselves last tick, an empty one, or one whose time ran out is overwritten, which resets its times to 1 tick every tick.
+                // A times packet arriving while a title shows (Hypixel) changes its time: with a stay of 0 the title is left with time 0 but is never cleared,
+                // so it counted as "showing" forever and the warp title never came back; with a long fade in it stayed almost invisible.
+                val currentTitle = mc.gui.title?.string.orEmpty()
+                val currentSubtitle = mc.gui.subtitle?.string.orEmpty()
+                val isEmpty = currentTitle.isEmpty() && currentSubtitle.isEmpty()
+                val isOurs = currentTitle == lastWarpTitle && currentSubtitle == lastWarpSubtitle
+                val titleBusy = mc.gui.title != null && mc.gui.titleTime > 0 && !isEmpty && !isOurs
 
-                if (!asSubtitle || !titleBusy) {
-                    val title = if (asSubtitle) "" else text
-                    val subtitle = if (asSubtitle) text else null
-
-                    Helper.showTitle(title, subtitle, 0, 1, 0, overwrite = false) // 1 ticks because next tick this will be called again. Overwrite false to not wipe rare mob title or use spade title.
+                if (!titleBusy) {
+                    Helper.showTitle(title, subtitle, 0, 1, 0) // 1 tick because next tick this will be called again
+                    lastWarpTitle = title
+                    lastWarpSubtitle = subtitle
                 }
             }
         } else {
@@ -260,9 +300,7 @@ class Waypoint(
         return RgbAndHex(floatArrayOf(r, g, b), color.rgb)
     }
 
-    fun format(
-        inqWaypoints: List<Waypoint>
-    ) {
+    fun format(rareMobWaypoints: List<Waypoint>) {
         this.distanceRaw = distanceToPlayer()
         this.dynamicOpacity = if (Waypoints.dynamicWaypointOpacity) updateDynamicOpacity() else (Waypoints.waypointOpacity / 100.0).toFloat().coerceIn(0.2f, 1.0f)
 
@@ -270,15 +308,14 @@ class Waypoint(
 
         when (this.type) {
             "guess", "arrow", "burrow", "spadeSpot" -> {
-                if (isClosest && !inqWaypoints.isEmpty()) isClosest = false
+                if (isClosest && !rareMobWaypoints.isEmpty()) isClosest = false
                 this.line = Waypoints.guessAndBurrowLine && isClosest
 
                 setWarpText()
-                setSecondaryDistanceText()
             }
 
             "rareMob" -> {
-                val newest = inqWaypoints.last() == this
+                val newest = rareMobWaypoints.last() == this
 
                 if (newest) isClosest = true
                 this.line = newest && Waypoints.inqLine && this.distanceRaw >= 8.0
@@ -288,14 +325,11 @@ class Waypoint(
                 } else {
                     this.formattedText = "$text${getWaypointDistanceText()}"
                 }
-
-                setSecondaryDistanceText()
             }
 
             "world" -> {
                 this.line = false
                 this.formattedText = "$text${getWaypointDistanceText()}"
-                setSecondaryDistanceText()
             }
 
             "subGuess", "debug" -> {
@@ -306,9 +340,10 @@ class Waypoint(
             else -> {
                 this.line = false
                 this.formattedText = "$text${getWaypointDistanceText()}"
-                setSecondaryDistanceText()
             }
         }
+
+        updateSecondaryDistanceText(this.type != "subGuess" && this.type != "debug")
 
         formatted = true
     }
@@ -322,6 +357,8 @@ class Waypoint(
 
     fun render(context: LevelRenderContext) {
         if (!this.formatted || this.hidden) return
+
+        updateVisualText()
 
         val rgbAndHex = getRgbAndHex()
 

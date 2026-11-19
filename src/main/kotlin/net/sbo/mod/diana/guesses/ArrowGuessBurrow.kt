@@ -45,23 +45,19 @@ object ArrowGuessBurrow {
     private const val COUNT_NEAR_TIP = 4
     private const val COUNT_NEAR_BASE = 2
     private const val EPSILON = 1e-6
-    private val HUB_BOUNDS_MIN = SboVec(-283.0, 60.0, -208.0)
-    private val HUB_BOUNDS_MAX = SboVec(175.0, 105.0, 205.0)
-    /** The Hub island, guesses outside of it are never valid. */
+    // TODO: measured with /sbodebughubscan on the live Hub and the Alpha Network (Nov 2026), re-check once the alpha
+    //  changes are live. Alpha needs max x 210 (fairy forest grass up to x 203), both need min y 51 (grass at y 52 in
+    //  a pit near 104 -25) and max y 110 (terrace near the castle at -207 109 88). Before: x -283..175, y 60..105.
+    private val HUB_BOUNDS_MIN = SboVec(-283.0, 51.0, -208.0)
+    private val HUB_BOUNDS_MAX = SboVec(210.0, 110.0, 208.0)
+    /** The Hub island, guesses outside of it are never valid. The min is exclusive, the max inclusive. */
     val HUB_BOUNDS: AABB = AABB(HUB_BOUNDS_MIN.x, HUB_BOUNDS_MIN.y, HUB_BOUNDS_MIN.z, HUB_BOUNDS_MAX.x, HUB_BOUNDS_MAX.y, HUB_BOUNDS_MAX.z)
-
     private val recentFoundArrows = TimeLimitedSet<RaycastUtils.Ray>(18.seconds)
-
     private var spadeTitleShown = false
-
     private val locations = mutableSetOf<SboVec>()
-
     val recentClickedBlocks = TimeLimitedSet<SboVec>(4.seconds)
-
     val allGuesses = mutableListOf<GuessEntry>()
-
     private val toRemove = mutableMapOf<Waypoint, BooleanSupplier>()
-
     private val invalidCache = mutableSetOf<SboVec>()
 
     fun queueRemoval(waypoint: Waypoint, condition: BooleanSupplier) {
@@ -79,69 +75,48 @@ object ArrowGuessBurrow {
         }
     }
 
+    fun removeSubGuessFromInternalState(pos: SboVec) {
+        allGuesses.forEach { it.removeSubGuess(pos) }
+    }
+
     fun removeArrowGuessFromSubGuess(pos: SboVec) {
         val target = pos.roundLocationToBlock()
-
         val toRemove = allGuesses.filter {
-            it.getRemaining().any { guess ->
-                guess.roundLocationToBlock() == target
-            }
+            it.getRemaining().any { guess -> guess.roundLocationToBlock() == target}
         }
-
-        toRemove.forEach {
-            it.removeAllWaypoints()
-        }
-
+        toRemove.forEach { it.removeAllWaypoints() }
         allGuesses.removeAll(toRemove.toSet())
     }
 
-    fun removeSubGuessFromInternalState(pos: SboVec) {
-        allGuesses.forEach {
-            it.removeSubGuess(pos)
+    private fun guessesAt(pos: SboVec): List<GuessEntry> {
+        val search = pos.roundLocationToBlock()
+        return allGuesses.filter {
+            val guess = it.getCurrent().roundLocationToBlock()
+            guess.x == search.x && guess.y == search.y && guess.z == search.z
         }
     }
 
     fun removeFromInternalState(pos: SboVec) {
-        val target = pos.roundLocationToBlock()
-
-        val containList = allGuesses.filter { guessEntry ->
-            val current = guessEntry.getCurrent().roundLocationToBlock()
-
-            current.x == target.x && current.y == target.y && current.z == target.z
-        }
-
-        containList.forEach { entry ->
-            entry.removeAllWaypoints()
-        }
-
+        val containList = guessesAt(pos)
+        containList.forEach { it.removeAllWaypoints() }
         allGuesses.removeAll(containList.toSet())
     }
 
     fun removeOrMoveFromInternalState(pos: SboVec) {
-        val target = pos.roundLocationToBlock()
-
-        val containList = allGuesses.filter { guessEntry ->
-            val current = guessEntry.getCurrent().roundLocationToBlock()
-
-            current.x == target.x && current.y == target.y && current.z == target.z
-        }
-
+        val containList = guessesAt(pos)
         val toRemove = mutableSetOf<GuessEntry>()
-
         containList.forEach {
             if (!it.moveToNext()) {
                 toRemove.add(it)
                 it.removeAllWaypoints()
             }
         }
-
         allGuesses.removeAll(toRemove)
     }
 
     @SboEvent
     fun onReceiveParticle(event: ParticleReceiveEvent) {
-        if (!Burrows.arrowGuess) return
-        if (!World.isInHub()) return
+        if (!Burrows.arrowGuess || !World.isInHub()) return
 
         val packet = event.packet
         if (!packet.isRelevant()) return
@@ -156,9 +131,7 @@ object ArrowGuessBurrow {
 
     @SboEvent
     fun onTick(event: TickEvent) {
-        if (!Burrows.arrowGuess) return
-        if (!World.isInHub()) return
-        if (allGuesses.isEmpty()) return
+        if (!Burrows.arrowGuess || !World.isInHub() || allGuesses.isEmpty()) return
         checkMoveGuess()
     }
 
@@ -202,12 +175,12 @@ object ArrowGuessBurrow {
     }
 
     private data class LineCandidate(
-        val points: List<SboVec>,
-        val score: Double,
-        val support: Int
+        @JvmField val points: List<SboVec>,
+        @JvmField val score: Double,
+        @JvmField val support: Int
     )
 
-    private data class LocationCell(val x: Int, val y: Int, val z: Int) : Comparable<LocationCell> {
+    private data class LocationCell(@JvmField val x: Int, @JvmField val y: Int, @JvmField val z: Int) : Comparable<LocationCell> {
         private var cachedHashCode = -1
 
         override fun hashCode(): Int {
@@ -235,12 +208,14 @@ object ArrowGuessBurrow {
 
             if (x != other.x) return false
             if (y != other.y) return false
-            if (z != other.z) return false
-            return cachedHashCode == other.cachedHashCode
+
+            // Don't compare cachedHashCode - equals() should return true even if hashCode was not called to compute the cached hash in one of the objects. The x, y and z must still be equal for it to return true.
+
+            return z == other.z
         }
     }
 
-    private data class IndexedLocation(val point: SboVec, val order: Int)
+    private data class IndexedLocation(@JvmField val point: SboVec, @JvmField val order: Int)
 
     /** Spatial broad phase for the small-radius neighbor lookups made while extending candidate lines. */
     private class LocationIndex(locations: Set<SboVec>) {
@@ -259,28 +234,47 @@ object ArrowGuessBurrow {
             second: SboVec,
             visited: Set<SboVec>
         ): SboVec? {
-            val center = cellFor(origin)
             var closest: IndexedLocation? = null
+            var closestOrder = Int.MAX_VALUE
             var minDistSq = Double.MAX_VALUE
 
-            for (x in center.x - 1..center.x + 1) {
-                for (y in center.y - 1..center.y + 1) {
-                    for (z in center.z - 1..center.z + 1) {
+            val tolerance = PARTICLE_DETECTION_TOLERANCE
+            val minX = floor(Math.nextDown(Math.nextDown(origin.x - tolerance) / cellSize)).toInt()
+            val maxX = floor(Math.nextUp(Math.nextUp(origin.x + tolerance) / cellSize)).toInt()
+            val minY = floor(Math.nextDown(Math.nextDown(origin.y - tolerance) / cellSize)).toInt()
+            val maxY = floor(Math.nextUp(Math.nextUp(origin.y + tolerance) / cellSize)).toInt()
+            val minZ = floor(Math.nextDown(Math.nextDown(origin.z - tolerance) / cellSize)).toInt()
+            val maxZ = floor(Math.nextUp(Math.nextUp(origin.z + tolerance) / cellSize)).toInt()
+
+            val abX = second.x - first.x
+            val abY = second.y - first.y
+            val abZ = second.z - first.z
+
+            for (x in minX..maxX) {
+                for (y in minY..maxY) {
+                    for (z in minZ..maxZ) {
                         val bucket = cells[LocationCell(x, y, z)] ?: continue
                         for (candidate in bucket) {
                             val point = candidate.point
+                            val distSq = origin.distanceSq(point)
+
+                            if (distSq > PARTICLE_DETECTION_TOLERANCE_SQ || distSq > minDistSq) continue
+                            if (distSq == minDistSq && candidate.order >= closestOrder) continue
                             if (point in visited) continue
 
-                            val distSq = origin.distanceSq(point)
-                            if (distSq > PARTICLE_DETECTION_TOLERANCE_SQ) continue
-                            if (!isCollinear(first, second, point)) continue
+                            val acX = point.x - first.x
+                            val acY = point.y - first.y
+                            val acZ = point.z - first.z
 
-                            val currentClosest = closest
-                            if (distSq < minDistSq || distSq == minDistSq && currentClosest != null && candidate.order < currentClosest.order
-                            ) {
-                                minDistSq = distSq
-                                closest = candidate
-                            }
+                            val crossX = abY * acZ - abZ * acY
+                            val crossY = abZ * acX - abX * acZ
+                            val crossZ = abX * acY - abY * acX
+
+                            if (!(crossX * crossX + crossY * crossY + crossZ * crossZ < EPSILON)) continue
+
+                            minDistSq = distSq
+                            closest = candidate
+                            closestOrder = candidate.order
                         }
                     }
                 }
@@ -474,25 +468,6 @@ object ArrowGuessBurrow {
         return null
     }
 
-
-    private fun isCollinear(a: SboVec, b: SboVec, c: SboVec): Boolean {
-        val abX = b.x - a.x
-        val abY = b.y - a.y
-        val abZ = b.z - a.z
-
-        val acX = c.x - a.x
-        val acY = c.y - a.y
-        val acZ = c.z - a.z
-
-        val crossX = abY * acZ - abZ * acY
-        val crossY = abZ * acX - abX * acZ
-        val crossZ = abX * acY - abY * acX
-
-        return crossX * crossX +
-               crossY * crossY +
-               crossZ * crossZ < EPSILON
-    }
-
     internal fun isBlockValid(pos: SboVec): Boolean {
         if (!HUB_BOUNDS.isInside(pos)) return false
         if (pos in invalidCache) return false
@@ -525,6 +500,9 @@ object ArrowGuessBurrow {
 
         return valid
     }
+
+    /** True if [pos] is inside [HUB_BOUNDS]. */
+    fun isInHubBounds(pos: SboVec): Boolean = HUB_BOUNDS.isInside(pos)
 
     private fun AABB.isInside(vec: SboVec): Boolean {
         return vec.x > this.minX && vec.x <= this.maxX &&

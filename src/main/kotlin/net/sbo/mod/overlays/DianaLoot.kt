@@ -6,12 +6,14 @@ import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.config.nextOption
 import net.sbo.mod.diana.tracker.Tracker
+import net.sbo.mod.guis.ConfirmGui
 import net.sbo.mod.overlays.OverlayUtils.LootItemData
 import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Helper.calcPercentOneReflectively
 import net.sbo.mod.utils.Helper.removeFormatting
 import net.sbo.mod.utils.SboTimerManager
+import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.configs.diana.DianaTracker
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.events.Register
@@ -81,6 +83,14 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Trackers.TrackerLo
             resetSession()
         }
     )
+
+    /** Resets the session tracker after the player confirmed it, from the Reset badge and /sboresetsession. */
+    fun askResetSession() {
+        ConfirmGui.confirmReset("Reset the session tracker?", "The loot, mobs and time of this session start from zero.") {
+            resetSession()
+            Chat.chat("§6[SBO] §aDiana session tracker has been reset.")
+        }
+    }
 
     fun resetSession() {
         SboTimerManager.timerSession.reset()
@@ -177,12 +187,12 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Trackers.TrackerLo
     fun shurikenUse(event: PlayerInteractEvent) {
         // useItemOn falls through to useItem when the block does nothing, so only watch useItem
         if (event.action != "useItem") return
-        if (event.player.mainHandItem.isShuriken() && isDiana()) onShurikenClick()
+        if (isDiana() && event.player.mainHandItem.isShuriken()) onShurikenClick()
     }
 
     @SboEvent
     fun shurikenAttack(event: StartAttackingEvent) {
-        if (event.getMainHandItem().isShuriken() && isDiana()) onShurikenClick()
+        if (isDiana() && event.getMainHandItem().isShuriken()) onShurikenClick()
     }
 
     @SboEvent
@@ -452,7 +462,7 @@ object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Trackers.TrackerLo
                 Trackers.lootSort = Trackers.lootSort.nextOption()
                 updateLines()
             }
-            "reset" -> resetSession()
+            "reset" -> askResetSession()
             // Coins and profit only have a tooltip
             else -> rowId(id)?.takeIf { it != "coins" && it != "profit" }?.let(::toggleHidden)
         }

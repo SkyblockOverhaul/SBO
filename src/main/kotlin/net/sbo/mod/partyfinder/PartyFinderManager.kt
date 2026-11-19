@@ -183,7 +183,7 @@ object PartyFinderManager {
             }
         }
 
-        Register.command("sboKey", "sbokey") { args ->
+        Register.command("sboKey", "sbokey", argName = "key") { args ->
             if (args.isEmpty()) {
                 Chat.chat("§6[SBO] §cPlease provide a key")
             } else if (args[0].startsWith("sbo").not()) {
@@ -223,7 +223,7 @@ object PartyFinderManager {
         }
 
         Register.onChatMessageCancelable(
-            Pattern.compile("^§9§m(.*?) §ehas invited you to join their party!(.*?)$", Pattern.DOTALL)
+            Pattern.compile("^§9§m(.*?) §ehas invited you to join their party!(.*?)$")
         ) { _, matchResult ->
             val playername = Helper.getPlayerName(matchResult.group(1) ?: "")
             if (Helper.isPlayerName(playername) && playersSentRequest.containsKey(playername)) {

@@ -6,7 +6,6 @@ import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.world.level.ChunkPos
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import net.sbo.mod.settings.categories.General
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.Register
@@ -42,6 +41,13 @@ object HubChunkCache {
     /** Per area, all chunks seen this connection by [ChunkPos.pack]. Client thread only, the maps itself are shared. */
     private val stores = HashMap<String, ConcurrentHashMap<Long, ChunkSnapshot>>()
 
+    /**
+     * All chunks stored for [area] this connection, by [ChunkPos.pack]. Client thread only.
+     *
+     * @param area Lowercase tab list area, e.g. "hub".
+     */
+    fun cachedChunks(area: String): Map<Long, ChunkSnapshot> = stores[area] ?: emptyMap()
+
     @Volatile
     private var manager: FakeChunkManager? = null
     private var levelChangedAt = System.nanoTime()
@@ -69,6 +75,14 @@ object HubChunkCache {
     /** True while fake chunks are shown, the render distance then ignores the server's limit. */
     @JvmStatic
     fun isActive(): Boolean = manager != null
+
+    /**
+     * True for chunks outside [HubIsland] while "Render Hub Island Only" hides them. Runs for every chunk lookup, so
+     * the plain field checks go before the setting.
+     */
+    @JvmStatic
+    fun hidesChunk(chunkX: Int, chunkZ: Int): Boolean =
+        isActive() && World.isInHub() && renderHubIslandOnlyEnabled() && !HubIsland.contains(chunkX, chunkZ)
 
     /** Debug line for F3, appended to the client chunk cache stats. */
     @JvmStatic
@@ -176,8 +190,7 @@ object HubChunkCache {
         val key = world.lowercase()
         val store = stores.getOrPut(key) { ConcurrentHashMap() }
         skippedLevel = null
-        val area = if (key == "hub" && General.chunkCacheHubIslandOnly) ArrowGuessBurrow.HUB_BOUNDS else null
-        manager = FakeChunkManager(level, key, store, area)
+        manager = FakeChunkManager(level, key, store, key == "hub" && General.chunkCacheHubIslandOnly)
         SBOKotlin.logger.info("[HubChunkCache] Showing fake chunks in $world, ${store.size} chunks stored")
     }
 

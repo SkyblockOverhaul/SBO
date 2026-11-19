@@ -16,13 +16,12 @@ object HelpCommand {
         mapOf("cmd" to "sboclearburrows", "desc" to "Clear all burrow waypoints (or: /sbocb)"),
         mapOf("cmd" to "sboimporttracker <profilename>", "desc" to "Import skyhanni tracker"), //todo: add sboimporttracker command
         mapOf("cmd" to "sboimporttrackerundo", "desc" to "Undo the tracker import"), // todo: add sboimporttrackerundo command
-        mapOf("cmd" to "sbodc", "desc" to "Diana dropchances (main server)"),
-        mapOf("cmd" to "sbodcnew", "desc" to "Diana dropchances (Alpha Network)"),
+        mapOf("cmd" to "sbodc <mf> <griffinrarity>", "desc" to "Diana dropchances"),
         mapOf("cmd" to "sbosc", "desc" to "Diana spawnchances"),
         mapOf("cmd" to "sbopartyblacklist", "desc" to "Party commands blacklisting"), // todo: add sbopartyblacklist command
         mapOf("cmd" to "sbobacktrackachievements", "desc" to "Backtrack achievements"),
         mapOf("cmd" to "sboachievements", "desc" to "Opens the achievements GUI"),
-        mapOf("cmd" to "sbolockachievements", "desc" to "Locks all Achievements (needs confirmation)"),
+        mapOf("cmd" to "sboresetachievements", "desc" to "Resets all achievements (asks first)"),
         mapOf("cmd" to "sboevents", "desc" to "Opens the Diana Events GUI (also /sbopde)"),
         mapOf("cmd" to "sboactiveuser", "desc" to "Shows the active user of the mod"), // todo: add sboactiveuser command
         mapOf("cmd" to "sbopf", "desc" to "Opens the PartyFinder GUI"),
@@ -34,8 +33,8 @@ object HelpCommand {
         mapOf("cmd" to "sboKey", "desc" to "Set your sbokey"),
         mapOf("cmd" to "sboClearKey", "desc" to "Reset your sbokey"),
         mapOf("cmd" to "sbocloud", "desc" to "Opens the Cloud Sync window (also to load backups)"),
-        mapOf("cmd" to "sbobadge", "desc" to "Edit your SBO badge (supporters, maintainers and moderators)"),
-        mapOf("cmd" to "sboconflicts", "desc" to "Shows mods that break SBO features and sends a report"),
+        mapOf("cmd" to "sbocustomizer", "desc" to "Your badge, name look and player size (supporters, maintainers and moderators)"),
+        mapOf("cmd" to "sboinforeport", "desc" to "Sends your SBO settings and mods that break SBO features to the SBO team"),
         mapOf("cmd" to "sbotestmedalclip [drop|all]", "desc" to "Test Medal clip saving"),
         mapOf("cmd" to "sbosounds", "desc" to "Opens custom sounds setting Gui"),
         mapOf("cmd" to "sbosetprimarycoa", "desc" to "Set your primary Crown of Avarice to the equipped helmet"),
@@ -51,12 +50,14 @@ object HelpCommand {
         }
 
         dropChances()
-        newDropChances()
         spawnChances()
     }
 
+    /** The griffin rarities /sbodc takes. */
+    private val RARITIES = listOf("epic", "legendary", "mythic")
+
     private fun spawnChances() {
-        Register.command("sbosc", "sbospawnchances") { args ->
+        Register.command("sbosc", "sbospawnchances", argName = "tracking") { args ->
             if (args.isEmpty()) {
                 Chat.chat("§6[SBO] §ePlease provide a tracking value. /sbosc <tracking>")
                 return@command
@@ -88,18 +89,11 @@ object HelpCommand {
     }
 
     private fun dropChances() {
-        Register.command("sbodc", "sbodropchances") { args ->
-            // TODO: When the Alpha Network update is pushed to main by Hypixel, remove looting and rename newDropChances() to dropChances().
-            if (args.size < 3) {
-                Chat.chat("§6[SBO] §ePlease provide MF, looting, and pet rarity. /sbodc <mf> <looting> <griffinrarity>")
-                return@command
-            }
-
-            val mf = args[0].toIntOrNull()
-            val looting = args[1].toIntOrNull()
-            val rarity = args[2].lowercase().trim()
-            if (mf == null || looting == null || rarity !in listOf("epic", "legendary", "mythic")) {
-                Chat.chat("§6[SBO] §ePlease provide valid values. /sbodc 500 5 <griffinrarity(epic/legendary/mythic)>")
+        Register.command("sbodc", "sbodropchances", argName = "mf> <griffinrarity", completions = { if (it.size == 1) RARITIES else emptyList() }) { args ->
+            val mf = args.getOrNull(0)?.toIntOrNull()
+            val rarity = args.getOrNull(1)?.lowercase()?.trim().orEmpty()
+            if (mf == null || rarity !in RARITIES) {
+                Chat.chat("§6[SBO] §ePlease provide MF and griffin rarity. /sbodc 500 <epic|legendary|mythic>")
                 return@command
             }
 
@@ -109,69 +103,12 @@ object HelpCommand {
                 else -> listOf("Chimera" to "chim", "Stick" to "stick", "Relic" to "relic", "Food" to "food", "Wool" to "wool", "Core" to "core", "Stinger" to "stinger")
             }
 
-            val normalChances = Helper.getChance(mf, looting, rarity)
-            val lsChances = Helper.getChance(mf, looting, rarity, lootshare = true)
-            listOf(false, true).forEach { isLs ->
-                val chances = if (isLs) lsChances else normalChances
-                val label = if (isLs) "§7[MF:$mf]" else Helper.formatMagicFindAndLooting(mf, looting)
+            val label = Helper.formatMagicFind(mf)
+            listOf(false, true).forEach { lootshare ->
+                val chances = Helper.getChance(mf, rarity, lootshare)
+                val lsPrefix = if (lootshare) "§7[§bLS§7] " else ""
                 items.forEach { (name, key) ->
-                    val lsPrefix = if (isLs) "§7[§bLS§7] " else ""
                     Chat.chat("§6[SBO] $lsPrefix§e$name ${Helper.formatChances(chances[key] ?: 0.0, label)}")
-                }
-            }
-        }
-    }
-
-    // TODO: When the Alpha Network update is pushed to main by Hypixel, remove dropChances() and rename newDropChances() to dropChances().
-    private fun newDropChances() {
-        Register.command("sbodcnew", "sbodropchancesnew") { args ->
-            if (args.size < 2) {
-                Chat.chat("§6[SBO] §ePlease provide MF and pet rarity. /sbodcnew <mf> <griffinrarity>")
-                return@command
-            }
-
-            val mf = args[0].toIntOrNull()
-            val rarity = args[1].lowercase().trim()
-
-            if (mf == null) {
-                Chat.chat("§6[SBO] §ePlease provide a valid Magic Find value. /sbodcnew 500 <griffinrarity(epic/legendary/mythic)>")
-                return@command
-            }
-
-            val items = when (rarity) {
-                "epic" -> listOf("Stick" to "stick", "Relic" to "relic")
-                "legendary" -> listOf(
-                    "Chimera" to "chim",
-                    "Stick" to "stick",
-                    "Relic" to "relic",
-                    "Food" to "food"
-                )
-                "mythic" -> listOf(
-                    "Chimera" to "chim",
-                    "Stick" to "stick",
-                    "Relic" to "relic",
-                    "Food" to "food",
-                    "Wool" to "wool",
-                    "Core" to "core",
-                    "Stinger" to "stinger"
-                )
-                else -> {
-                    Chat.chat("§6[SBO] §ePlease provide a valid griffin rarity: epic, legendary, mythic.")
-                    return@command
-                }
-            }
-
-            val normalChances = Helper.getChanceNew(mf, rarity)
-            val lsChances = Helper.getChanceNew(mf, rarity, lootshare = true)
-
-            listOf(false, true).forEach { isLs ->
-                val chances = if (isLs) lsChances else normalChances
-                val labelFunc: (String) -> String = { _ -> Helper.formatMagicFind(mf) }
-
-                items.forEach { (name, key) ->
-                    val chance = chances[key] ?: 0.0
-                    val lsPrefix = if (isLs) "§7[§bLS§7] " else ""
-                    Chat.chat("§6[SBO] $lsPrefix§e$name ${Helper.formatChances(chance, labelFunc(name))}")
                 }
             }
         }

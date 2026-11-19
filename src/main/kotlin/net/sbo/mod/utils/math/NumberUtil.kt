@@ -1,4 +1,4 @@
-package net.sbo.mod.utils
+package net.sbo.mod.utils.math
 
 import kotlin.math.pow
 import kotlin.math.round

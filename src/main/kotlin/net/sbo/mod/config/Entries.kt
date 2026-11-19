@@ -2,9 +2,7 @@ package net.sbo.mod.config
 
 import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty0
-
-fun <T> Collection<T>.asSet(): Set<T> =
-    this as? Set<T> ?: toSet()
+import java.util.EnumSet
 
 fun <T> Collection<T>.asList(): List<T> =
     this as? List<T> ?: toList()
@@ -51,11 +49,15 @@ open class EntriesBuilder {
     fun string(value: String, builder: TypeBuilder.() -> Unit = {}) =
         EntryProvider(null, ::TypeBuilder, builder) { id, b -> StringEntry(id, value, b.name, b.description) }
 
+    /** A key or mouse button, [default] is Minecraft's name for it ("key.keyboard.1"), unbound when left out. */
+    fun keybind(default: String = KeybindEntry.UNBOUND, builder: KeybindBuilder.() -> Unit = {}) =
+        EntryProvider(null, ::KeybindBuilder, builder) { id, b -> KeybindEntry(id, default, b.name, b.description, b.menuOnly) }
+
     fun choice(value: String, builder: ChoiceBuilder.() -> Unit = {}) =
         EntryProvider(null, ::ChoiceBuilder, builder) { id, b -> ChoiceEntry(id, value, b.name, b.description, b.options) }
 
-    fun strings(vararg value: String, builder: TypeBuilder.() -> Unit = {}) =
-        EntryProvider(null, ::TypeBuilder, builder) { id, b -> StringsEntry(id, arrayOf(*value), b.name, b.description) }
+    fun strings(vararg value: String, builder: StringsBuilder.() -> Unit = {}) =
+        EntryProvider(null, ::StringsBuilder, builder) { id, b -> StringsEntry(id, arrayOf(*value), b.name, b.description, b.template) }
 
     /** One constant of [E], options show the [Option] label and description. */
     inline fun <reified E : Enum<E>> option(value: E, noinline builder: TypeBuilder.() -> Unit = {}) =
@@ -63,13 +65,13 @@ open class EntriesBuilder {
 
     /** Any number of constants of [E], [value] is the default selection. */
     inline fun <reified E : Enum<E>> options(vararg value: E, noinline builder: TypeBuilder.() -> Unit = {}) =
-        EntryProvider(null, ::TypeBuilder, builder) { id, b -> OptionsEntry(id, value.toCollection(LinkedHashSet()), b.name, b.description, enumValues<E>().toList()) }
+        EntryProvider(null, ::TypeBuilder, builder) { id, b -> OptionsEntry(id, EnumSet.noneOf(E::class.java).apply { addAll(value.toSet()) }, b.name, b.description, enumValues<E>().toList(), E::class.java) }
 
     inline fun <reified E : Enum<E>> options(
         value: Collection<E>,
         noinline builder: TypeBuilder.() -> Unit = {},
     ) = EntryProvider(null, ::TypeBuilder, builder) { id, b ->
-        OptionsEntry(id, value.asSet(), b.name, b.description, enumValues<E>().asList())
+        OptionsEntry(id, EnumSet.noneOf(E::class.java).apply { addAll(value) }, b.name, b.description, enumValues<E>().asList(), E::class.java)
     }
 
     fun button(builder: ButtonBuilder.() -> Unit) {
@@ -170,6 +172,16 @@ class NumberBuilder<T>(id: String) : TypeBuilder(id) where T : Number, T : Compa
 class ColorBuilder(id: String) : TypeBuilder(id) {
     var allowAlpha: Boolean = false
     var presets: IntArray = intArrayOf()
+}
+
+class KeybindBuilder(id: String) : TypeBuilder(id) {
+    /** True for a key that only works in a menu, it can share its key with Minecraft's keys then. */
+    var menuOnly: Boolean = false
+}
+
+class StringsBuilder(id: String) : TypeBuilder(id) {
+    /** Text the settings screen can put into the field with its template button, one line per entry. Null: no button. */
+    var template: String? = null
 }
 
 class ChoiceBuilder(id: String) : TypeBuilder(id) {

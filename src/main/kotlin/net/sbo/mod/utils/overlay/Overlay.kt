@@ -5,6 +5,7 @@ import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.utils.Helper.fastForEach
 import net.sbo.mod.utils.game.World
 import java.awt.Color
 import java.util.Locale
@@ -49,7 +50,7 @@ class Overlay(
 
     override fun updateConditions() {
         super.updateConditions()
-        lines.forEach { it.updateCondition() }
+        lines.fastForEach { it.updateCondition() }
     }
 
     fun addLine(line: OverlayTextLine) {
@@ -89,8 +90,8 @@ class Overlay(
         var currentY = renderY / scale
         var currentX = renderX / scale
 
-        for (line in getLines()) {
-            if (!line.checkCondition()) continue
+        getLines().fastForEach { line ->
+            if (!line.checkCondition()) return@fastForEach
             line.lineClicked(mouseX, mouseY, currentX * scale, currentY * scale, scale)
 
             if (line.linebreak) {
@@ -104,7 +105,7 @@ class Overlay(
 
     override fun contentHeight(): Int {
         var totalHeight = 0
-        for (line in getLines()) {
+        getLines().fastForEach { line ->
             if (line.linebreak && line.checkCondition()) {
                 totalHeight += line.height
             }
@@ -115,7 +116,7 @@ class Overlay(
     override fun contentWidth(): Int {
         var maxWidth = 0
         var currentWidth = 0
-        for (line in getLines()) {
+        getLines().fastForEach { line ->
             currentWidth += line.width
             if (line.linebreak) {
                 if (currentWidth > maxWidth) {
@@ -163,11 +164,10 @@ class Overlay(
             drawContext.fill(currentX.toInt(), currentY.toInt(), (currentX + totalWidth).toInt(), (currentY + totalHeight).toInt(), Color(0, 0, 0, 100).rgb)
         }
 
-        val lines = getLines()
         val lineStates = mutableListOf<LineRenderState>()
 
-        for (line in lines) {
-            if (!line.checkCondition()) continue
+        getLines().fastForEach { line ->
+            if (!line.checkCondition()) return@fastForEach
 
             val lineX = if (line.centered) {
                 currentX.toInt() + (totalWidth - line.width) / 2

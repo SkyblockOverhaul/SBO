@@ -67,31 +67,36 @@ object Drops : Category("Drops") {
     init {
         sub {
             this.title = "Custom Drop Messages"
-            this.description = "Leave empty to use the default. Use {mf} for Magic Find, {amount} for the drop amount this event, {since} for the mobs it took, {price} for the price, {percentage} for the drop/mob ratio and {lstext} for (LS) on lootshare drops. Colors can be used with & and a color code (stripped when announcing to party)."
+            this.description = "Leave empty to use the default, the template icon inserts a template to start from and the reset icon clears the field. Use {mf} for Magic Find, {amount} for the drop amount this event, {since} for the mobs it took, {price} for the price, {percentage} for the drop/mob ratio and {lstext} for (LS) on lootshare drops. Colors can be used with & and a color code (stripped when announcing to party)."
         }
     }
 
     var customChimeraMessage by strings("") {
+        this.template = "&6[SBO] &6&lRARE DROP! &dChimera! &b+{mf} ✯ Magic Find &b#{amount}"
         this.name = literal("Chimera")
         this.description = literal("{since}: inquisitor it took to drop the chim.")
     }
 
     var customManticoreMessage by strings("") {
+        this.template = "&6[SBO] &6&lRARE DROP! &6Manti-Core! &b+{mf} ✯ Magic Find &b#{amount}"
         this.name = literal("Manti-core")
         this.description = literal("{since}: manti it took to drop the core.")
     }
 
     var customFatefulStingerMessage by strings("") {
+        this.template = "&6[SBO] &6&lRARE DROP! &dFateful Stinger! &b+{mf} ✯ Magic Find &b#{amount}"
         this.name = literal("Fateful Stinger")
         this.description = literal("{since}: manti it took to drop the stinger.")
     }
 
     var customBrainFoodMessage by strings("") {
+        this.template = "&6[SBO] &6&lRARE DROP! &5Brain Food! &b+{mf} ✯ Magic Find &b#{amount}"
         this.name = literal("Brain Food")
         this.description = literal("{since}: sphinx it took to drop the food.")
     }
 
     var customShimmeringWoolMessage by strings("") {
+        this.template = "&6[SBO] &6&lRARE DROP! &6Shimmering Wool! &b+{mf} ✯ Magic Find &b#{amount}"
         this.name = literal("Shimmering Wool")
         this.description = literal("{since}: kings it took to drop the wool.")
     }

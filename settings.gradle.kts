@@ -5,14 +5,31 @@ pluginManagement {
     plugins {
         id("org.jetbrains.kotlin.jvm") version kotlinVersion
         id("org.jetbrains.kotlin.plugin.serialization") version kotlinVersion
-
         id("com.replaymod.preprocess-root") version preprocessorVersion
     }
 
     repositories {
         gradlePluginPortal()
-        maven("https://maven.fabricmc.net")
-        maven("https://jitpack.io")
+
+        exclusiveContent {
+            forRepository {
+                maven("https://maven.fabricmc.net")
+            }
+
+            filter {
+                includeGroupByRegex("net\\.fabricmc(\\..*)?")
+            }
+        }
+
+        exclusiveContent {
+            forRepository {
+                maven("https://jitpack.io")
+            }
+
+            filter {
+                includeGroupByRegex("com\\.github\\.replaymod(\\..*)?")
+            }
+        }
     }
 
     resolutionStrategy {

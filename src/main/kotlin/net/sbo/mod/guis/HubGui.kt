@@ -27,6 +27,7 @@ import net.sbo.mod.config.ConfigGui
 import net.sbo.mod.general.SboBadges
 import net.sbo.mod.utils.data.cloud.CloudSync
 import net.sbo.mod.general.HelpCommand
+import net.sbo.mod.guis.customizer.CustomizerGui
 import net.sbo.mod.guis.look.SboLook
 import net.sbo.mod.guis.look.useFitScale
 import net.sbo.mod.guis.look.useSboScale
@@ -49,6 +50,25 @@ object HubGui {
     /** [whatsNew] opens on What's New even when it was seen already. */
     fun openSettings(whatsNew: Boolean = false) {
         ConfigGui.open(Settings, "SBO Settings", onBack = ::open, whatsNew = SettingsChanges.whatsNew(force = whatsNew))
+    }
+
+    /** The settings categories as typed after /sboconfig: "rare_mobs". */
+    val settingsPages: List<String> get() = Settings.children.map { it.name.lowercase().replace(' ', '_') }
+
+    /** Opens the settings on the category [arg] names, or with [arg] in the search when it names none. */
+    fun openSettings(arg: String) {
+        if (arg.isBlank()) return openSettings()
+        val key = pageKey(arg)
+        val page = Settings.children.firstOrNull { pageKey(it.name) == key }
+        ConfigGui.open(Settings, "SBO Settings", onBack = ::open, whatsNew = SettingsChanges.whatsNew(), page = page, query = if (page == null) arg else "")
+    }
+
+    /** [name] in lower case without spaces or "_", so "Rare Mobs", "rare_mobs" and "raremobs" name the same category. */
+    private fun pageKey(name: String) = name.lowercase().filter { it.isLetterOrDigit() }
+
+    /** Opens the settings on [page], back goes to [onBack]. */
+    fun openSettings(page: Category, onBack: () -> Unit) {
+        ConfigGui.open(Settings, "SBO Settings", onBack = onBack, whatsNew = SettingsChanges.whatsNew(), page = page)
     }
 
     fun settingsScreen(): GuiLibScreen = ConfigGui.screen(Settings, "SBO Settings", onBack = ::open, whatsNew = SettingsChanges.whatsNew())
@@ -109,9 +129,9 @@ object HubGui {
             },
         ) { CloudSyncGui.open() },
         Tile(
-            "SBO Badge", "Your logo, stat and name color", "/sbobadge", Items.NAME_TAG,
+            "SBO Customizer", "Your badge, name look and player size", "/sbocustomizer", Items.NAME_TAG,
             supporter = Supporter("Patreon and Ko-fi supporters, maintainers and moderators") { SboBadges.hasAccess() },
-        ) { BadgeGui.open() },
+        ) { CustomizerGui.open() },
     )
 
     private val COMMANDS = Tile("Commands", "Every SBO command and what it does", "/sbohelp", Items.COMMAND_BLOCK) {}

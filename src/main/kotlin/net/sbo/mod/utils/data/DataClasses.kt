@@ -4,6 +4,7 @@ import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import net.minecraft.network.chat.Style
 
 @Serializable
 data class AchievementStatsResponse(
@@ -39,9 +40,13 @@ data class SboBadge(
     @SerialName("in")
     val places: BadgePlaces? = null,
     val colors: BadgeColors? = null,
+    /** Size and symbols; null is the normal look. */
+    val look: BadgeLook? = null,
 ) {
     fun shows(part: String, place: String): Boolean = places?.let { place in it[part] } ?: when (part) {
         BadgePart.LOGO -> true
+        // Before the stat had places of its own it showed with the logo above the head
+        BadgePart.STAT -> place == TeamTagPlace.HEAD
         BadgePart.NAME -> plainName != true
         BadgePart.LEVEL -> level == true && place in TeamTagPlace.LEVEL
         else -> false
@@ -83,7 +88,27 @@ data class PartColor(
     val chain: Boolean? = null,
     /** A BadgeMotion of the chars; null stands still. */
     val motion: String? = null,
+    /** Text styles of the part; null is plain. */
+    val bold: Boolean? = null,
+    val italic: Boolean? = null,
+    val underline: Boolean? = null,
+    val strike: Boolean? = null,
+    /** Symbols in front of and behind the part; null is none. */
+    val before: String? = null,
+    val after: String? = null,
 ) {
+    /** The part's text styles on top of [style]; [keepWidth] leaves out bold, which draws wider. */
+    fun styled(style: Style, keepWidth: Boolean = false): Style {
+        var out = style
+        if (bold == true && !keepWidth) out = out.withBold(true)
+        if (italic == true) out = out.withItalic(true)
+        if (underline == true) out = out.withUnderlined(true)
+        if (strike == true) out = out.withStrikethrough(true)
+        return out
+    }
+
+    val hasStyle: Boolean get() = bold == true || italic == true || underline == true || strike == true
+
     /** Badges from before effects: a gradient stat waves, everything else stands still. */
     fun effectOf(part: String): String = effect
         ?: if (part == BadgePart.STAT && to != null) BadgeEffect.WAVE else BadgeEffect.STATIC
@@ -129,9 +154,12 @@ data class BadgePlaces(
     @EncodeDefault val name: List<String> = emptyList(),
     @EncodeDefault val level: List<String> = emptyList(),
     @EncodeDefault val rank: List<String> = emptyList(),
+    /** Only above the head; null on backends before it, then the stat shows with the logo above the head. */
+    val stat: List<String>? = null,
 ) {
     operator fun get(part: String): List<String> = when (part) {
         BadgePart.LOGO -> logo
+        BadgePart.STAT -> stat ?: listOfNotNull(TeamTagPlace.HEAD.takeIf { it in logo })
         BadgePart.NAME -> name
         BadgePart.LEVEL -> level
         BadgePart.RANK -> rank
@@ -140,6 +168,7 @@ data class BadgePlaces(
 
     fun with(part: String, places: List<String>): BadgePlaces = when (part) {
         BadgePart.LOGO -> copy(logo = places)
+        BadgePart.STAT -> copy(stat = places)
         BadgePart.NAME -> copy(name = places)
         BadgePart.LEVEL -> copy(level = places)
         BadgePart.RANK -> copy(rank = places)
@@ -235,6 +264,8 @@ data class BadgeSettings(
     @SerialName("in")
     val places: BadgePlaces? = null,
     val colors: BadgeColors? = null,
+    /** Size and symbols; null on backends without it, then nothing is sent and the saved look stays. */
+    val look: BadgeLook? = null,
 ) {
     val teamTagPlaces: Set<String> get() = teamTagIn?.toSet() ?: if (teamTag) TeamTagPlace.ALL else emptySet()
 
@@ -243,6 +274,7 @@ data class BadgeSettings(
 
     fun placesOf(part: String): Set<String> = places?.get(part)?.toSet() ?: when (part) {
         BadgePart.LOGO -> if (enabled) TeamTagPlace.ALL else emptySet()
+        BadgePart.STAT -> if (enabled) setOf(TeamTagPlace.HEAD) else emptySet()
         BadgePart.NAME -> if (enabled && colorName) TeamTagPlace.ALL else emptySet()
         BadgePart.LEVEL -> if (enabled && colorLevel) TeamTagPlace.LEVEL else emptySet()
         else -> emptySet()
@@ -260,6 +292,7 @@ data class BadgeSettings(
         TeamTagPlace.ALL.filter { it in placesOf(BadgePart.NAME) },
         TeamTagPlace.ALL.filter { it in placesOf(BadgePart.LEVEL) },
         TeamTagPlace.ALL.filter { it in placesOf(BadgePart.RANK) },
+        stat = TeamTagPlace.ALL.filter { it in placesOf(BadgePart.STAT) },
     )
 
     private fun styledColors() = BadgeColors(
@@ -272,7 +305,8 @@ data class BadgeSettings(
         return copy(
             places = places,
             colors = colors,
-            enabled = places.logo.isNotEmpty() || places.name.isNotEmpty() || places.level.isNotEmpty() || places.rank.isNotEmpty(),
+            enabled = places.logo.isNotEmpty() || places.stat.orEmpty().isNotEmpty() || places.name.isNotEmpty() ||
+                places.level.isNotEmpty() || places.rank.isNotEmpty(),
             colorName = places.name.isNotEmpty(),
             colorLevel = places.level.isNotEmpty(),
             color = name.color,
@@ -309,7 +343,25 @@ data class OwnBadgeResponse(
     val gradient: Boolean = false,
     /** The rank has a team tag it can show above the head. */
     val team: Boolean = false,
+    /** Symbols that may stand next to the name; empty on backends without the look. */
+    val symbols: List<String> = emptyList(),
+    /** Range of the model size; null on backends without the look. */
+    val sizes: BadgeSizes? = null,
 )
+
+@Serializable
+data class BadgeSizes(val min: Float = 0.1f, val max: Float = 1.75f, val step: Float = 0.05f)
+
+/** Model size; text styles and symbols are per part, see [PartColor]. `before`/`after` are the name's symbols on backends before that. */
+@Serializable
+data class BadgeLook(
+    /** Model size others with SBO see; null is 1. */
+    val size: Float? = null,
+    val before: String? = null,
+    val after: String? = null,
+) {
+    val scale: Float get() = size ?: 1f
+}
 
 @Serializable
 data class CloudEnvelope(

@@ -52,6 +52,14 @@ open class Category(val id: String) : EntriesBuilder() {
         categories.values.forEach { it.linkRequirements() }
     }
 
+    /** Every saved value (also of switched off subs) as plain JSON without comments, sub categories nested by id. */
+    fun values(): JsonObject = JsonObject().also { out ->
+        val disabled = subs.filterNot { it.enabled }
+        if (disabled.isNotEmpty()) out.add(DISABLED_SUBS_KEY, JsonArray().apply { disabled.forEach { add(it.title) } })
+        entries.forEach { out.add(it.id, it.toJson()) }
+        categories.forEach { (id, category) -> out.add(id, category.values()) }
+    }
+
     private fun resetAll() {
         subs.forEach { it.setEnabled(true) }
         entries.forEach { it.reset() }

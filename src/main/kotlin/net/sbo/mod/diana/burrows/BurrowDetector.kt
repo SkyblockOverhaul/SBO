@@ -279,8 +279,7 @@ object BurrowDetector {
     @SboEvent
     fun onParticleReceive(event: ParticleReceiveEvent) {
         val packet = event.packet
-        if (!Burrows.closeBurrowDetection) return
-        if (!World.isInHub()) return
+        if (!Burrows.closeBurrowDetection || !World.isInHub()) return
 
         if (packet.particle.type == MCParticleTypes.LARGE_SMOKE && packet.maxSpeed == 0.01f && packet.xDist == 0.0f && packet.yDist == 0.0f && packet.zDist == 0.0f) {
             val pos = SboVec(packet.x, packet.y, packet.z).roundLocationToBlock().down()

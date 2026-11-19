@@ -23,7 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(MouseHandler.class)
 final class MouseHandlerMixin {
     @Unique
-    private static final long sbo$RESTORE_WITHIN_MS = 500L;
+    private static final long sbo$RESTORE_WITHIN_NS = 500_000_000L;
 
     @Shadow
     @Final
@@ -52,12 +52,12 @@ final class MouseHandlerMixin {
         if (this.mouseGrabbed || !this.minecraft.isWindowActive()) return;
         this.sbo$lastX = this.xpos;
         this.sbo$lastY = this.ypos;
-        this.sbo$grabbedAt = System.currentTimeMillis();
+        this.sbo$grabbedAt = System.nanoTime();
     }
 
     @Inject(method = "releaseMouse", at = @At("TAIL"))
     private final void sbo$restorePosition(@NonNull final CallbackInfo ci) {
-        if (System.currentTimeMillis() - this.sbo$grabbedAt > sbo$RESTORE_WITHIN_MS) return;
+        if (System.nanoTime() - this.sbo$grabbedAt > sbo$RESTORE_WITHIN_NS) return;
         if (!(GuiLib.INSTANCE.currentScreen() instanceof GuiLibScreen)) return;
         this.sbo$grabbedAt = 0L;
         this.xpos = this.sbo$lastX;

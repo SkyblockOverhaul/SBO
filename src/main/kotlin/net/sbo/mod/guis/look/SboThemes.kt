@@ -1,9 +1,9 @@
 package net.sbo.mod.guis.look
 
+import net.sbo.mod.openFolder
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import net.fabricmc.loader.api.FabricLoader
-import net.minecraft.util.Util
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.security.MessageDigest
@@ -139,7 +139,7 @@ object SboThemes {
 
     fun openFolder() {
         prepareFolder()
-        Util.getPlatform().openFile(folder)
+        openFolder(folder)
     }
 
     private val File.isCss get() = extension.equals("css", ignoreCase = true)
@@ -256,7 +256,7 @@ object SboThemes {
         "achievements.css" to "/assets/sbo/ui/achievements/achievements.css",
         "sounds.css" to "/assets/sbo/ui/sounds/sounds.css",
         "cloud.css" to "/assets/sbo/ui/cloud/cloud.css",
-        "badge.css" to "/assets/sbo/ui/badge/badge.css",
+        "customizer.css" to "/assets/sbo/ui/customizer/customizer.css",
         "elements.css" to "/assets/guilib/css/ua.css"
     )
 

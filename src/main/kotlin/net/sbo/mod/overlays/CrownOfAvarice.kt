@@ -8,6 +8,7 @@ import net.sbo.guilib.core.dsl.item
 import net.sbo.guilib.core.dsl.span
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.config.nextOption
+import net.sbo.mod.guis.ConfirmGui
 import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.overlay.CHAT_SCREEN_FILTER
@@ -120,6 +121,8 @@ object CrownOfAvarice {
         // world change), so comparing the reference each tick finds every change without reading the lore.
         // Rates (/h, maxed in) move with the playtime, they are refreshed every few seconds while it runs.
         Register.onTick(1) {
+            if (!World.isInHub() || !Helper.hasSpade) return@onTick
+
             val stack = mc.player?.inventory?.getItem(39)
             val trackerOn = tracker != null
             val blocked = alphaBlocked
@@ -140,15 +143,19 @@ object CrownOfAvarice {
 
         // Only the CoA part of the tracker, the loot, mobs and Diana playtime stay
         Register.command("sboresetcoasession") {
-            resetCoa(DataManager.dianaTrackerSessionData, SboTimerManager.timerCoaSession)
-            DataManager.save(DataManager::dianaTrackerSessionData)
-            Chat.chat("§6[SBO] §aCoA session tracker has been reset.")
+            ConfirmGui.confirmReset("Reset the CoA session tracker?", "The Crown of Avarice coins and time of this session start from zero.") {
+                resetCoa(DataManager.dianaTrackerSessionData, SboTimerManager.timerCoaSession)
+                DataManager.save(DataManager::dianaTrackerSessionData)
+                Chat.chat("§6[SBO] §aCoA session tracker has been reset.")
+            }
         }
 
         Register.command("sboresetcoaevent") {
-            resetCoa(DataManager.dianaTrackerMayorData, SboTimerManager.timerCoaMayor)
-            DataManager.save(DataManager::dianaTrackerMayorData)
-            Chat.chat("§6[SBO] §aCoA event tracker has been reset.")
+            ConfirmGui.confirmReset("Reset the CoA event tracker?", "The Crown of Avarice coins and time of this Diana event start from zero.") {
+                resetCoa(DataManager.dianaTrackerMayorData, SboTimerManager.timerCoaMayor)
+                DataManager.save(DataManager::dianaTrackerMayorData)
+                Chat.chat("§6[SBO] §aCoA event tracker has been reset.")
+            }
         }
 
         Register.command("sbosetprimarycoa") {
@@ -477,7 +484,9 @@ object CrownOfAvarice {
         if (this == null || this.isEmpty()) return false
 
         val lookup = ItemLookup(this)
-        return "CROWN_OF_AVARICE" in lookup.sbId || "CROWN_OF_AVARICE_CELEBRATION" in lookup.sbId
+        val sbId = lookup.sbId
+
+        return "CROWN_OF_AVARICE" in sbId || "CROWN_OF_AVARICE_CELEBRATION" in sbId
     }
 
     private fun updateCoaPrice() {

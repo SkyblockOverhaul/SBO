@@ -132,7 +132,7 @@ data class PlayerItems(
         /** The backend packs them like Hypixel packs inventories: gzipped JSON in base64. */
         fun unpack(packed: String): PlayerItems? = runCatching {
             val text = GZIPInputStream(Base64.getDecoder().decode(packed).inputStream()).use { it.readBytes().decodeToString() }
-            PartyFinderApi.json.decodeFromString(serializer(), text)
+            PartyFinderApi.json.decodeFromString<PlayerItems>(text)
         }.onFailure { SBOKotlin.logger.warn("[SBO] Could not read the profile viewer items", it) }.getOrNull()
     }
 }

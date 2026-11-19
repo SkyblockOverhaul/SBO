@@ -2,7 +2,12 @@ name: build
 on: [pull_request, push]
 
 jobs:
+  # One job per MC version, each on its own runner, so the jars are ready sooner
   build:
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ['26.1.2-fabric', '26.2-fabric', '26.3-fabric']
     permissions:
       contents: read
     runs-on: ubuntu-26.04
@@ -25,15 +30,39 @@ jobs:
         run: |
           # A version tag (0.7.2-beta.1, 0.7.2, with or without a v) builds as that version, so the jars and the mod itself carry it
           if [[ "$GITHUB_REF" == refs/tags/* ]]; then
-            ./gradlew build --scan "-Pmod.version=${GITHUB_REF_NAME#v}"
+            ./gradlew ":${{ matrix.version }}:build" --scan -PenableErrorprone=true "-Pmod.version=${GITHUB_REF_NAME#v}"
           else
-            ./gradlew build --scan
+            ./gradlew ":${{ matrix.version }}:build" --scan -PenableErrorprone=true
           fi
+      # Only the one jar is in build/versions, so it is uploaded as-is instead of zipped.
+      # The artifact is named after the jar (SBO-<version>+<mc>-fabric.jar).
       - name: capture build artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: Artifacts
-          path: build/versions/
+          path: build/versions/*.jar
+          archive: false
+          if-no-files-found: error
+
+  # Detekt is slow (Kotlin analysis API), so it runs on its own and nothing waits for it.
+  # Findings are reported but don't fail the build.
+  detekt:
+    permissions:
+      contents: read
+    runs-on: ubuntu-26.04
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v7
+      - name: setup jdk
+        uses: actions/setup-java@v6
+        with:
+          java-version: '27'
+          distribution: 'oracle'
+      - name: setup gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+      - name: detekt
+        run: ./gradlew detektMain detektTest -PenableDetekt=true
 
   # Pushing a version tag publishes the build. A beta tag (0.7.2-beta.1) becomes a beta version on Modrinth,
   # a release tag (0.7.2) a featured release version on Modrinth and a GitHub release with the jars,
@@ -60,7 +89,8 @@ jobs:
       - name: download build artifacts
         uses: actions/download-artifact@v8
         with:
-          name: Artifacts
+          pattern: SBO-*.jar
+          merge-multiple: true
           path: jars
       - name: release only from main
         if: ${{ !contains(github.ref_name, '-beta') }}

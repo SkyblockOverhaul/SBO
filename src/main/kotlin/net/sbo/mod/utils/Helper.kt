@@ -3,6 +3,7 @@ package net.sbo.mod.utils
 import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.entity.LivingEntity
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.tracker.Tracker
@@ -47,7 +48,11 @@ import kotlin.math.abs
 import net.sbo.mod.utils.data.configs.diana.DianaTracker as DianaTrackerDataClass
 
 object Helper {
-    private val MF_REGEX = Regex("""§b\(\+(?:§b)?(\d+)""")
+    /**
+     * The Magic Find in a drop message without formatting, e.g. "(+566 ✯ Magic Find)". Ignores the symbol, the MF
+     * rework (Alpha Network, Nov 2026) shows it as a resource pack glyph.
+     */
+    private val MF_REGEX = Regex("""\(\+([\d,]+)[^)]*Magic Find\)""")
 
     private var lastLootShare: Long = 0L
     var allowSackTracking: Boolean = true
@@ -76,6 +81,32 @@ object Helper {
             .factory() // virtual threads are daemon by default
     )
 
+    /**
+     * Checks whether a mob is a valid entity in the hub. Checks that player is not null, level is not null and equal to the entity's level (reference equality), the entity must not be dead, the entity must be alive (different check than dead), and belong exactly to the current level (where a getEntity query with its entity ID returns exactly the same Entity instance with reference equality). Additionally performs invisibility check based on the parameter, although you usually do not want that.
+     *
+     * @param checkInvisibility whether or not a valid entity must not be invisible. Usually pass false for this, as Hypixel might hide and unhide the entity, and this checks the entity itself being invisible, not it is nametag; so for example an ArmorStand used only for its nametag counts as invisible, which would return as an invalid entity if this parameter was passed as true. Even for player entities; for example the Sphinx Diana mob becomes invisible whilst the question is pending an answer, then becomes visible again; only pass true into checkInvisibility if absolutely sure about it.
+     */
+    fun LivingEntity.isValidEntityInHub(checkInvisibility: Boolean): Boolean {
+        val level = mc.level
+
+        // Intentional reference equality; Entity#level() should return exactly mc.level, and ClientLevel#getEntity(I) should return exactly this entity; otherwise the entity does not belong to the current level.
+        return mc.player != null && level != null && this.level() === mc.level && !this.dead && World.isInHub() && this.isAlive && (!checkInvisibility || !this.isInvisible) && level.getEntity(this.id) === this
+    }
+
+    /**
+     * Essentially .forEach, but without the extra overhead from allocating an Iterator object.
+     *
+     * JIT compiler can usually optimize the iteration, but it does not prevent the Iterator object allocation itself.
+     * If any iterator allocations shows up in an allocation profiler report, switching to this can improve performance.
+     *
+     * Note that if the list is a LinkedList, you should keep using .forEach / for (item in list), as algorithmic complexity grows with indexed access.
+     */
+    inline fun <T> List<T>.fastForEach(action: (T) -> Unit) {
+        for (i in 0..<size) {
+            action(this[i])
+        }
+    }
+
     private fun onLootShare() {
         lastLootShare = System.nanoTime()
     }
@@ -87,7 +118,7 @@ object Helper {
     }
 
     fun init() {
-        Register.onChatMessageCancelable(Pattern.compile("^§e§lLOOT SHARE §fYou received .*? for assisting .*?!?$", Pattern.DOTALL)) { _, _ ->
+        Register.onChatMessageCancelable(Pattern.compile("^§e§lLOOT SHARE §fYou received .*? for assisting .*?!?$")) { _, _ ->
             onLootShare()
             true
         }
@@ -358,7 +389,7 @@ object Helper {
             return "0s"
         }
 
-        val totalSeconds = (milliseconds / 1000).toInt()
+        val totalSeconds = milliseconds / 1000
         val totalMinutes = totalSeconds / 60
         val totalHours = totalMinutes / 60
         val days = totalHours / 24
@@ -369,23 +400,29 @@ object Helper {
         val builder = StringBuilder()
 
         if (days > 0) {
-            builder.append("${days}d ")
+            builder.append(days).append('d')
         }
         if (hours > 0 || days > 0) {
-            builder.append("${hours}h ")
+            if (builder.isNotEmpty()) builder.append(' ')
+            builder.append(hours).append('h')
         }
         if (minutes > 0 || hours > 0 || days > 0) {
-            builder.append("${minutes}m ")
+            if (builder.isNotEmpty()) builder.append(' ')
+            builder.append(minutes).append('m')
         }
         if (builder.isEmpty()) {
             if (decimalSeconds) {
-                builder.append("${"%.1f".format(Locale.ROOT, milliseconds / 1000.0)}s")
+                val tenths = (milliseconds + 50) / 100
+                builder.append(tenths / 10)
+                    .append('.')
+                    .append(tenths % 10)
+                    .append('s')
             } else {
-                builder.append("${seconds}s")
+                builder.append(seconds).append('s')
             }
         }
 
-        return builder.toString().trim()
+        return builder.toString()
     }
 
     /**
@@ -569,8 +606,9 @@ object Helper {
 
     fun showTitle(title: String?, subtitle: String?, fadeIn: Int, time: Int, fadeOut: Int, overwrite: Boolean = true) {
         val currentDurationTicks = mc.gui.titleTime
-        val currentTitle = mc.gui.title?.string
-        val currentSubtitle = mc.gui.subtitle?.string
+        // A title whose time ran out is not drawn anymore, even if Minecraft did not clear it (a times packet can set its time to 0)
+        val currentTitle = if (currentDurationTicks > 0) mc.gui.title?.string else null
+        val currentSubtitle = if (currentDurationTicks > 0) mc.gui.subtitle?.string else null
 
         if (overwrite || time >= currentDurationTicks) {
             mc.gui.setTimes(fadeIn, time, fadeOut)
@@ -703,12 +741,10 @@ object Helper {
 
     fun toTitleCase(input: String): String = input.lowercase().replaceFirstChar { char -> char.uppercase() }
 
+    /** The Magic Find of a drop message, 0 if it has none (the mob was killed by someone else). Colors don't matter. */
     fun getMagicFind(mf: String): Int {
-        val mfMatch = MF_REGEX.find(mf)
-        if (mfMatch != null) {
-            return mfMatch.groupValues[1].toIntOrNull() ?: 0
-        }
-        return 0
+        val mfMatch = MF_REGEX.find(mf.removeFormatting()) ?: return 0
+        return mfMatch.groupValues[1].replace(",", "").toIntOrNull() ?: 0
     }
 
     /** Tells the backend this player is online, it counts everyone from the last 5 minutes. */
@@ -809,42 +845,22 @@ object Helper {
         return BigDecimal.valueOf(mobsPerHr).setScale(2, RoundingMode.HALF_UP).toDouble()
     }
 
-    // TODO: When the Alpha Network update is pushed to main by Hypixel, remove BASE_CHANCES_PERCENT and rename BASE_CHANCES_PERCENT_NEW to BASE_CHANCES_PERCENT.
+    /** Drop chances in percent without Magic Find, by griffin rarity and drop. */
     private val BASE_CHANCES_PERCENT = mapOf(
-        "epic" to mapOf("stick" to 0.08, "relic" to 0.02),
-        "legendary" to mapOf("chim" to 1.0, "stick" to 0.12, "relic" to 0.03, "food" to 0.25),
-        "mythic" to mapOf("chim" to 1.25, "stick" to 0.16, "relic" to 0.04, "food" to 0.5, "wool" to 0.2, "core" to 0.2, "stinger" to 0.5)
-    )
-
-    private val BASE_CHANCES_PERCENT_NEW = mapOf(
         "epic" to mapOf("stick" to 0.05, "relic" to 0.05),
         "legendary" to mapOf("chim" to 2.0, "stick" to 0.1, "relic" to 0.1, "food" to 0.5),
         "mythic" to mapOf("chim" to 2.5, "stick" to 0.15, "relic" to 0.15, "food" to 1.0, "wool" to 1.0, "core" to 1.0, "stinger" to 1.5)
     )
 
-    // TODO: When the Alpha Network update is pushed to main by Hypixel, remove getChance() and rename getChanceNew() to getChance().
-    fun getChance(mf: Int, looting: Int, rarity: String, lootshare: Boolean = false): Map<String, Double> {
-        val baseChances = BASE_CHANCES_PERCENT[rarity.lowercase().trim()]
-            .orEmpty()
-
-        val mfMultiplier = 1.0 + mf / 100.0
-        val factor = if (lootshare) mfMultiplier / 5.0 else mfMultiplier * (1.0 + looting * 0.15)
-        return baseChances.mapValues { (_, chance) -> chance / 100.0 * factor }
-    }
-
-    // TODO: When the Alpha Network update is pushed to main by Hypixel, this becomes getChance().
-    fun getChanceNew(mf: Int, rarity: String, lootshare: Boolean = false): Map<String, Double> {
-        val baseChances = BASE_CHANCES_PERCENT_NEW[rarity.lowercase().trim()]
-            .orEmpty()
-
-        return calculateDropChances(baseChances, mf, lootshare)
-    }
-
-    private fun calculateDropChances(baseChances: Map<String, Double>, mf: Int, lootshare: Boolean): Map<String, Double> {
+    /**
+     * The drop chances (0..1) of a griffin of [rarity] with [mf] Magic Find, by drop ("chim", "stick"...).
+     *
+     * @param lootshare the chances when looting a mob someone else killed, a fifth of the normal ones
+     */
+    fun getChance(mf: Int, rarity: String, lootshare: Boolean = false): Map<String, Double> {
         val multiplier = 1.0 + mf / 100.0
         val factor = if (lootshare) multiplier / 5.0 else multiplier
-
-        return baseChances.mapValues { (_, chance) -> chance / 100.0 * factor }
+        return BASE_CHANCES_PERCENT[rarity.lowercase().trim()].orEmpty().mapValues { (_, chance) -> chance / 100.0 * factor }
     }
 
     fun formatChances(chance: Double, label: String): String {
@@ -854,8 +870,6 @@ object Helper {
     }
 
     fun formatMagicFind(mf: Int): String = "§7[MF:$mf]"
-
-    fun formatMagicFindAndLooting(mf: Int, looting: Int): String = " §7[MF:$mf] [L:$looting]"
 
     fun getKillsFromLore(stack: ItemStack?): Int {
         if (stack == null || stack.isEmpty) return 0

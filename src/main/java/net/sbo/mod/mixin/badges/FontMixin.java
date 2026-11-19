@@ -19,7 +19,10 @@ final class FontMixin {
         require = 0
     )
     private final @NonNull FormattedCharSequence sbo$recolorNames(@NonNull final FormattedCharSequence text) {
-        final FormattedCharSequence recolored = SboBadges.INSTANCE.replaceEverywhere(text);
+        // Chat lines with moving badges in their current colors
+        final var animated = SboBadges.INSTANCE.animatedChatLine(text);
+        if (animated != null) return animated;
+        final var recolored = SboBadges.INSTANCE.replaceEverywhere(text);
         return recolored != null ? recolored : text;
     }
 }

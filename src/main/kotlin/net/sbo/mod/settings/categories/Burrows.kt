@@ -55,14 +55,14 @@ object Burrows : Category("Burrows") {
         this.description = literal("Shows \"Possible\" text on sub guesses in addition to the block highlight. Might increase visual clutter in exchange of making sub guesses more visible.")
     }
 
-    var showTitleWhenFailure by boolean(false) {
-        this.name = literal("Show Title When Failure")
-        this.description = literal("Shows a title to use spade when the arrow guess fails to solve the burrow. This might sometimes show wrongfully on a second solve attempt if the first was successful and second failed for any reason.")
-    }
-
     var showTitleWhenChainEnds by boolean(true) {
         this.name = literal("Show Title When Chain Ends")
-        this.description = literal("Shows a title to use spade when the burrow chain is complete and there's no more guesses or burrows at least 90 blocks nearby, which will usually point to a new Start burrow to hold up your concurrent chains.")
+        this.description = literal("Shows a title to use spade when the burrow chain is complete and there's no more guesses or burrows at least 90 blocks nearby, which will usually point to a new Start burrow to hold up your concurrent chains. Recommended to keep it enabled.")
+    }
+
+    var showTitleWhenFailure by boolean(false) {
+        this.name = literal("Show Title When Failure")
+        this.description = literal("Shows a title to use spade when the arrow guess fails to solve the next burrow's block from the arrow particles. This might sometimes show wrongfully even if a later attempt of the solver succeeded and added a waypoint. Recommended to keep it disabled, as the title is useless most of the time, since arrow guess automatically runs again next tick when particles are handled again.")
     }
 
     init {

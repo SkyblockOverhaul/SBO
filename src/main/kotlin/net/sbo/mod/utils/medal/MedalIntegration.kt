@@ -5,8 +5,8 @@ import net.sbo.mod.settings.categories.Drops
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.DataManager.dianaTrackerMayorData
 import net.sbo.mod.utils.game.Mayor.mayorElectedYear
+import net.sbo.mod.utils.http.RefreshingHttpClient
 import java.net.URI
-import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.time.Duration
@@ -17,9 +17,9 @@ object MedalIntegration {
     private const val PUBLIC_KEY = "pub_gm8PleBWBACgpFhYEZGohVHylz7WtPoN"
     private const val MEDAL_API_URL = "http://localhost:12665/api/v1/event/invoke"
 
-    private val client: HttpClient = HttpClient.newBuilder()
-        .connectTimeout(Duration.ofSeconds(2))
-        .build()
+    private val client = RefreshingHttpClient {
+        connectTimeout(Duration.ofSeconds(2))
+    }
 
     private data class MedalEvent(
         val eventId: String,
@@ -241,6 +241,12 @@ object MedalIntegration {
 
     private fun displayTitle(dropName: String, dropNumber: Int): String = "$dropName #$dropNumber"
 
+    /** The clip names /sbotestmedalclip completes, [testClip] takes more spellings of each. */
+    val CLIP_NAMES = listOf(
+        "all", "chimera", "wool", "brainfood", "relic", "core", "stinger", "stick", "braided", "dye", "fish", "crown",
+        "hilt", "souvenir", "shelmet", "plushie", "remedies", "urn",
+    )
+
     fun testClip(clip: String?) {
         if (!Drops.medalEnabled) {
             Chat.chat("§6[SBO] §cMedal Clips are disabled. Enable them before testing.")
@@ -295,7 +301,9 @@ object MedalIntegration {
                     .POST(HttpRequest.BodyPublishers.ofString(body))
                     .build()
 
-                val response = client.send(request, HttpResponse.BodyHandlers.discarding())
+                val response = client.useClient {
+                    it.send(request, HttpResponse.BodyHandlers.discarding())
+                }
                 if (response.statusCode() == 200) {
                     if (showSuccess) Chat.chat("§6[SBO] §aClipping ${event.displayName}.")
                 } else {
