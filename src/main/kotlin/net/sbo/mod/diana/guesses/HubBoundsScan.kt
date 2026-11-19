@@ -122,7 +122,7 @@ object HubBoundsScan {
         for (cx in pcx - radius..pcx + radius) for (cz in pcz - radius..pcz + radius) {
             val key = ChunkPos.pack(cx, cz)
             if (key in solidByChunk) continue
-            val chunk = level.chunkSource.getChunk(cx, cz, ChunkStatus.FULL, false) as? LevelChunk ?: continue
+            val chunk = level.chunkSource.getChunk(cx, cz, ChunkStatus.FULL, false) ?: continue
             solidByChunk[key] = solidColumns(chunk, level.minY)
         }
 
@@ -288,7 +288,7 @@ object HubBoundsScan {
             // Loaded chunks of other areas would count as Hub chunks.
             if (World.isInHub()) {
                 for (cx in -CHUNK_RANGE..CHUNK_RANGE) for (cz in -CHUNK_RANGE..CHUNK_RANGE) {
-                    val chunk = level.chunkSource.getChunk(cx, cz, ChunkStatus.FULL, false) as? LevelChunk ?: continue
+                    val chunk = level.chunkSource.getChunk(cx, cz, ChunkStatus.FULL, false) ?: continue
                     chunks[ChunkPos.pack(cx, cz)] = chunk
                     live++
                 }
