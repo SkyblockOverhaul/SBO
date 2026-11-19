@@ -277,6 +277,9 @@ body {
 .cfg-keybind { display: flex; align-items: center; gap: 2px; }
 .cfg-keybind-button { min-width: 80px; }
 .cfg-keybind-button.listening { color: var(--text-strong); }
+/* A warning, the key still works */
+.cfg-keybind-button.conflict { color: var(--toast-warning); border-color: var(--toast-warning); }
+.cfg-keybind-conflict { color: var(--toast-warning); padding: 0 2px; }
 
 .cfg-strings { display: flex; align-items: stretch; gap: 2px; }
 .cfg-textarea { width: 160px; }

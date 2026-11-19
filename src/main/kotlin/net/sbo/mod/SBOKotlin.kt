@@ -59,6 +59,7 @@ import net.sbo.mod.utils.game.InventoryUtils
 import net.sbo.mod.utils.game.Mayor
 import net.sbo.mod.utils.game.TabList
 import net.sbo.mod.utils.game.World
+import net.sbo.mod.utils.input.KeybindConflicts
 import net.sbo.mod.utils.time.TimeUtil
 import net.sbo.mod.utils.overlay.OverlayManager
 import net.sbo.mod.utils.version.UpdateChecker
@@ -176,6 +177,7 @@ object SBOKotlin : ClientModInitializer {
 		ClickActionManager.init()
 		SboKeyBinds.init()
 		LoadoutKeybinds.init()
+		KeybindConflicts.init()
 		WaypointManager.init()
 		HypixelModApi.init()
 		PartyFinderManager.init()

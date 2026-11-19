@@ -56,71 +56,85 @@ object Keybinds : Category("Keybinds") {
     var loadoutNextPageKey by keybind("key.keyboard.right") {
         this.name = literal("Next Page")
         depends(::loadoutKeybinds)
+        this.menuOnly = true
     }
 
     var loadoutPreviousPageKey by keybind("key.keyboard.left") {
         this.name = literal("Previous Page")
         depends(::loadoutKeybinds)
+        this.menuOnly = true
     }
 
     var loadout1 by keybind("key.keyboard.1") {
         this.name = literal("Loadout 1")
         depends(::loadoutKeybinds)
+        this.menuOnly = true
     }
 
     var loadout2 by keybind("key.keyboard.2") {
         this.name = literal("Loadout 2")
         depends(::loadoutKeybinds)
+        this.menuOnly = true
     }
 
     var loadout3 by keybind("key.keyboard.3") {
         this.name = literal("Loadout 3")
         depends(::loadoutKeybinds)
+        this.menuOnly = true
     }
 
     var loadout4 by keybind("key.keyboard.4") {
         this.name = literal("Loadout 4")
         depends(::loadoutKeybinds)
+        this.menuOnly = true
     }
 
     var loadout5 by keybind("key.keyboard.5") {
         this.name = literal("Loadout 5")
         depends(::loadoutKeybinds)
+        this.menuOnly = true
     }
 
     var loadout6 by keybind("key.keyboard.6") {
         this.name = literal("Loadout 6")
         depends(::loadoutKeybinds)
+        this.menuOnly = true
     }
 
     var loadout7 by keybind("key.keyboard.7") {
         this.name = literal("Loadout 7")
         depends(::loadoutKeybinds)
+        this.menuOnly = true
     }
 
     var loadout8 by keybind("key.keyboard.8") {
         this.name = literal("Loadout 8")
         depends(::loadoutKeybinds)
+        this.menuOnly = true
     }
 
     var loadout9 by keybind("key.keyboard.9") {
         this.name = literal("Loadout 9")
         depends(::loadoutKeybinds)
+        this.menuOnly = true
     }
 
     var loadout10 by keybind("key.keyboard.0") {
         this.name = literal("Loadout 10")
         depends(::loadoutKeybinds)
+        this.menuOnly = true
     }
 
     var loadout11 by keybind("key.keyboard.minus") {
         this.name = literal("Loadout 11")
         depends(::loadoutKeybinds)
+        this.menuOnly = true
     }
 
     var loadout12 by keybind("key.keyboard.equal") {
         this.name = literal("Loadout 12")
         depends(::loadoutKeybinds)
+        this.menuOnly = true
     }
 
     /** The loadout keys of a page, top left to bottom right. */

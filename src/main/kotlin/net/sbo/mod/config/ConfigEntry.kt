@@ -338,9 +338,14 @@ class StringsEntry internal constructor(id: String, default: Array<String>, name
 /**
  * A key or mouse button, saved by Minecraft's name for it ("key.keyboard.g", "key.mouse.4") like options.txt does, so
  * the same file works with GLFW and SDL key codes. Unbound while its [sub] is off or a requirement isn't met.
+ *
+ * @property menuOnly true for a key that only works in a menu, it can share its key with Minecraft's keys
  */
-class KeybindEntry internal constructor(id: String, default: String, name: String, description: String) :
+class KeybindEntry internal constructor(id: String, default: String, name: String, description: String, val menuOnly: Boolean) :
     ConfigEntry<String>(id, default, name, description) {
+
+    /** The names of everything else bound to the same key, shown on the key in the settings screen. */
+    var conflicts: () -> List<String> = { emptyList() }
 
     override val effectiveValue: String
         get() = if (sub?.enabled == false || !requirementsMet) UNBOUND else value
