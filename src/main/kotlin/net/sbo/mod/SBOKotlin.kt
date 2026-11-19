@@ -24,6 +24,7 @@ import net.sbo.mod.diana.MuteBuggedSpadeSounds
 import net.sbo.mod.diana.achievements.AchievementManager
 import net.sbo.mod.diana.achievements.AchievementManager.unlockAchievement
 import net.sbo.mod.diana.burrows.BurrowDetector
+import net.sbo.mod.diana.guesses.HubBoundsScan
 import net.sbo.mod.diana.guesses.PreciseGuessBurrow
 import net.sbo.mod.utils.hubcache.HubChunkCache
 import net.sbo.mod.diana.sphinx.SphinxSolver
@@ -179,6 +180,7 @@ object SBOKotlin : ClientModInitializer {
 		EventsGui.register()
 		HubGui.register()
 		HelpCommand.init()
+		HubBoundsScan.init()
 		CloudSync.init()
 		SboBadges.init()
 		ModConflicts.init()

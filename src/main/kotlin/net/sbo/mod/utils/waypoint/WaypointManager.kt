@@ -163,7 +163,7 @@ object WaypointManager {
             expiredArrowPositions.forEach(ArrowGuessBurrow::removeFromInternalState)
             expiredBurrowPositions.forEach(BurrowDetector::removeFromInternalState)
 
-            // Remove all waypoints that are not in radius of typical burrow locations x y z
+            // Burrows and guesses outside the Hub island can never be real.
             if (inHub) {
                 val invalidArrowPositions = mutableSetOf<SboVec>()
                 val invalidBurrowPositions = mutableSetOf<SboVec>()
@@ -173,17 +173,7 @@ object WaypointManager {
                         return@forEachWaypoint false
                     }
 
-                    val underWorld = waypoint.pos.y < 60
-                    val aboveWorld = waypoint.pos.y > 105
-                    val outsideZ = waypoint.pos.z > 205
-                    val outsideX = waypoint.pos.x > 175
-                    val outsideNegativeZ = waypoint.pos.z < 0 && -waypoint.pos.z > 208
-                    val outsideNegativeX = waypoint.pos.x < 0 && -waypoint.pos.x > 283
-
-                    if (
-                        underWorld || aboveWorld || outsideZ || outsideX ||
-                        outsideNegativeZ || outsideNegativeX
-                    ) {
+                    if (!ArrowGuessBurrow.isInHubBounds(waypoint.pos)) {
                         when (waypoint.type) {
                             "arrow" -> invalidArrowPositions.add(waypoint.pos.roundLocationToBlock())
                             "burrow" -> invalidBurrowPositions.add(waypoint.pos.roundLocationToBlock())

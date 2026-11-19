@@ -48,7 +48,11 @@ import kotlin.math.abs
 import net.sbo.mod.utils.data.configs.diana.DianaTracker as DianaTrackerDataClass
 
 object Helper {
-    private val MF_REGEX = Regex("""§b\(\+(?:§b)?(\d+)""")
+    /**
+     * The Magic Find in a drop message without formatting, e.g. "(+566 ✯ Magic Find)". Ignores the symbol, the MF
+     * rework (Alpha Network, Nov 2026) shows it as a resource pack glyph.
+     */
+    private val MF_REGEX = Regex("""\(\+([\d,]+)[^)]*Magic Find\)""")
 
     private var lastLootShare: Long = 0L
     var allowSackTracking: Boolean = true
@@ -737,12 +741,10 @@ object Helper {
 
     fun toTitleCase(input: String): String = input.lowercase().replaceFirstChar { char -> char.uppercase() }
 
+    /** The Magic Find of a drop message, 0 if it has none (the mob was killed by someone else). Colors don't matter. */
     fun getMagicFind(mf: String): Int {
-        val mfMatch = MF_REGEX.find(mf)
-        if (mfMatch != null) {
-            return mfMatch.groupValues[1].toIntOrNull() ?: 0
-        }
-        return 0
+        val mfMatch = MF_REGEX.find(mf.removeFormatting()) ?: return 0
+        return mfMatch.groupValues[1].replace(",", "").toIntOrNull() ?: 0
     }
 
     /** Tells the backend this player is online, it counts everyone from the last 5 minutes. */

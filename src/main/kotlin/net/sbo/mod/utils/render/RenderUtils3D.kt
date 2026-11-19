@@ -290,6 +290,10 @@ object RenderUtils3D {
         }
     }
 
+    /** Lines are cut this far in front of the camera, a bit past the near plane (0.05). See [drawLine]. */
+    private const val LINE_NEAR_PLANE = 0.1
+    /** How far in front of the camera the line from the crosshair starts, see [drawLineFromCursor]. */
+    private const val CURSOR_LINE_START_DISTANCE = 32.0
     private const val VANILLA_NAME_TAG_SCALE = 0.025
     private const val LABEL_VANILLA_SIZE_DISTANCE = 16.0
     private const val LABEL_MAX_GROWTH = 5.0
@@ -403,8 +407,11 @@ object RenderUtils3D {
     ) {
         val camera = context.getCamera()
 
+        // Any point straight ahead lands on the crosshair and gives the same line on screen. A far one makes a line to
+        // a target behind the player reach the screen edge: from 1 block ahead it passes so close to the camera that
+        // [drawLine] cuts it off in the middle of the screen.
         val startPos = camera.position()
-            .add(Vec3.directionFromRotation(camera.xRot(), camera.yRot()))
+            .add(Vec3.directionFromRotation(camera.xRot(), camera.yRot()).scale(CURSOR_LINE_START_DISTANCE))
 
         val endPos = target.center()
             .toVec3d()
@@ -421,7 +428,7 @@ object RenderUtils3D {
     }
 
     /**
-     * Draws a line from a start point to a target point in the world.
+     * Draws a line from a start point to a target point in the world. The part behind the camera is cut off.
      * @param context The world render context.
      * @param startPos The start position in the world.
      * @param endPos The end position in the world.
@@ -437,49 +444,49 @@ object RenderUtils3D {
         lineWidth: Float,
         alpha: Float = 0.5f
     ) {
-        context.pushPop {
-            val cameraPos = context.getCamera().position()
+        val camera = context.getCamera()
 
-            translate(cameraPos.reverse())
+        // Made camera relative in doubles: world coordinates as floats lose precision far from 0 0.
+        var start = startPos.subtract(camera.position())
+        var end = endPos.subtract(camera.position())
 
-            val lineDir = endPos.subtract(startPos)
-            val viewDir = startPos.subtract(cameraPos)
+        // The lines shader widens a line on screen from its projected end points. An end point behind the camera
+        // projects to a flipped, meaningless spot, which made the line wobble whenever its target was behind the
+        // player. Cut the line at a plane just in front of the camera, the part behind it is not visible anyway.
+        val forward = Vec3.directionFromRotation(camera.xRot(), camera.yRot())
+        val startDepth = start.dot(forward)
+        val endDepth = end.dot(forward)
+        if (startDepth < LINE_NEAR_PLANE && endDepth < LINE_NEAR_PLANE) return
+        if (startDepth < LINE_NEAR_PLANE) {
+            start = start.lerp(end, (LINE_NEAR_PLANE - startDepth) / (endDepth - startDepth))
+        } else if (endDepth < LINE_NEAR_PLANE) {
+            end = end.lerp(start, (LINE_NEAR_PLANE - endDepth) / (startDepth - endDepth))
+        }
 
-            val sideVec = lineDir.cross(viewDir).normalize()
-            val upVec = sideVec.cross(lineDir).normalize()
+        // The lines shader uses the normal as the line direction: it projects position + normal to get the direction
+        // on screen and widens the line sideways from it. Any other normal makes the line wobble with the view angle.
+        // Only its axis matters, so it points away from the camera: position + normal then never lands behind it.
+        var dir = end.subtract(start).normalize()
+        if (dir.dot(forward) < 0) dir = dir.reverse()
+        val nx = dir.x.toFloat()
+        val ny = dir.y.toFloat()
+        val nz = dir.z.toFloat()
 
-            val nx = upVec.x.toFloat()
-            val ny = upVec.y.toFloat()
-            val nz = upVec.z.toFloat()
+        context.submitNodeCollector().submitCustomGeometry(
+            context.poseStack(),
+            SboRenderLayers.LINES_THROUGH_WALLS
+        ) { pose, consumer ->
+            consumer
+                .addVertex(pose, start.x.toFloat(), start.y.toFloat(), start.z.toFloat())
+                .setNormal(pose, nx, ny, nz)
+                .setColor(color[0], color[1], color[2], alpha)
+                .setLineWidth(lineWidth)
 
-            val renderLayer = SboRenderLayers.LINES_THROUGH_WALLS
-
-            context.submitNodeCollector().submitCustomGeometry(
-                context.poseStack(),
-                renderLayer
-            ) { pose, consumer ->
-                consumer
-                    .addVertex(
-                        pose,
-                        startPos.x.toFloat(),
-                        startPos.y.toFloat(),
-                        startPos.z.toFloat()
-                   )
-                    .setNormal(pose, nx, ny, nz)
-                    .setColor(color[0], color[1], color[2], alpha)
-                    .setLineWidth(lineWidth)
-
-                consumer
-                    .addVertex(
-                        pose,
-                        endPos.x.toFloat(),
-                        endPos.y.toFloat(),
-                        endPos.z.toFloat()
-                    )
-                    .setNormal(pose, nx, ny, nz)
-                    .setColor(color[0], color[1], color[2], alpha)
-                    .setLineWidth(lineWidth)
-            }
+            consumer
+                .addVertex(pose, end.x.toFloat(), end.y.toFloat(), end.z.toFloat())
+                .setNormal(pose, nx, ny, nz)
+                .setColor(color[0], color[1], color[2], alpha)
+                .setLineWidth(lineWidth)
         }
     }
 

@@ -45,9 +45,12 @@ object ArrowGuessBurrow {
     private const val COUNT_NEAR_TIP = 4
     private const val COUNT_NEAR_BASE = 2
     private const val EPSILON = 1e-6
-    private val HUB_BOUNDS_MIN = SboVec(-283.0, 60.0, -208.0)
-    private val HUB_BOUNDS_MAX = SboVec(175.0, 105.0, 205.0)
-    /** The Hub island, guesses outside of it are never valid. */
+    // TODO: measured with /sbodebughubscan on the live Hub and the Alpha Network (Nov 2026), re-check once the alpha
+    //  changes are live. Alpha needs max x 210 (fairy forest grass up to x 203), both need min y 51 (grass at y 52 in
+    //  a pit near 104 -25) and max y 110 (terrace near the castle at -207 109 88). Before: x -283..175, y 60..105.
+    private val HUB_BOUNDS_MIN = SboVec(-283.0, 51.0, -208.0)
+    private val HUB_BOUNDS_MAX = SboVec(210.0, 110.0, 208.0)
+    /** The Hub island, guesses outside of it are never valid. The min is exclusive, the max inclusive. */
     val HUB_BOUNDS: AABB = AABB(HUB_BOUNDS_MIN.x, HUB_BOUNDS_MIN.y, HUB_BOUNDS_MIN.z, HUB_BOUNDS_MAX.x, HUB_BOUNDS_MAX.y, HUB_BOUNDS_MAX.z)
     private val recentFoundArrows = TimeLimitedSet<RaycastUtils.Ray>(18.seconds)
     private var spadeTitleShown = false
@@ -497,6 +500,9 @@ object ArrowGuessBurrow {
 
         return valid
     }
+
+    /** True if [pos] is inside [HUB_BOUNDS]. */
+    fun isInHubBounds(pos: SboVec): Boolean = HUB_BOUNDS.isInside(pos)
 
     private fun AABB.isInside(vec: SboVec): Boolean {
         return vec.x > this.minX && vec.x <= this.maxX &&
