@@ -37,15 +37,21 @@ import kotlin.math.pow
 object ConfigGui {
     private val STYLES = listOf("sbo:ui/config/config.css", SboLook.STYLE)
 
-    fun open(config: Config, title: String, onBack: (() -> Unit)? = null, whatsNew: WhatsNew? = null) {
-        GuiLib.open(app(config, title, onBack, whatsNew), STYLES, title)
+    /**
+     * @param onBack run by the back button, no back button when null
+     * @param whatsNew the What's New page, opened first when it asks for that and there is no [page] or [query]
+     * @param page the category to open on, the home page when null
+     * @param query typed into the search
+     */
+    fun open(config: Config, title: String, onBack: (() -> Unit)? = null, whatsNew: WhatsNew? = null, page: Category? = null, query: String = "") {
+        GuiLib.open(app(config, title, onBack, whatsNew, page, query), STYLES, title)
     }
 
     fun screen(config: Config, title: String, onBack: (() -> Unit)? = null, whatsNew: WhatsNew? = null): GuiLibScreen =
         GuiLib.screen(app(config, title, onBack, whatsNew), STYLES, title)
 
-    private fun app(config: Config, title: String, onBack: (() -> Unit)?, whatsNew: WhatsNew?) =
-        component(title) { App(AppProps(config, onBack, whatsNew?.takeIf { it.hits.isNotEmpty() })) }
+    private fun app(config: Config, title: String, onBack: (() -> Unit)?, whatsNew: WhatsNew?, page: Category? = null, query: String = "") =
+        component(title) { App(AppProps(config, onBack, whatsNew?.takeIf { it.hits.isNotEmpty() }, page, query)) }
 }
 
 private class Ui(
@@ -61,17 +67,21 @@ private class Ui(
 
 private val UiContext = createContext<Ui?>(null, "ConfigUi")
 
-private data class AppProps(val config: Config, val onBack: (() -> Unit)?, val whatsNew: WhatsNew?)
+/**
+ * @property startPage the category shown first, the home page when null
+ * @property startQuery typed into the search when the screen opens
+ */
+private data class AppProps(val config: Config, val onBack: (() -> Unit)?, val whatsNew: WhatsNew?, val startPage: Category?, val startQuery: String)
 
-private val App = component<AppProps>("ConfigApp") { (config, onBack, whatsNew) ->
+private val App = component<AppProps>("ConfigApp") { (config, onBack, whatsNew, startPage, startQuery) ->
     val hasGeneral = config.elements.isNotEmpty()
     // null is the home page with every category below each other
-    var page by useState<Category?>(null)
+    var page by useState(startPage)
     // What's New is shown instead of the page while this is on
-    var showNew by useState(whatsNew?.openFirst == true)
+    var showNew by useState(startPage == null && startQuery.isEmpty() && whatsNew?.openFirst == true)
     // The count only marks it as not looked at yet
     var newSeen by useState(whatsNew?.seen == true)
-    var query by useState("")
+    var query by useState(startQuery)
     var target by useState<ConfigElement?>(null)
     var editing by useState<StringsEntry?>(null)
     var collapsed by useState<Set<String>>(DataManager.sboData.collapsedSettings.toSet())

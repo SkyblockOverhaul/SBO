@@ -53,7 +53,7 @@ object WaypointManager {
 
     fun init() {
         // TODO Once majority of people are on 0.7.2 or above, change these commands both to send with [SBO] prefix in front.
-        Register.command("sbosendping") { args ->
+        Register.command("sbosendping", argName = "message") { args ->
             val playerPos = Player.getLastPosition()
             if (args.isNotEmpty()) {
                 Chat.pc("x: ${playerPos.x.roundToInt()}, y: ${playerPos.y.roundToInt() - 1}, z: ${playerPos.z.roundToInt()} | ${args.joinToString(" ")}")
@@ -61,7 +61,7 @@ object WaypointManager {
                 Chat.pc("x: ${playerPos.x.roundToInt()}, y: ${playerPos.y.roundToInt() - 1}, z: ${playerPos.z.roundToInt()}")
         }
 
-        Register.command("sbosendcoords") { args ->
+        Register.command("sbosendcoords", argName = "message") { args ->
             val playerPos = Player.getLastPosition()
             if (args.isNotEmpty()) {
                 Chat.allChat("x: ${playerPos.x.roundToInt()}, y: ${playerPos.y.roundToInt() - 1}, z: ${playerPos.z.roundToInt()} | ${args.joinToString(" ")}")

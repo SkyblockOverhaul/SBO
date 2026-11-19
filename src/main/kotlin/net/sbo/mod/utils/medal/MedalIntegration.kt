@@ -241,6 +241,12 @@ object MedalIntegration {
 
     private fun displayTitle(dropName: String, dropNumber: Int): String = "$dropName #$dropNumber"
 
+    /** The clip names /sbotestmedalclip completes, [testClip] takes more spellings of each. */
+    val CLIP_NAMES = listOf(
+        "all", "chimera", "wool", "brainfood", "relic", "core", "stinger", "stick", "braided", "dye", "fish", "crown",
+        "hilt", "souvenir", "shelmet", "plushie", "remedies", "urn",
+    )
+
     fun testClip(clip: String?) {
         if (!Drops.medalEnabled) {
             Chat.chat("§6[SBO] §cMedal Clips are disabled. Enable them before testing.")

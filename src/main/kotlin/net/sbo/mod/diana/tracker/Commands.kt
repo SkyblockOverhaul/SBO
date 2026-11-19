@@ -1,5 +1,6 @@
 package net.sbo.mod.diana.tracker
 
+import net.sbo.mod.guis.ConfirmGui
 import net.sbo.mod.overlays.DianaLoot
 import net.sbo.mod.overlays.DianaStats
 import net.sbo.mod.settings.Settings
@@ -13,12 +14,9 @@ import net.sbo.mod.utils.medal.MedalIntegration
 
 internal object Commands {
     fun register() {
-        Register.command("sboresetsession") {
-            DianaLoot.resetSession()
-            Chat.chat("§6[SBO] §aDiana session tracker has been reset.")
-        }
+        Register.command("sboresetsession") { DianaLoot.askResetSession() }
 
-        Register.command("sbolegacylook") { args ->
+        Register.command("sbolegacylook", argName = "yes|no", completions = { if (it.isEmpty()) listOf("yes", "no") else emptyList() }) { args ->
             val legacy = when (args.firstOrNull()?.lowercase()) {
                 "yes" -> true
                 "no" -> false
@@ -41,21 +39,25 @@ internal object Commands {
         }
 
         Register.command("sboresetmayortracker") {
-            MayorReset.reset(true)
+            ConfirmGui.confirmReset("Reset the event tracker?", "The tracker of this Diana event starts from zero, what it has now is kept in the past events.") {
+                MayorReset.reset(true)
+            }
         }
 
         Register.command("sboresetstatstracker") {
-            sboData.mobsSinceInq = 0
-            sboData.inqsSinceChim = 0
-            sboData.minotaursSinceStick = 0
-            sboData.champsSinceRelic = 0
-            sboData.inqsSinceLsChim = 0
-            DataManager.save(DataManager::sboData)
-            SboTimerManager.timerSession.reset()
-            DianaStats.updateLines()
+            ConfirmGui.confirmReset("Reset the stats tracker?", "Mobs since Inquisitor, Inquisitors since Chimera and the other counters start from zero, so does the session timer.") {
+                sboData.mobsSinceInq = 0
+                sboData.inqsSinceChim = 0
+                sboData.minotaursSinceStick = 0
+                sboData.champsSinceRelic = 0
+                sboData.inqsSinceLsChim = 0
+                DataManager.save(DataManager::sboData)
+                SboTimerManager.timerSession.reset()
+                DianaStats.updateLines()
+            }
         }
 
-        Register.command("sbotestmedalclip", "sbomedaltest") { args ->
+        Register.command("sbotestmedalclip", "sbomedaltest", argName = "clip", completions = { if (it.isEmpty()) MedalIntegration.CLIP_NAMES else emptyList() }) { args ->
             MedalIntegration.testClip(args.firstOrNull())
         }
     }

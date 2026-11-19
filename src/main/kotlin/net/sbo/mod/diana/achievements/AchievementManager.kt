@@ -9,6 +9,7 @@ import net.minecraft.world.item.component.CustomData
 import net.sbo.mod.diana.RareMob
 import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.guis.ConfirmGui
 import net.sbo.mod.overlays.CrownOfAvarice
 import net.sbo.mod.overlays.CrownOfAvarice.isCoA
 import net.sbo.mod.overlays.DianaLoot.totalProfit
@@ -62,18 +63,15 @@ object AchievementManager {
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
 
     fun init() {
-        Register.command("sbolockachievements") { args ->
-            if (args.getOrNull(0) != "CONFIRM") {
-                Chat.chat("§6[SBO] §eYou are about to reset all your achievements. Type §c/sbolockachievements CONFIRM §eto confirm")
-                return@command
+        Register.command("sboresetachievements", "sbolockachievements") {
+            ConfirmGui.confirmReset("Reset all achievements?", "Every achievement you unlocked is locked again. This can't be undone.") {
+                achievementsData.totalAchievements.clear()
+                achievementsData.currentEventAchievements.clear()
+                achievementsData.lastEventYear = -1
+
+                DataManager.save(DataManager::achievementsData)
+                Chat.chat("§6[SBO] §eAchievements reset")
             }
-
-            achievementsData.totalAchievements.clear()
-            achievementsData.currentEventAchievements.clear()
-            achievementsData.lastEventYear = -1
-
-            DataManager.save(DataManager::achievementsData)
-            Chat.chat("§6[SBO] §eAchievements locked")
         }
 
         Register.command("sbobacktrackachievements") {

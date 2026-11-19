@@ -183,7 +183,7 @@ object PartyFinderManager {
             }
         }
 
-        Register.command("sboKey", "sbokey") { args ->
+        Register.command("sboKey", "sbokey", argName = "key") { args ->
             if (args.isEmpty()) {
                 Chat.chat("§6[SBO] §cPlease provide a key")
             } else if (args[0].startsWith("sbo").not()) {

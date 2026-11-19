@@ -136,7 +136,9 @@ object ProfileViewerGui {
     }
 
     fun register() {
-        Register.command("sbopv", "spv", "sboprofileviewer", "sbocheck", "sboc") { args ->
+        Register.command("sbopv", "spv", "sboprofileviewer", "sbocheck", "sboc", argName = "player|party", completions = { previous ->
+            if (previous.isEmpty()) listOf("party") + mc.level?.players().orEmpty().map { it.gameProfile.name } else emptyList()
+        }) { args ->
             val party = args.firstOrNull()?.equals("party", ignoreCase = true) == true
             mc.schedule { open(if (party) null else args.firstOrNull(), party) }
         }

@@ -154,12 +154,20 @@ object SBOKotlin : ClientModInitializer {
 
 		// load Main Features
 		PartyCommands.init()
-		Register.command("sbo") { args ->
-			val settings = args.firstOrNull()?.lowercase() in setOf("settings", "config")
-			mc.schedule { if (settings) HubGui.openSettings() else HubGui.open() }
+		val settingsWords = listOf("settings", "config")
+		Register.command("sbo", argName = "settings", completions = { previous ->
+			when {
+				previous.isEmpty() -> settingsWords
+				previous.size == 1 && previous[0].lowercase() in settingsWords -> HubGui.settingsPages
+				else -> emptyList()
+			}
+		}) { args ->
+			val settings = args.firstOrNull()?.lowercase() in settingsWords
+			val rest = args.drop(1).joinToString(" ")
+			mc.schedule { if (settings) HubGui.openSettings(rest) else HubGui.open() }
 		}
-		Register.command("sbosettings", "sboconfig") {
-			mc.schedule { HubGui.openSettings() }
+		Register.command("sbosettings", "sboconfig", argName = "category|search", completions = { if (it.isEmpty()) HubGui.settingsPages else emptyList() }) { args ->
+			mc.schedule { HubGui.openSettings(args.joinToString(" ")) }
 		}
 
 		PartyFinderGui.register()

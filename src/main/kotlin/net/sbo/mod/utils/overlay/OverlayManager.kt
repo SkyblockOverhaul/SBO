@@ -4,6 +4,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.guis.ConfirmGui
 import net.sbo.mod.utils.Helper.fastForEach
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
@@ -40,8 +41,10 @@ object OverlayManager {
         }
 
         Register.command("sboresethudpositions") {
-            overlays.forEach { it.resetPosition() }
-            DataManager.overlayData.save()
+            ConfirmGui.confirmReset("Reset all overlay positions?", "Every SBO overlay moves back to where it starts on a new install.") {
+                overlays.forEach { it.resetPosition() }
+                DataManager.overlayData.save()
+            }
         }
     }
 

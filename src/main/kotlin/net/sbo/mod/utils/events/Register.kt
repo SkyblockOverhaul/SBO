@@ -4,7 +4,6 @@ import com.mojang.brigadier.arguments.StringArgumentType
 import net.fabricmc.fabric.api.client.command.v2.ClientCommands
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.minecraft.network.chat.Component
-import net.minecraft.client.Minecraft
 import net.minecraft.commands.SharedSuggestionProvider
 import net.sbo.mod.utils.chat.ChatHandler
 import java.util.regex.Matcher
@@ -16,16 +15,18 @@ import java.util.regex.Pattern
 object Register {
     /**
      * Registers a command with the specified name and aliases.
-     * Player names are suggested by default when no other suggestions
-     * are available from the command.
      *
      * @param name The name of the command.
      * @param aliases Optional aliases for the command.
+     * @param argName Shown as `[<argName>]` in the hint above chat while typing the command, "mf> <rarity" shows two.
+     * @param completions Tab completions for the word being typed, gets the words typed before it.
      * @param action The action to execute. It receives the command arguments.
      */
     fun command(
         name: String,
         vararg aliases: String,
+        argName: String = "args",
+        completions: ((List<String>) -> List<String>)? = null,
         action: (Array<String>) -> Unit
     ) {
         ClientCommandRegistrationCallback.EVENT.register { dispatcher, _ ->
@@ -37,22 +38,18 @@ object Register {
                         1
                     }
                     .then(
-                        ClientCommands.argument("args", StringArgumentType.greedyString())
+                        ClientCommands.argument(argName, StringArgumentType.greedyString())
                             .suggests { _, builder ->
-                                val world = Minecraft.getInstance().level
-
-                                if (world != null) {
-                                    SharedSuggestionProvider.suggest(
-                                        world.players().map { it.gameProfile.name },
-                                        builder
-                                    )
-                                } else {
-                                    builder.buildFuture()
-                                }
+                                if (completions == null) return@suggests builder.buildFuture()
+                                // The argument is all words, only the last one is completed
+                                val typed = builder.remaining
+                                val wordStart = typed.lastIndexOf(' ') + 1
+                                val previous = typed.substring(0, wordStart).split(' ').filter { it.isNotEmpty() }
+                                SharedSuggestionProvider.suggest(completions(previous), builder.createOffset(builder.start + wordStart))
                             }
                             .executes {
                                 val argsString =
-                                    StringArgumentType.getString(it, "args")
+                                    StringArgumentType.getString(it, argName)
 
                                 val args = argsString.split(' ')
                                     .filter { s -> s.isNotEmpty() }

@@ -52,6 +52,20 @@ object HubGui {
         ConfigGui.open(Settings, "SBO Settings", onBack = ::open, whatsNew = SettingsChanges.whatsNew(force = whatsNew))
     }
 
+    /** The settings categories as typed after /sboconfig: "rare_mobs". */
+    val settingsPages: List<String> get() = Settings.children.map { it.name.lowercase().replace(' ', '_') }
+
+    /** Opens the settings on the category [arg] names, or with [arg] in the search when it names none. */
+    fun openSettings(arg: String) {
+        if (arg.isBlank()) return openSettings()
+        val key = pageKey(arg)
+        val page = Settings.children.firstOrNull { pageKey(it.name) == key }
+        ConfigGui.open(Settings, "SBO Settings", onBack = ::open, whatsNew = SettingsChanges.whatsNew(), page = page, query = if (page == null) arg else "")
+    }
+
+    // "Rare Mobs", "rare_mobs" and "raremobs" all name the same category
+    private fun pageKey(name: String) = name.lowercase().filter { it.isLetterOrDigit() }
+
     fun settingsScreen(): GuiLibScreen = ConfigGui.screen(Settings, "SBO Settings", onBack = ::open, whatsNew = SettingsChanges.whatsNew())
 
     private class Tile(

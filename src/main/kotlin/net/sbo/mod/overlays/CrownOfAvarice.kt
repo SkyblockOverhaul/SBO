@@ -8,6 +8,7 @@ import net.sbo.guilib.core.dsl.item
 import net.sbo.guilib.core.dsl.span
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.config.nextOption
+import net.sbo.mod.guis.ConfirmGui
 import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.overlay.CHAT_SCREEN_FILTER
@@ -142,15 +143,19 @@ object CrownOfAvarice {
 
         // Only the CoA part of the tracker, the loot, mobs and Diana playtime stay
         Register.command("sboresetcoasession") {
-            resetCoa(DataManager.dianaTrackerSessionData, SboTimerManager.timerCoaSession)
-            DataManager.save(DataManager::dianaTrackerSessionData)
-            Chat.chat("§6[SBO] §aCoA session tracker has been reset.")
+            ConfirmGui.confirmReset("Reset the CoA session tracker?", "The Crown of Avarice coins and time of this session start from zero.") {
+                resetCoa(DataManager.dianaTrackerSessionData, SboTimerManager.timerCoaSession)
+                DataManager.save(DataManager::dianaTrackerSessionData)
+                Chat.chat("§6[SBO] §aCoA session tracker has been reset.")
+            }
         }
 
         Register.command("sboresetcoaevent") {
-            resetCoa(DataManager.dianaTrackerMayorData, SboTimerManager.timerCoaMayor)
-            DataManager.save(DataManager::dianaTrackerMayorData)
-            Chat.chat("§6[SBO] §aCoA event tracker has been reset.")
+            ConfirmGui.confirmReset("Reset the CoA event tracker?", "The Crown of Avarice coins and time of this Diana event start from zero.") {
+                resetCoa(DataManager.dianaTrackerMayorData, SboTimerManager.timerCoaMayor)
+                DataManager.save(DataManager::dianaTrackerMayorData)
+                Chat.chat("§6[SBO] §aCoA event tracker has been reset.")
+            }
         }
 
         Register.command("sbosetprimarycoa") {
