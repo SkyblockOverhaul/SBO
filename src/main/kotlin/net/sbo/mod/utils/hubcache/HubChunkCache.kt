@@ -70,6 +70,11 @@ object HubChunkCache {
     @JvmStatic
     fun isActive(): Boolean = manager != null
 
+    /** True for chunks outside the Hub island while "Render Hub Island Only" hides them. Runs for every chunk lookup, so the plain field checks go before the setting. */
+    @JvmStatic
+    fun hidesChunk(chunkX: Int, chunkZ: Int): Boolean =
+        isActive() && World.isInHub() && renderHubIslandOnlyEnabled() && !inArea(chunkX, chunkZ, ArrowGuessBurrow.HUB_BOUNDS)
+
     /** Debug line for F3, appended to the client chunk cache stats. */
     @JvmStatic
     fun debugString(): String {

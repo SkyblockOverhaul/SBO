@@ -1,5 +1,9 @@
 package net.sbo.mod.mixin.hubcache;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import org.slf4j.Logger;
+
 import net.minecraft.client.multiplayer.ClientChunkCache;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.level.ChunkPos;
@@ -73,6 +77,12 @@ final class HubClientChunkCacheMixin implements ChunkStorageExt {
         final var manager = this.sbo$manager();
         // Also when nothing is loaded here: it must not come back over the real chunk later.
         if (manager != null) manager.unload(x, z, true);
+    }
+
+    // "Render Hub Island Only" rejects the chunks around the island on purpose, vanilla would warn for each one.
+    @WrapOperation(method = {"replaceWithPacketData", "replaceBiomes"}, at = @At(value = "INVOKE", target = "Lorg/slf4j/Logger;warn(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V", remap = false))
+    private final void sbo$skipHiddenChunkWarning(@NonNull final Logger logger, @NonNull final String message, @NonNull final Object x, @NonNull final Object z, @NonNull final Operation<Void> original) {
+        if (!HubChunkCache.hidesChunk((Integer) x, (Integer) z)) original.call(logger, message, x, z);
     }
 
     @Inject(method = "drop", at = @At("HEAD"))
