@@ -34,11 +34,14 @@ jobs:
           else
             ./gradlew ":${{ matrix.version }}:build" --scan -PenableErrorprone=true
           fi
+      # Only the one jar is in build/versions, so it is uploaded as-is instead of zipped.
+      # The artifact is named after the jar (SBO-<version>+<mc>-fabric.jar).
       - name: capture build artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: Artifacts-${{ matrix.version }}
-          path: build/versions/
+          path: build/versions/*.jar
+          archive: false
+          if-no-files-found: error
 
   # Detekt is slow (Kotlin analysis API), so it runs on its own and nothing waits for it.
   # Findings are reported but don't fail the build.
@@ -86,7 +89,7 @@ jobs:
       - name: download build artifacts
         uses: actions/download-artifact@v8
         with:
-          pattern: Artifacts-*
+          pattern: SBO-*.jar
           merge-multiple: true
           path: jars
       - name: release only from main
