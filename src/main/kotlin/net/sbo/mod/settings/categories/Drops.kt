@@ -67,7 +67,7 @@ object Drops : Category("Drops") {
     init {
         sub {
             this.title = "Custom Drop Messages"
-            this.description = "Leave empty to use the default, ↺ inserts a template to start from. Use {mf} for Magic Find, {amount} for the drop amount this event, {since} for the mobs it took, {price} for the price, {percentage} for the drop/mob ratio and {lstext} for (LS) on lootshare drops. Colors can be used with & and a color code (stripped when announcing to party)."
+            this.description = "Leave empty to use the default, the template icon inserts a template to start from and the reset icon clears the field. Use {mf} for Magic Find, {amount} for the drop amount this event, {since} for the mobs it took, {price} for the price, {percentage} for the drop/mob ratio and {lstext} for (LS) on lootshare drops. Colors can be used with & and a color code (stripped when announcing to party)."
         }
     }
 

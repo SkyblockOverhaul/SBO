@@ -10,6 +10,7 @@ import net.sbo.guilib.core.dsl.div
 import net.sbo.guilib.core.dsl.h1
 import net.sbo.guilib.core.dsl.h2
 import net.sbo.guilib.core.dsl.header
+import net.sbo.guilib.core.dsl.img
 import net.sbo.guilib.core.dsl.input
 import net.sbo.guilib.core.dsl.multiSelect
 import net.sbo.guilib.core.dsl.numberInput
@@ -572,12 +573,18 @@ private fun NodeBuilder.strings(entry: StringsEntry, ui: Ui, refresh: () -> Unit
             refresh()
         })
         div(className = "cfg-strings-actions") {
-            button(className = "cfg-strings-expand", title = "Edit in a bigger field", onClick = { ui.edit(entry) }) { +"⤢" }
+            button(className = "cfg-strings-action", title = "Edit in a bigger field", onClick = { ui.edit(entry) }) {
+                img("sbo:ui/config/expand.svg", className = "cfg-strings-icon")
+            }
             entry.template?.let { template ->
-                button(className = "cfg-strings-expand", title = "Insert the template", onClick = {
+                button(className = "cfg-strings-action", title = "Insert the template", onClick = {
                     entry.set(template.split("\n").toTypedArray())
                     refresh()
-                }) { +"↺" }
+                }) { img("sbo:ui/config/template.svg", className = "cfg-strings-icon") }
+                button(className = "cfg-strings-action", title = "Reset to default", onClick = {
+                    entry.reset()
+                    refresh()
+                }) { img("sbo:ui/config/reset.svg", className = "cfg-strings-icon") }
             }
         }
     }
