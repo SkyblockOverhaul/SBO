@@ -24,7 +24,7 @@ jobs:
       - name: setup gradle
         uses: gradle/actions/setup-gradle@v6
         with:
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          cache-read-only: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
           build-scan-publish: true
           build-scan-terms-of-use-url: 'https://gradle.com/terms-of-service'
           build-scan-terms-of-use-agree: 'yes'
@@ -50,6 +50,7 @@ jobs:
   detekt:
     permissions:
       contents: read
+      security-events: write
     runs-on: ubuntu-26.04
     steps:
       - name: checkout repository
@@ -62,14 +63,14 @@ jobs:
       - name: setup gradle
         uses: gradle/actions/setup-gradle@v6
         with:
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          cache-read-only: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
       - name: detekt
         run: ./gradlew detektMain detektTest --scan -PenableDetekt=true
       - name: merge Detekt SARIF reports
         if: always()
         run: python3 .github/scripts/merge-detekt-sarif.py
       - name: upload Detekt SARIF
-        if: always() && hashFiles('sarif-output/detekt.sarif') != ''
+        if: always() && hashFiles('sarif-output/detekt.sarif') != '' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: sarif-output/detekt.sarif
