@@ -37,7 +37,9 @@ object KeyInput {
             //#else
             InputConstants.Type.KEYSYM -> InputConstants.isKeyDown(mc.window, key.value)
             //#endif
+            //#if MC < 26.3
             else -> false
+            //#endif
         }
     }
 }

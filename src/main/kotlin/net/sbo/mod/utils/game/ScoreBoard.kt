@@ -20,8 +20,8 @@ object ScoreBoard {
     private var lastTitle: String = "Unknown Scoreboard" // dummy
 
     init {
-        // Packet bursts only set dirty flags; rebuild each cache at most once per tick.
-        Register.onTick(1) {
+        // Packet bursts only set dirty flags; rebuild each cache at most once per 4 ticks.
+        Register.onTick(4) {
             if (linesDirty) {
                 linesDirty = false
                 lastLines = fetchLines()
