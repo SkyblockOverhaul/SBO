@@ -1,8 +1,5 @@
 package net.sbo.mod.utils.hubcache
 
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet
-import net.minecraft.world.level.ChunkPos
-
 /**
  * The chunks of the Hub island itself, without the islands around it (The Park, Spider's Den, The Barn...).
  * Used by "Cache Hub Island Only" and "Render Hub Island Only".
@@ -45,14 +42,27 @@ object HubIsland {
         12 to listOf(3..8),
     )
 
-    /** [ISLAND_CHUNKS] plus one chunk around them: vanilla only renders a chunk once its neighbors are there. */
-    private val chunks = LongOpenHashSet().apply {
+    // Bounds of [ISLAND_CHUNKS] plus the ring around it
+    private val minX = ISLAND_CHUNKS.values.flatten().minOf { it.first } - 1
+    private val minZ = ISLAND_CHUNKS.keys.min() - 1
+    private val width = ISLAND_CHUNKS.values.flatten().maxOf { it.last } + 1 - minX + 1
+    private val depth = ISLAND_CHUNKS.keys.max() + 1 - minZ + 1
+
+    /**
+     * [ISLAND_CHUNKS] plus one chunk around them (vanilla only renders a chunk once its neighbors are there), as a grid
+     * over their bounds: [contains] runs for every chunk lookup, an array index is cheaper than a hash set.
+     */
+    private val chunks = BooleanArray(width * depth).apply {
         for ((z, ranges) in ISLAND_CHUNKS) for (range in ranges) for (x in range) {
-            for (dx in -1..1) for (dz in -1..1) add(ChunkPos.pack(x + dx, z + dz))
+            for (dx in -1..1) for (dz in -1..1) this[(z + dz - minZ) * width + (x + dx - minX)] = true
         }
     }
 
     /** True for chunks of the Hub island and the ring around it. Runs for every chunk lookup. */
     @JvmStatic
-    fun contains(chunkX: Int, chunkZ: Int): Boolean = chunks.contains(ChunkPos.pack(chunkX, chunkZ))
+    fun contains(chunkX: Int, chunkZ: Int): Boolean {
+        val x = chunkX - minX
+        val z = chunkZ - minZ
+        return x in 0 until width && z in 0 until depth && chunks[z * width + x]
+    }
 }
