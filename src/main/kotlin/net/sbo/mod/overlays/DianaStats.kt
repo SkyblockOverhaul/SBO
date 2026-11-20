@@ -67,6 +67,7 @@ object DianaStats : DianaOverlay<DianaStats.View>("Diana Stats", Trackers.Tracke
         Stat("STATS_INQS_SINCE_CHIM", "Inqs since Chimera", "Chim", LIGHT_PURPLE, { sboData.inqsSinceChim }, { sboData.inqsSinceLsChim }),
         Stat("STATS_MOBS_SINCE_SPHINX", "Mobs since Sphinx", "Sphinx", LIGHT_PURPLE, { sboData.mobsSinceSphinx }),
         Stat("STATS_SPHINXES_SINCE_FOOD", "Sphinxes since Food", "Food", DARK_PURPLE, { sboData.sphinxSinceFood }, { sboData.sphinxSinceLsFood }),
+        Stat("STATS_SPHINXES_SINCE_LOOTING", "Sphinxes since Looting 7", "Loot 7", LIGHT_PURPLE, { sboData.sphinxSinceLooting }, { sboData.sphinxSinceLsLooting }),
         Stat("STATS_CHAMPS_SINCE_RELIC", "Champs since Relic", "Relic", DARK_PURPLE, { sboData.champsSinceRelic }),
         Stat("STATS_MINOTAURS_SINCE_STICK", "Minotaurs since Stick", "Stick", GOLD, { sboData.minotaursSinceStick })
     )
@@ -150,6 +151,7 @@ object DianaStats : DianaOverlay<DianaStats.View>("Diana Stats", Trackers.Tracke
             createStatLine("STATS_INQS_SINCE_CHIM", if (hideLs) "$GRAY - ${LIGHT_PURPLE}Inqs since Chimera: $AQUA${sboData.inqsSinceChim}" else "$GRAY - ${LIGHT_PURPLE}Inqs since Chimera: $AQUA${sboData.inqsSinceChim}$GRAY, ${LIGHT_PURPLE}since §7[§bLS§7]: $AQUA${sboData.inqsSinceLsChim}"),
             createStatLine("STATS_MOBS_SINCE_SPHINX", "$GRAY - ${LIGHT_PURPLE}Mobs since Sphinx: $AQUA${sboData.mobsSinceSphinx}"),
             createStatLine("STATS_SPHINXES_SINCE_FOOD", if (hideLs) "$GRAY - ${DARK_PURPLE}Sphinxes since Food: $AQUA${sboData.sphinxSinceFood}" else "$GRAY - ${DARK_PURPLE}Sphinxes since Food: $AQUA${sboData.sphinxSinceFood}$GRAY, ${DARK_PURPLE}since §7[§bLS§7]: $AQUA${sboData.sphinxSinceLsFood}"),
+            createStatLine("STATS_SPHINXES_SINCE_LOOTING", if (hideLs) "$GRAY - ${LIGHT_PURPLE}Sphinxes since Looting 7: $AQUA${sboData.sphinxSinceLooting}" else "$GRAY - ${LIGHT_PURPLE}Sphinxes since Looting 7: $AQUA${sboData.sphinxSinceLooting}$GRAY, ${LIGHT_PURPLE}since §7[§bLS§7]: $AQUA${sboData.sphinxSinceLsLooting}"),
             createStatLine("STATS_CHAMPS_SINCE_RELIC", "$GRAY - ${DARK_PURPLE}Champs since Relic: $AQUA${Helper.formatNumber(sboData.champsSinceRelic,
                 withCommas = true
             )}"),

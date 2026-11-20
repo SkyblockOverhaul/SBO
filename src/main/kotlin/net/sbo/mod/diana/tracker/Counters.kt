@@ -24,7 +24,7 @@ internal object Counters {
         DianaItemsData::GRIFFIN_FEATHER, DianaItemsData::MYTHOS_FRAGMENT, DianaItemsData::CROWN_OF_GREED,
         DianaItemsData::WASHED_UP_SOUVENIR, DianaItemsData::SHIMMERING_WOOL, DianaItemsData::SHIMMERING_WOOL_LS,
         DianaItemsData::MANTI_CORE, DianaItemsData::MANTI_CORE_LS, DianaItemsData::CHIMERA, DianaItemsData::CHIMERA_LS,
-        DianaItemsData::BRAIN_FOOD, DianaItemsData::BRAIN_FOOD_LS, DianaItemsData::FATEFUL_STINGER, DianaItemsData::FATEFUL_STINGER_LS,
+        DianaItemsData::BRAIN_FOOD, DianaItemsData::BRAIN_FOOD_LS, DianaItemsData::LOOTING_7, DianaItemsData::LOOTING_7_LS, DianaItemsData::FATEFUL_STINGER, DianaItemsData::FATEFUL_STINGER_LS,
         DianaItemsData::BRAIDED_GRIFFIN_FEATHER, DianaItemsData::DAEDALUS_STICK, DianaItemsData::CRETAN_URN,
         DianaItemsData::DWARF_TURTLE_SHELMET, DianaItemsData::ANTIQUE_REMEDIES, DianaItemsData::CROCHET_TIGER_PLUSHIE,
         DianaItemsData::ENCHANTED_ANCIENT_CLAW, DianaItemsData::ANCIENT_CLAW, DianaItemsData::MINOS_RELIC,

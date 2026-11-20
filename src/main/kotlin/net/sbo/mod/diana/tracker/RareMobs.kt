@@ -42,6 +42,8 @@ internal object RareMobs {
         "Sphinx" to RareMob("Sphinx", "a Sphinx", SboData::mobsSinceSphinx, SboData::lastSphinxDate, SboData::b2bSphinx, b2bAch = 107, b2b2bAch = 108) {
             sphinxSinceFood += 1
             if (sphinxSinceFood >= 2) b2bFood = false
+            sphinxSinceLooting += 1
+            if (sphinxSinceLooting >= 2) b2bLooting = false
         },
     )
     private val plainMobs = setOf("Gaia Construct", "Harpy", "Cretan Bull", "Stranded Nymph", "Siamese Lynxes", "Minos Hunter")

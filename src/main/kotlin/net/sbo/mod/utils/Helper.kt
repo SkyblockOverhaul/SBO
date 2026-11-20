@@ -359,6 +359,7 @@ object Helper {
         "MANTI_CORE" to { it.MANTI_CORE }, "MANTI_CORE_LS" to { it.MANTI_CORE_LS },
         "CHIMERA" to { it.CHIMERA }, "CHIMERA_LS" to { it.CHIMERA_LS },
         "BRAIN_FOOD" to { it.BRAIN_FOOD }, "BRAIN_FOOD_LS" to { it.BRAIN_FOOD_LS },
+        "LOOTING_7" to { it.LOOTING_7 }, "LOOTING_7_LS" to { it.LOOTING_7_LS },
         "FATEFUL_STINGER" to { it.FATEFUL_STINGER }, "FATEFUL_STINGER_LS" to { it.FATEFUL_STINGER_LS },
         "BRAIDED_GRIFFIN_FEATHER" to { it.BRAIDED_GRIFFIN_FEATHER }, "DAEDALUS_STICK" to { it.DAEDALUS_STICK },
         "CRETAN_URN" to { it.CRETAN_URN }, "DWARF_TURTLE_SHELMET" to { it.DWARF_TURTLE_SHELMET },
@@ -700,6 +701,7 @@ object Helper {
             "stinger" -> if (isLootshare) data.mantiSinceLsCore.toString() else data.mantiSinceCore.toString()
             "chimera" -> if (isLootshare) data.inqsSinceLsChim.toString() else data.inqsSinceChim.toString()
             "brain food" -> if (isLootshare) data.sphinxSinceLsFood.toString() else data.sphinxSinceFood.toString()
+            "looting" -> if (isLootshare) data.sphinxSinceLsLooting.toString() else data.sphinxSinceLooting.toString()
             else -> "ErrorGettingSince"
         }
     }
@@ -728,6 +730,11 @@ object Helper {
             "brain food" -> {
                 val message = getCustomMessage(Drops.customBrainFoodMessage)
                 DropInfo(message, message.isNotEmpty(), items.BRAIN_FOOD + items.BRAIN_FOOD_LS, "BRAIN_FOOD", mobs.SPHINX, items.BRAIN_FOOD)
+            }
+
+            "looting" -> {
+                val message = getCustomMessage(Drops.customLootingMessage)
+                DropInfo(message, message.isNotEmpty(), items.LOOTING_7 + items.LOOTING_7_LS, "LOOTING_7", mobs.SPHINX, items.LOOTING_7)
             }
 
             "wool" -> {
@@ -823,6 +830,7 @@ object Helper {
     fun getItemPrice(sbId: String, amount: Int = 1): Long {
         val id = when {
             sbId == "CHIMERA" -> "ENCHANTMENT_ULTIMATE_CHIMERA_1"
+            sbId == "LOOTING_7" -> "ENCHANTMENT_LOOTING_7"
             sbId.endsWith("_SHARD") || sbId.endsWith("_DYE") -> {
                 val suffix = sbId.substringAfterLast('_')   // "SHARD"
                 val name = sbId.substringBeforeLast('_')   // "WITHER"

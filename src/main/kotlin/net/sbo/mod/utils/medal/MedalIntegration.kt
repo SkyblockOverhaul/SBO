@@ -166,6 +166,14 @@ object MedalIntegration {
             enabled = Drops.MedalDrop.CRETAN_URN in Drops.medalClips
         )
 
+    private val lootingEvent: MedalEvent
+        get() = event(
+            eventId = "18",
+            dropName = "Looting 7 Drop",
+            dropNumber = dianaTrackerMayorData.items.LOOTING_7 + dianaTrackerMayorData.items.LOOTING_7_LS + 1,
+            enabled = Drops.MedalDrop.LOOTING_7 in Drops.medalClips
+        )
+
     private val allEvents: List<MedalEvent>
         get() = listOf(
             chimeraEvent,
@@ -184,7 +192,8 @@ object MedalIntegration {
             dwarfTurtleShelmetEvent,
             crochetTigerPlushieEvent,
             antiqueRemediesEvent,
-            cretanUrnEvent
+            cretanUrnEvent,
+            lootingEvent
         )
 
     fun saveChimeraClip() = triggerEvent(chimeraEvent)
@@ -221,6 +230,8 @@ object MedalIntegration {
 
     fun saveCretanUrnClip() = triggerEvent(cretanUrnEvent)
 
+    fun saveLootingClip() = triggerEvent(lootingEvent)
+
     private fun event(
         eventId: String,
         dropName: String,
@@ -244,7 +255,7 @@ object MedalIntegration {
     /** The clip names /sbotestmedalclip completes, [testClip] takes more spellings of each. */
     val CLIP_NAMES = listOf(
         "all", "chimera", "wool", "brainfood", "relic", "core", "stinger", "stick", "braided", "dye", "fish", "crown",
-        "hilt", "souvenir", "shelmet", "plushie", "remedies", "urn",
+        "hilt", "souvenir", "shelmet", "plushie", "remedies", "urn", "looting",
     )
 
     fun testClip(clip: String?) {
@@ -272,8 +283,9 @@ object MedalIntegration {
             "plushie", "crochettigerplushie" -> listOf(crochetTigerPlushieEvent)
             "remedies", "antiqueremedies" -> listOf(antiqueRemediesEvent)
             "urn", "cretanurn" -> listOf(cretanUrnEvent)
+            "looting", "looting7", "lootingvii" -> listOf(lootingEvent)
             else -> {
-                Chat.chat("§6[SBO] §cUsage: /sbotestmedalclip [chimera|wool|brainfood|relic|core|stinger|stick|braided|dye|fish|crown|hilt|souvenir|shelmet|plushie|remedies|urn|all]")
+                Chat.chat("§6[SBO] §cUsage: /sbotestmedalclip [chimera|wool|brainfood|relic|core|stinger|stick|braided|dye|fish|crown|hilt|souvenir|shelmet|plushie|remedies|urn|looting|all]")
                 return
             }
         }

@@ -17,6 +17,8 @@ data class DianaItemsData(
     @SerializedName("ChimeraLs") var CHIMERA_LS: Int = 0,
     @SerializedName("Brain Food") var BRAIN_FOOD: Int = 0,
     @SerializedName("Brain Food LS") var BRAIN_FOOD_LS: Int = 0,
+    @SerializedName("Looting 7") var LOOTING_7: Int = 0,
+    @SerializedName("Looting 7 LS") var LOOTING_7_LS: Int = 0,
     @SerializedName("Fateful Stinger") var FATEFUL_STINGER: Int = 0,
     @SerializedName("Fateful Stinger Ls") var FATEFUL_STINGER_LS: Int = 0,
     @SerializedName("Braided Griffin Feather") var BRAIDED_GRIFFIN_FEATHER: Int = 0,

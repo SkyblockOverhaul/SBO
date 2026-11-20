@@ -59,6 +59,13 @@ object InventoryUtils {
     }
 
     /**
+     * When the held item was taken out.
+     * @param itemId Part of the held item's ID (e.g. "SPADE")
+     * @return The System.nanoTime() it was taken out at, null when another item is held
+     */
+    fun heldSince(itemId: String): Long? = if (itemId in currentItemId) currentItemStartTime else null
+
+    /**
      * Checks if an item is currently held OR was recently held.
      * @param itemId The Item ID (e.g. "HYPERION" or "minecraft:stick")
      * @param duration The minimum time it must have been held (e.g. 500.milliseconds)

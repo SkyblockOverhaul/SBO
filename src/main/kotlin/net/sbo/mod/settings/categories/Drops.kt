@@ -12,6 +12,7 @@ object Drops : Category("Drops") {
         CHIMERA("Chimera"),
         SHIMMERING_WOOL("Shimmering Wool"),
         BRAIN_FOOD("Brain Food"),
+        LOOTING_7("Looting 7"),
         MINOS_RELIC("Minos Relic"),
         MANTI_CORE("Manti-core"),
         FATEFUL_STINGER("Fateful Stinger"),
@@ -95,6 +96,13 @@ object Drops : Category("Drops") {
         this.description = literal("{since}: sphinx it took to drop the food.")
     }
 
+    var customLootingMessage by strings("") {
+        this.template = "&6[SBO] &6&lRARE DROP! &dLooting 7! &b+{mf} ✯ Magic Find &b#{amount}"
+        this.name = literal("Looting 7")
+        this.since = "0.7.3"
+        this.description = literal("{since}: sphinx it took to drop the Looting 7 book.")
+    }
+
     var customShimmeringWoolMessage by strings("") {
         this.template = "&6[SBO] &6&lRARE DROP! &6Shimmering Wool! &b+{mf} ✯ Magic Find &b#{amount}"
         this.name = literal("Shimmering Wool")
@@ -111,6 +119,7 @@ object Drops : Category("Drops") {
                     val drops = mutableListOf<String>()
                     if (customChimeraMessage.isNotEmpty()) drops.add("Chimera")
                     if (customBrainFoodMessage.isNotEmpty()) drops.add("Brain Food")
+                    if (customLootingMessage.isNotEmpty()) drops.add("Looting")
                     if (customShimmeringWoolMessage.isNotEmpty()) drops.add("Wool")
                     if (customManticoreMessage.isNotEmpty()) drops.add("Core")
                     if (customFatefulStingerMessage.isNotEmpty()) drops.add("Stinger")
