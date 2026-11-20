@@ -5,8 +5,8 @@ import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.phys.AABB
-import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.burrows.BurrowDetector
+import net.sbo.mod.diana.burrows.BurrowParticleClock
 import net.sbo.mod.diana.burrows.ChainTracker
 import net.sbo.mod.settings.categories.Burrows
 import net.sbo.mod.utils.collection.TimeLimitedSet
@@ -15,12 +15,10 @@ import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.diana.BurrowDugEvent
 import net.sbo.mod.utils.events.impl.game.TickEvent
 import net.sbo.mod.utils.events.impl.packets.ParticleReceiveEvent
-import net.sbo.mod.utils.game.InventoryUtils
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.game.ServerStats
 import net.sbo.mod.utils.math.RaycastUtils
 import net.sbo.mod.utils.math.SboVec
-import net.sbo.mod.utils.math.SboVec.Companion.toSboVec
 import net.sbo.mod.utils.waypoint.Waypoint
 import net.sbo.mod.utils.waypoint.WaypointManager
 import java.util.*
@@ -436,10 +434,9 @@ object ArrowGuessBurrow {
 
     private fun checkMoveGuess() {
         if (allGuesses.isEmpty()) return
-        val player = SBOKotlin.mc.player ?: return
-        val hasSpade = InventoryUtils.isItemHeld("SPADE", 1.seconds) // 20 ticks
+        // Where the spade's burrow particles have shown around by now, see BurrowParticleClock
+        val shownFrom = BurrowParticleClock.shownFrom()
         val burrowLocations = BurrowDetector.burrows.values.asSequence().map { it.waypoint?.pos ?: SboVec.ZERO }.toHashSet()
-        val playerPos = player.position().toSboVec()
         val toRemove = mutableSetOf<GuessEntry>()
 
         for (guess in allGuesses) {
@@ -450,9 +447,9 @@ object ArrowGuessBurrow {
                 }
                 continue
             }
-            if (hasSpade) {
+            if (shownFrom != null) {
                 val isKnownBurrow = current in burrowLocations
-                if (!isKnownBurrow && current.distanceSq(playerPos) <= 1024 && !guess.moveToNext()) { // 32 blocks
+                if (!isKnownBurrow && current.distanceSq(shownFrom) <= 1024 && !guess.moveToNext()) { // 32 blocks
                     toRemove.add(guess)
                 }
             }
