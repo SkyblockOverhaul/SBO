@@ -209,7 +209,7 @@ object BurrowDetector {
     private fun chainFinish() {
         purgeExpiredChains()
         // A new chain starts somewhere, even where you've already looked
-        SpadeGuessOptimizer.reset("chain")
+        SpadeGuessOptimizer.reset(chainFinished = true)
 
         if (chainExpirations.isNotEmpty()) {
             chainExpirations.removeFirst()

@@ -37,7 +37,8 @@ import kotlin.math.sqrt
  * that chain however far it is, so nothing is shown until the chain is finished.
  *
  * Every block a burrow can be on in the Hub is shipped in [SPOTS_RESOURCE]. A block counts as searched when:
- * - the spade was held within [HOLD_SEARCH_RADIUS] blocks of it till its burrow particles show, see [BurrowParticleClock]
+ * - its burrow particles would have shown while you held the spade: within [BurrowParticleClock.SHOWN_RANGE] of
+ *   [BurrowParticleClock.shownFrom]. Only with Close Burrow Detection, without it a burrow there is never found
  * - a spade guess pointed farther away than the block, seen from where the spade was used while it points at the
  *   nearest burrow
  *
@@ -52,8 +53,8 @@ import kotlin.math.sqrt
 object SpadeGuessOptimizer {
     private const val SPOTS_RESOURCE = "/assets/sbo/diana/hub_spots.bin.gz"
     private const val WAYPOINT_TYPE = "spadeSpot"
-    /** Burrow particles show up to 32 blocks away, measured from 31.8 on. */
-    private const val HOLD_SEARCH_RADIUS = 31.0
+    /** How far around where you held the spade every burrow showed, and the least reach a place needs. */
+    private const val HOLD_SEARCH_RADIUS = BurrowParticleClock.SHOWN_RANGE
     /** Holding the spade only searches again after moving this far. */
     private const val HOLD_MOVE_DISTANCE = 2.0
     /** A burrow just as far as the guessed one could have been the one pointed at, so this much less is searched. */
@@ -89,12 +90,15 @@ object SpadeGuessOptimizer {
     /** The waypoint types that are a burrow, found or guessed. */
     private val BURROW_TYPES = listOf("burrow", "arrow", "guess")
 
+    /** Every spot's block, one array per axis: there are about 37 000 of them. */
     private var spotX = IntArray(0)
     private var spotY = IntArray(0)
     private var spotZ = IntArray(0)
+    /** Whether each spot was searched since the last chain finished. */
     private var searched = BooleanArray(0)
     /** The spots in each chunk by [ChunkPos.pack]. */
     private val spotsByChunk = HashMap<Long, IntArray>()
+    /** Whether [loadSpots] ran, the spots load the first time you're in the Hub with a spade. */
     private var spotsLoaded = false
     /** Goes up every time a spot gets searched or the searched spots are cleared. */
     private var searchVersion = 0
@@ -104,11 +108,13 @@ object SpadeGuessOptimizer {
     private var unsearchedTotal = 0
     private var unsearchedVersion = -1
 
+    /** Where holding the spade last searched from, see [HOLD_MOVE_DISTANCE]. */
     private var lastHoldSearch: SboVec? = null
 
     /** The last spade use and the burrow its guess points at, searched once the guess settles. */
     private var throwFrom: SboVec? = null
     private var throwGuess: SboVec? = null
+    /** When the last spade guess moved, it settles after [THROW_SETTLE_NANOS]. */
     private var throwGuessTime = 0L
     /** Whether the spade points at the nearest burrow, which is before any dig and after a chain is finished. */
     private var pointsAtNearest = true
@@ -136,6 +142,7 @@ object SpadeGuessOptimizer {
     private var spadeUsed = false
     /** Whether the shown place went away for a spade use, the next one waits for its guess to settle. */
     private var hiddenForUse = false
+    /** The waypoint of the shown place, empty while none is shown. */
     private val waypoints = mutableListOf<Waypoint>()
     /** The known burrows and searched spots the last pick was made with, nothing changes picking again with them. */
     private var lastPickKey: Any? = null
@@ -151,9 +158,9 @@ object SpadeGuessOptimizer {
 
     /**
      * Clears all searched spots, called when a chain is finished and on /sboclearburrows.
-     * @param reason Why they are cleared: "chain" when a chain is finished, the others start Look For Max Chains again.
+     * @param chainFinished Whether a chain was finished, otherwise Look For Max Chains starts again.
      */
-    fun reset(reason: String = "clear") {
+    fun reset(chainFinished: Boolean = false) {
         searched.fill(false)
         searchVersion++
         lastHoldSearch = null
@@ -166,8 +173,8 @@ object SpadeGuessOptimizer {
         spadeUsed = false
         spadeUseTime = 0L
         hiddenForUse = false
-        waitingForSpade = reason == "chain"
-        if (reason == "chain") {
+        waitingForSpade = chainFinished
+        if (chainFinished) {
             chainEnd = mc.player?.let { SboVec(it.x, it.y, it.z) }
         } else {
             startup = true
@@ -241,7 +248,7 @@ object SpadeGuessOptimizer {
             spadeUsed = true
         }
 
-        val shownFrom = BurrowParticleClock.shownFrom()
+        val shownFrom = if (Burrows.closeBurrowDetection) BurrowParticleClock.shownFrom() else null
         if (shownFrom != null) {
             val last = lastHoldSearch
             if (last == null || last.distanceTo(shownFrom) >= HOLD_MOVE_DISTANCE) {

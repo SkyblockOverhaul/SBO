@@ -45,9 +45,9 @@ import kotlin.math.*
  * Full trails (10+ particles) only use the cubic fit when the curve found no block. The curve guess is kept otherwise,
  * the cubic fit can end on a burrow next to the one the spade points at.
  *
- * A spade guess within [PARTICLE_DISTANCE] blocks for [NO_PARTICLE_TICKS] ticks while the spade's particles show with no burrow
- * found at it (its particles would show there) is removed, like arrow guesses. Only with Close Burrow Detection, without
- * it no burrow is ever found from its particles.
+ * A spade guess that stays within [BurrowParticleClock.SHOWN_RANGE] of where the spade's particles showed for
+ * [NO_PARTICLE_TICKS] ticks with no burrow found at it (its particles would show there) is removed, like arrow guesses.
+ * Only with Close Burrow Detection, without it no burrow is ever found from its particles.
  */
 object PreciseGuessBurrow {
     private val particleLocations = mutableListOf<SboVec>()
@@ -64,7 +64,7 @@ object PreciseGuessBurrow {
     /** Whether [throwGuess]'s waypoint was made by this spade use, a guess that was already there is left when it moves. */
     private var ownsThrowGuess = false
     private var shortTrailChecked = false
-    /** The ticks each spade guess was within [PARTICLE_DISTANCE] blocks while holding the spade. */
+    /** The ticks each spade guess was within [BurrowParticleClock.SHOWN_RANGE] of where the spade's particles showed. */
     private val ticksInParticleRange = HashMap<Waypoint, Int>()
 
     private val SPADE_WINDOW = TimeUnit.MILLISECONDS.toNanos(3000L)
@@ -81,8 +81,6 @@ object PreciseGuessBurrow {
     private const val POINT_ERROR = 0.002
     private const val PICK_SIDE = 3
     private const val PICK_UP = 2
-    /** How far burrow particles show while holding the spade. */
-    private const val PARTICLE_DISTANCE = 30.0
     /** A burrow's particles come every 1 to 3 ticks while they show, at most 8 ticks apart. */
     private const val NO_PARTICLE_TICKS = 10
 
@@ -111,20 +109,18 @@ object PreciseGuessBurrow {
 
     /** Removes the spade guesses that show no burrow particles after [NO_PARTICLE_TICKS] ticks in range of them. */
     private fun removeGuessesWithoutParticles() {
-        val player = SBOKotlin.mc.player
         val guesses = WaypointManager.getWaypointsOfType("guess")
-        if (
-            guesses.isEmpty() || !Burrows.spadeGuess || !Burrows.closeBurrowDetection || !World.isInHub() ||
-            player == null || !BurrowParticleClock.particlesShown()
-        ) {
+        // Where the server saw you while the particles showed, not where you are: after a teleport they didn't yet
+        val shownFrom = if (guesses.isEmpty() || !Burrows.spadeGuess || !Burrows.closeBurrowDetection || !World.isInHub()) null
+            else BurrowParticleClock.shownFrom()
+        if (shownFrom == null) {
             ticksInParticleRange.clear()
             return
         }
         ticksInParticleRange.keys.retainAll(guesses)
-        val playerPos = player.position().toSboVec()
         var noParticles: MutableList<Waypoint>? = null
         for (guess in guesses) {
-            if (guess.pos.distanceTo(playerPos) > PARTICLE_DISTANCE) {
+            if (guess.pos.distanceTo(shownFrom) > BurrowParticleClock.SHOWN_RANGE) {
                 ticksInParticleRange.remove(guess)
                 continue
             }
