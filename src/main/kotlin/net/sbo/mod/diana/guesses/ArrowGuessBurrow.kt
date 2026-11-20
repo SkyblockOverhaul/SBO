@@ -436,7 +436,8 @@ object ArrowGuessBurrow {
         if (allGuesses.isEmpty()) return
         // Where the spade's burrow particles have shown around by now, see BurrowParticleClock
         val shownFrom = BurrowParticleClock.shownFrom()
-        val burrowLocations = BurrowDetector.burrows.values.asSequence().map { it.waypoint?.pos ?: SboVec.ZERO }.toHashSet()
+        val burrowLocations = if (shownFrom == null) emptySet() else BurrowDetector.burrows.values.asSequence().map { it.waypoint?.pos ?: SboVec.ZERO }.toHashSet()
+        val shownRangeSq = BurrowParticleClock.SHOWN_RANGE * BurrowParticleClock.SHOWN_RANGE
         val toRemove = mutableSetOf<GuessEntry>()
 
         for (guess in allGuesses) {
@@ -449,7 +450,7 @@ object ArrowGuessBurrow {
             }
             if (shownFrom != null) {
                 val isKnownBurrow = current in burrowLocations
-                if (!isKnownBurrow && current.distanceSq(shownFrom) <= 1024 && !guess.moveToNext()) { // 32 blocks
+                if (!isKnownBurrow && current.distanceSq(shownFrom) <= shownRangeSq && !guess.moveToNext()) {
                     toRemove.add(guess)
                 }
             }

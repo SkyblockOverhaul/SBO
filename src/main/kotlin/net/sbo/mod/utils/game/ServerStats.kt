@@ -22,11 +22,12 @@ object ServerStats {
     private const val TICK_JUMP = 5.0
     /** Without a time packet for this long the server tick isn't known (they come every 20 ticks). */
     private val TICK_STALE_NANOS = TimeUnit.SECONDS.toNanos(3L)
-    /** The server tick at [tickBaseTime], -1 before a time packet came. */
-    private var tickBase = -1.0
+    /** The server tick at [tickBaseTime], NaN before a time packet came. */
+    private var tickBase = Double.NaN
+    /** When the last time packet came. */
     private var tickBaseTime = 0L
+    /** The game time of the last time packet, -1 before one came. */
     private var lastGameTime = -1L
-    private var lastTickPacket = 0L
     /** How long a server tick takes, from the time packets. */
     var nanosPerTick = TimeUnit.MILLISECONDS.toNanos(50L).toDouble()
         private set
@@ -62,7 +63,7 @@ object ServerStats {
      * @return The tick with its fraction, null without a recent time packet.
      */
     fun serverTickAt(time: Long): Double? {
-        if (tickBase < 0 || time - lastPacket > TICK_STALE_NANOS) return null
+        if (tickBase.isNaN() || time - lastPacket > TICK_STALE_NANOS) return null
         return tickBase + (time - tickBaseTime) / nanosPerTick
     }
 
@@ -76,16 +77,15 @@ object ServerStats {
     private fun followServerTick(gameTime: Long, currentTime: Long) {
         if (gameTime == lastGameTime) return
         val predicted = serverTickAt(currentTime)
-        val ticks = gameTime - lastGameTime
         if (predicted == null || abs(gameTime - predicted) > TICK_JUMP) {
             tickBase = gameTime.toDouble()
         } else {
-            if (ticks in 10..40) nanosPerTick += ((currentTime - lastTickPacket).toDouble() / ticks - nanosPerTick) / 8
+            val ticks = gameTime - lastGameTime
+            if (ticks in 10..40) nanosPerTick += ((currentTime - tickBaseTime).toDouble() / ticks - nanosPerTick) / 8
             tickBase = predicted + (gameTime - predicted) / 4
         }
         tickBaseTime = currentTime
         lastGameTime = gameTime
-        lastTickPacket = currentTime
     }
 
     @SboEvent
@@ -105,7 +105,7 @@ object ServerStats {
     fun onLoginReceive(event: LoginReceiveEvent) {
         averageTps = 20f
         prevTime = 0L
-        tickBase = -1.0
+        tickBase = Double.NaN
         tickBaseTime = 0L
         lastGameTime = -1L
         tpsIndex = 0

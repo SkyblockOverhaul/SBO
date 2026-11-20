@@ -38,12 +38,6 @@ object Burrows : Category("Burrows") {
         this.description = literal("Detects burrow locations when being close to them from the particles when holding shovel to register/update it as a Treasure, Mob or Start burrow. Needs Critical Hit and Enchant particles, and set /particlequality extreme. To reset waypoints type /sboclearburrows.")
     }
 
-    var serverTickParticleClock by boolean(true) {
-        this.name = literal("Server Tick Particle Clock")
-        this.since = "0.7.3"
-        this.description = literal("Times burrow particles by the server's ticks, Hypixel shows them every 22 ticks to a spade it sees in your hand. Turn it off if Hypixel ever changes its time packets, the timing then goes by real time.")
-    }
-
     init {
         sub {
             this.title = "Guesses"
