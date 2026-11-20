@@ -27,6 +27,7 @@ object MagicFind : DirtyFlushableOverlay() {
             OverlayTextLine("$GRAY - ${RED}Stinger: $AQUA${sboData.highestStingerMagicFind}%"),
             OverlayTextLine("$GRAY - ${LIGHT_PURPLE}Chimera: $AQUA${sboData.highestChimMagicFind}%"),
             OverlayTextLine("$GRAY - ${DARK_PURPLE}Food: $AQUA${sboData.highestFoodMagicFind}%"),
+            OverlayTextLine("$GRAY - ${LIGHT_PURPLE}Looting 7: $AQUA${sboData.highestLootingMagicFind}%"),
             OverlayTextLine("$GRAY - ${DARK_PURPLE}Relic: $AQUA${sboData.highestRelicMagicFind}%"),
             OverlayTextLine("$GRAY - ${GOLD}Stick: $AQUA${sboData.highestStickMagicFind}%")
         )

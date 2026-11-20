@@ -61,6 +61,7 @@ object SoundsGui {
         "Drops" to listOf(
             SoundSetting("Chimera Drop", SoundSettingsData::chimSound, SoundSettingsData::chimVolume),
             SoundSetting("Brain Food Drop", SoundSettingsData::bfSound, SoundSettingsData::bfVolume),
+            SoundSetting("Looting 7 Drop", SoundSettingsData::lootingSound, SoundSettingsData::lootingVolume),
             SoundSetting("Manti-Core Drop", SoundSettingsData::coreSound, SoundSettingsData::coreVolume),
             SoundSetting("Fateful Stinger Drop", SoundSettingsData::stingerSound, SoundSettingsData::stingerVolume),
             SoundSetting("Shimmering Wool Drop", SoundSettingsData::woolSound, SoundSettingsData::woolVolume),

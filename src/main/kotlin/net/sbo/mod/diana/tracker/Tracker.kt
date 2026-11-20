@@ -273,7 +273,10 @@ object Tracker {
                 sboData.mantiSinceLsCore += 1
                 sboData.mantiSinceLsStinger += 1
             }
-            "SPHINX_LS" -> sboData.sphinxSinceLsFood += 1
+            "SPHINX_LS" -> {
+                sboData.sphinxSinceLsFood += 1
+                sboData.sphinxSinceLsLooting += 1
+            }
         }
 
         Counters.add(dianaTrackerMayorData, itemName, amount)

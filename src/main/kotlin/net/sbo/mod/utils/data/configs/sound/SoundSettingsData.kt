@@ -33,6 +33,8 @@ data class SoundSettingsData(
     var chimVolume: Float = 1.0f,
     var bfSound: String = "",
     var bfVolume: Float = 1.0f,
+    var lootingSound: String = "",
+    var lootingVolume: Float = 1.0f,
     var coreSound: String = "",
     var coreVolume: Float = 1.0f,
     var stingerSound: String = "",
