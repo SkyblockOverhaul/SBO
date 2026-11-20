@@ -54,5 +54,14 @@ enum class AdditionalHubWarps(override val label: String, val priority: Int, val
     val preferWarpAgainstCompetitive: AdditionalHubWarps?
         get() = preferWarpAgainstCompetitiveName?.let(::valueOf)
 
-    val warpPoint = WarpPoint(pos = pos, unlocked = true, setting = setting, warpType = this, preferWarpAgainstCompetitive = preferWarpAgainstCompetitive, extraBlocks = extraBlocks)
+    val warpPoint: WarpPoint by lazy {
+        WarpPoint(
+            pos = pos,
+            unlocked = true,
+            setting = setting,
+            warpType = this,
+            preferWarpAgainstCompetitive = preferWarpAgainstCompetitive,
+            extraBlocks = extraBlocks
+        )
+    }
 }
