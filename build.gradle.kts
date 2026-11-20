@@ -399,6 +399,7 @@ repositories {
         filter {
             includeModule("maven.modrinth", "iris")
             includeModule("maven.modrinth", "sodium")
+            includeModule("maven.modrinth", "spark")
         }
     }
 
@@ -632,6 +633,10 @@ dependencies {
     }
 
     runtimeOnly("me.djtheredstoner:DevAuth-fabric:${property("devauth.version")}")
+    // spark profiler in dev runs, opt-in: sbo.spark=true in ~/.gradle/gradle.properties or -Psbo.spark=true
+    if (providers.gradleProperty("sbo.spark").map(String::toBoolean).getOrElse(false)) {
+        runtimeOnly("maven.modrinth:spark:${property("spark.version")}")
+    }
 
     if (enableErrorprone) {
         add("errorprone", "com.google.errorprone:error_prone_core:${property("errorprone.version")}")
