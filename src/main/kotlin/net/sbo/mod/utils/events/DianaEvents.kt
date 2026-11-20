@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.event.player.AttackBlockCallback
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.diana.guesses.ArrowGuessBurrow
+import net.sbo.mod.utils.isDianaSpade
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.diana.BurrowDugEvent
 import net.sbo.mod.utils.events.impl.game.PlayerInteractEvent
@@ -41,8 +42,8 @@ object DianaEvents {
         if (!World.isInHub()) return
         val item = event.player.mainHandItem
         if (item.isEmpty) return
-        val sbId = ItemLookup(item).sbId
-        if (sbId != "DEIFIC_SPADE" && sbId != "ARCHAIC_SPADE" && sbId != "ANCESTRAL_SPADE") return
+        val lookup = ItemLookup(item)
+        if (!lookup.isDianaSpade()) return
         if (event.pos ==  null) return
 
         processBlockInteraction(event.pos.toSboVec())
