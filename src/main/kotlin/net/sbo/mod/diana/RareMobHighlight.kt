@@ -43,7 +43,7 @@ object RareMobHighlight {
     private val pendingMobs = Object2LongOpenHashMap<LivingEntity>()
 
     fun init() {
-        Register.onTick(1) {
+        Register.onTick(4) {
             val world = mc.level ?: return@onTick
             world.checkMobGlow()
         }

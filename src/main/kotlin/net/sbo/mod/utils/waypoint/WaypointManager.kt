@@ -865,7 +865,7 @@ object WaypointManager {
     /**
      * Iterates over all waypoints and removes each waypoint for which the predicate returns true.
      */
-    private fun forEachWaypoint(removeIf: (Waypoint) -> Boolean) {
+    private inline fun forEachWaypoint(removeIf: (Waypoint) -> Boolean) {
         for (list in waypoints.values) {
             val iterator = list.iterator()
             while (iterator.hasNext()) {
@@ -918,47 +918,87 @@ object WaypointManager {
             return null
         }
 
-        val warps = hubWarps.filter { it.value.unlocked }.toMutableMap()
-        for (warp in Warps.allowedWarps) {
-            val warpName = warp.lowercaseName
-            val additionalWarp = additionalHubWarps[warpName]
-            if (additionalWarp != null && additionalWarp.unlocked) {
-                warps[warpName] = additionalWarp
-            }
-        }
-
         val ignoreYLevel = Warps.ignoreYLevel
         val playerDistance = if (ignoreYLevel) pos.distanceToIgnoringY(playerPos) else pos.distanceTo(playerPos)
 
         var closestWarp: String? = null
         var closestWarpPoint: WarpPoint? = null
         var closestDistance = Double.MAX_VALUE
+        var closestPriority = Int.MAX_VALUE
 
         var secondClosestWarp: String? = null
         var secondClosestWarpPoint: WarpPoint? = null
         var secondClosestDistance = Double.MAX_VALUE
+        var secondClosestPriority = Int.MAX_VALUE
 
-        for ((name, warp) in warps) {
-            val distance = if (ignoreYLevel) pos.distanceToIgnoringY(warp.pos) else pos.distanceTo(warp.pos)
+        fun isBetter(distance: Double, priority: Int, currentDistance: Double, currentPriority: Int): Boolean =
+            distance < currentDistance || distance == currentDistance && priority < currentPriority
 
-            if (distance < closestDistance) {
+        // Hub has the highest tie priority.
+        val hubWarp = hubWarpPoint
+        val hubPriority = 0
+
+        if (hubWarp.unlocked) {
+            val distance = if (ignoreYLevel) {
+                pos.distanceToIgnoringY(hubWarp.pos)
+            } else {
+                pos.distanceTo(hubWarp.pos)
+            }
+
+            if (isBetter(distance, hubPriority, closestDistance, closestPriority)) {
                 secondClosestWarp = closestWarp
                 secondClosestWarpPoint = closestWarpPoint
                 secondClosestDistance = closestDistance
+                secondClosestPriority = closestPriority
 
-                closestWarp = name
-                closestWarpPoint = warp
+                closestWarp = "hub"
+                closestWarpPoint = hubWarp
                 closestDistance = distance
-            } else if (distance < secondClosestDistance) {
-                secondClosestWarp = name
-                secondClosestWarpPoint = warp
+                closestPriority = hubPriority
+            } else if (isBetter(distance, hubPriority, secondClosestDistance, secondClosestPriority)) {
+                secondClosestWarp = "hub"
+                secondClosestWarpPoint = hubWarp
                 secondClosestDistance = distance
+                secondClosestPriority = hubPriority
+            }
+        }
+
+        for (warp in Warps.allowedWarps) {
+            val warpPoint = warp.warpPoint
+            if (!warpPoint.unlocked) continue
+
+            val distance = if (ignoreYLevel) {
+                pos.distanceToIgnoringY(warpPoint.pos)
+            } else {
+                pos.distanceTo(warpPoint.pos)
+            }
+
+            if (isBetter(distance, warp.priority, closestDistance, closestPriority)) {
+                secondClosestWarp = closestWarp
+                secondClosestWarpPoint = closestWarpPoint
+                secondClosestDistance = closestDistance
+                secondClosestPriority = closestPriority
+
+                closestWarp = warp.lowercaseName
+                closestWarpPoint = warpPoint
+                closestDistance = distance
+                closestPriority = warp.priority
+            } else if (isBetter(distance, warp.priority, secondClosestDistance, secondClosestPriority)) {
+                secondClosestWarp = warp.lowercaseName
+                secondClosestWarpPoint = warpPoint
+                secondClosestDistance = distance
+                secondClosestPriority = warp.priority
             }
         }
 
         val preferredAgainst = secondClosestWarpPoint?.preferWarpAgainstCompetitive
 
-        if (Warps.badWarpDistance > 0 && preferredAgainst != null && preferredAgainst == closestWarpPoint?.warpType && secondClosestDistance - closestDistance < Warps.badWarpDistance) {
+        if (
+            Warps.badWarpDistance > 0 &&
+            preferredAgainst != null &&
+            preferredAgainst == closestWarpPoint?.warpType &&
+            secondClosestDistance - closestDistance < Warps.badWarpDistance
+        ) {
             closestWarp = secondClosestWarp
             closestWarpPoint = secondClosestWarpPoint
             closestDistance = secondClosestDistance
@@ -985,10 +1025,11 @@ object WaypointManager {
             !Warps.dontWarpIfBurrowClose ||
             playerToWarpDistance > 60
 
-        return if (warpIsWorthIt && targetIsFarEnough && warpIsFarEnough)
+        return if (warpIsWorthIt && targetIsFarEnough && warpIsFarEnough) {
             closestWarp
-        else
+        } else {
             null
+        }
     }
 
     /**

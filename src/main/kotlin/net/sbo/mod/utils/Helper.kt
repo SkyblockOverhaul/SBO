@@ -47,6 +47,39 @@ import net.sbo.mod.utils.data.configs.npcSellValueMap
 import kotlin.math.abs
 import net.sbo.mod.utils.data.configs.diana.DianaTracker as DianaTrackerDataClass
 
+private const val T3_SPADE = "DEIFIC_SPADE"
+private const val T2_SPADE = "ARCHAIC_SPADE"
+private const val T1_SPADE = "ANCESTRAL_SPADE"
+
+fun ItemLookup.isCrownOfAvarice(): Boolean {
+    val sbId = this.sbId
+
+    return sbId == "CROWN_OF_AVARICE" || sbId == "CROWN_OF_AVARICE_CELEBRATION"
+}
+
+fun ItemStack?.isCrownOfAvarice(): Boolean {
+    if (this == null || this.isEmpty()) return false
+
+    return ItemLookup(this).isCrownOfAvarice()
+}
+
+fun ItemLookup.isDianaSpade(): Boolean {
+    val sbId = this.sbId
+
+    return sbId == T3_SPADE || sbId == T2_SPADE || sbId == T1_SPADE
+}
+
+/**
+ * Helper#hasSpade checks if player has (anywhere in the inventory) or held spade in the last 20 ticks.
+ * This checks if player is holding spade in main hand, right now.
+ */
+fun isHoldingSpadeRightNow(): Boolean {
+    val item = mc.player?.mainHandItem ?: return false
+    if (item.isEmpty) return false
+
+    return ItemLookup(item).isDianaSpade()
+}
+
 object Helper {
     /**
      * The Magic Find in a drop message without formatting, e.g. "(+566 ✯ Magic Find)". Ignores the symbol, the MF
@@ -124,7 +157,7 @@ object Helper {
         }
 
         Register.onTick(20) { // maybe better way to register this
-            hasSpade = playerHasItem("DEIFIC_SPADE") || playerHasItem("ARCHAIC_SPADE") || playerHasItem("ANCESTRAL_SPADE")
+            hasSpade = playerHasItem(T3_SPADE) || playerHasItem(T2_SPADE) || playerHasItem(T1_SPADE)
         }
 
         Register.onTick(20 * 60 * 5) {
@@ -855,9 +888,9 @@ object Helper {
 
     /** Drop chances in percent without Magic Find, by griffin rarity and drop. */
     private val BASE_CHANCES_PERCENT = mapOf(
-        "epic" to mapOf("stick" to 0.05, "relic" to 0.05),
-        "legendary" to mapOf("chim" to 2.0, "stick" to 0.1, "relic" to 0.1, "food" to 0.5),
-        "mythic" to mapOf("chim" to 2.5, "stick" to 0.15, "relic" to 0.15, "food" to 1.0, "wool" to 1.0, "core" to 1.0, "stinger" to 1.5)
+        "epic" to mapOf("stick" to 0.3, "relic" to 0.05),
+        "legendary" to mapOf("chim" to 2.0, "stick" to 0.35, "relic" to 0.1, "food" to 0.5),
+        "mythic" to mapOf("chim" to 2.5, "stick" to 0.4, "relic" to 0.15, "food" to 1.0, "wool" to 0.75, "core" to 0.75, "stinger" to 1.5)
     )
 
     /**

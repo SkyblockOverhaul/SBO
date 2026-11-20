@@ -1,6 +1,6 @@
 package net.sbo.mod.mixin;
 
-import com.mojang.blaze3d.platform.InputConstants.Key;
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.sbo.mod.utils.input.KeyInput;
 import org.jspecify.annotations.NonNull;
@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(KeyMapping.class)
 final class KeyMappingMixin {
     @Inject(method = "set", at = @At("HEAD"))
-    private static void sbo$trackKey(@NonNull final Key key, final boolean down, @NonNull final CallbackInfo ci) {
+    private static final void sbo$trackKey(final InputConstants.@NonNull Key key, final boolean down, @NonNull final CallbackInfo ci) {
         KeyInput.onKeyMappingSet(key, down);
     }
 }

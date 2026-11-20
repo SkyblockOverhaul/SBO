@@ -10,6 +10,7 @@ jobs:
         version: ['26.1.2-fabric', '26.2-fabric', '26.3-fabric']
     permissions:
       contents: read
+      security-events: write
     runs-on: ubuntu-26.04
     steps:
       - name: checkout repository
@@ -19,10 +20,11 @@ jobs:
         with:
           java-version: '27'
           distribution: 'oracle'
+          problem-matcher: true
       - name: setup gradle
         uses: gradle/actions/setup-gradle@v6
         with:
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          cache-read-only: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
           build-scan-publish: true
           build-scan-terms-of-use-url: 'https://gradle.com/terms-of-service'
           build-scan-terms-of-use-agree: 'yes'
@@ -30,9 +32,9 @@ jobs:
         run: |
           # A version tag (0.7.2-beta.1, 0.7.2, with or without a v) builds as that version, so the jars and the mod itself carry it
           if [[ "$GITHUB_REF" == refs/tags/* ]]; then
-            ./gradlew ":${{ matrix.version }}:build" --scan -PenableErrorprone=true "-Pmod.version=${GITHUB_REF_NAME#v}"
+            ./gradlew ":${{ matrix.version }}:build" --scan -PenableErrorprone=true -PenableTests=true "-Pmod.version=${GITHUB_REF_NAME#v}"
           else
-            ./gradlew ":${{ matrix.version }}:build" --scan -PenableErrorprone=true
+            ./gradlew ":${{ matrix.version }}:build" --scan -PenableErrorprone=true -PenableTests=true
           fi
       # Only the one jar is in build/versions, so it is uploaded as-is instead of zipped.
       # The artifact is named after the jar (SBO-<version>+<mc>-fabric.jar).
@@ -48,6 +50,7 @@ jobs:
   detekt:
     permissions:
       contents: read
+      security-events: write
     runs-on: ubuntu-26.04
     steps:
       - name: checkout repository
@@ -60,9 +63,18 @@ jobs:
       - name: setup gradle
         uses: gradle/actions/setup-gradle@v6
         with:
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          cache-read-only: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
       - name: detekt
-        run: ./gradlew detektMain detektTest -PenableDetekt=true
+        run: ./gradlew detektMain detektTest --scan -PenableDetekt=true
+      - name: merge Detekt SARIF reports
+        if: always()
+        run: python3 .github/scripts/merge-detekt-sarif.py
+      - name: upload Detekt SARIF
+        if: always() && hashFiles('sarif-output/detekt.sarif') != '' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: sarif-output/detekt.sarif
+          category: detekt
 
   # Pushing a version tag publishes the build. A beta tag (0.7.2-beta.1) becomes a beta version on Modrinth,
   # a release tag (0.7.2) a featured release version on Modrinth and a GitHub release with the jars,

@@ -47,11 +47,6 @@ final class HubClientChunkCacheMixin implements ChunkStorageExt {
         return this.sbo$storage;
     }
 
-    @Unique
-    private final @Nullable FakeChunkManager sbo$manager() {
-        return HubChunkCache.managerFor((ClientChunkCache) (Object) this);
-    }
-
     @Inject(method = "<init>", at = @At("RETURN"))
     private final void sbo$initStorage(@NonNull final ClientLevel level, final int loadDistance, @NonNull final CallbackInfo ci) {
         this.sbo$storage.update(0, 0, calculateStorageRange(loadDistance), null);
@@ -62,7 +57,7 @@ final class HubClientChunkCacheMixin implements ChunkStorageExt {
     private final void sbo$getFakeChunk(final int x, final int z, @NonNull final ChunkStatus status, final boolean orEmpty, @NonNull final CallbackInfoReturnable<LevelChunk> cir) {
         if (cir.getReturnValue() != (orEmpty ? this.emptyChunk : null)) return;
 
-        final var manager = this.sbo$manager();
+        final var manager = HubChunkCache.managerFor((ClientChunkCache) (Object) this);
         if (manager == null) return;
         final var fake = manager.getChunk(x, z);
         if (fake != null) cir.setReturnValue(fake);
@@ -74,7 +69,7 @@ final class HubClientChunkCacheMixin implements ChunkStorageExt {
     //#else
     private final void sbo$beforeRealChunk(final int x, final int z, final net.minecraft.network.FriendlyByteBuf buf, final java.util.Map<net.minecraft.world.level.levelgen.Heightmap.Types, long[]> heightmaps, final java.util.function.Consumer<net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData.BlockEntityTagOutput> blockEntities, @NonNull final CallbackInfoReturnable<LevelChunk> cir) {
     //#endif
-        final var manager = this.sbo$manager();
+        final var manager = HubChunkCache.managerFor((ClientChunkCache) (Object) this);
         // Also when nothing is loaded here: it must not come back over the real chunk later.
         if (manager != null) manager.unload(x, z, true);
     }
@@ -87,36 +82,36 @@ final class HubClientChunkCacheMixin implements ChunkStorageExt {
 
     @Inject(method = "drop", at = @At("HEAD"))
     private final void sbo$saveDroppedChunk(@NonNull final ChunkPos pos, @NonNull final CallbackInfo ci) {
-        final var manager = this.sbo$manager();
+        final var manager = HubChunkCache.managerFor((ClientChunkCache) (Object) this);
         if (manager != null) manager.saveRealChunk(pos.x(), pos.z());
     }
 
     @Inject(method = "updateViewCenter", at = @At("HEAD"))
     private final void sbo$saveChunksBeforeMove(final int x, final int z, @NonNull final CallbackInfo ci) {
-        final var manager = this.sbo$manager();
+        final var manager = HubChunkCache.managerFor((ClientChunkCache) (Object) this);
         this.sbo$storage.updateCenter(x, z, manager == null ? null : manager::saveRealChunk);
     }
 
     @Inject(method = "updateViewRadius", at = @At("HEAD"))
     private final void sbo$saveChunksBeforeResize(final int loadDistance, @NonNull final CallbackInfo ci) {
-        final var manager = this.sbo$manager();
+        final var manager = HubChunkCache.managerFor((ClientChunkCache) (Object) this);
         this.sbo$storage.updateRadius(calculateStorageRange(loadDistance), manager == null ? null : manager::saveRealChunk);
     }
 
     @Inject(method = {"drop", "updateViewCenter", "updateViewRadius"}, at = @At("RETURN"))
     private final void sbo$fakeUnloadedChunks(@NonNull final CallbackInfo ci) {
-        final var manager = this.sbo$manager();
+        final var manager = HubChunkCache.managerFor((ClientChunkCache) (Object) this);
         if (manager != null) manager.substitutePending();
     }
 
     @Inject(method = "updateViewRadius", at = @At(value = "FIELD", target = "Lnet/minecraft/client/multiplayer/ClientChunkCache;storage:Lnet/minecraft/client/multiplayer/ClientChunkCache$Storage;", opcode = Opcodes.PUTFIELD, shift = At.Shift.AFTER))
     private final void sbo$remarkFakeChunks(final int loadDistance, @NonNull final CallbackInfo ci) {
-        final var manager = this.sbo$manager();
+        final var manager = HubChunkCache.managerFor((ClientChunkCache) (Object) this);
         if (manager != null) manager.remarkAllLoaded();
     }
 
     @Inject(method = "gatherStats", at = @At("RETURN"), cancellable = true)
     private final void sbo$debugStats(@NonNull final CallbackInfoReturnable<String> cir) {
-        if (this.sbo$manager() != null) cir.setReturnValue(cir.getReturnValue() + " " + HubChunkCache.debugString());
+        if (HubChunkCache.managerFor((ClientChunkCache) (Object) this) != null) cir.setReturnValue(cir.getReturnValue() + " " + HubChunkCache.debugString());
     }
 }

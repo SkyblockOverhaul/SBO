@@ -10,6 +10,7 @@ import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.config.nextOption
 import net.sbo.mod.guis.ConfirmGui
 import net.sbo.mod.settings.categories.Trackers
+import net.sbo.mod.utils.isCrownOfAvarice
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.overlay.CHAT_SCREEN_FILTER
 import net.sbo.mod.utils.overlay.CRAFTING_PLAYER_INVENTORY_FILTER
@@ -165,7 +166,7 @@ object CrownOfAvarice {
                 return@command
             }
 
-            if (!helmet.isCoA()) {
+            if (!helmet.isCrownOfAvarice()) {
                 Chat.chat("§6[SBO] §cYour helmet is not a Crown of Avarice")
                 return@command
             }
@@ -204,7 +205,7 @@ object CrownOfAvarice {
     // Reads the worn CoA and counts its gained coins, only when the helmet changed (see the tick in init)
     private fun onHelmetChanged(stack: ItemStack?) {
         helmet = stack
-        val worn = if (helmet.isCoA()) ItemLookup(helmet!!) else null
+        val worn = if (helmet.isCrownOfAvarice()) ItemLookup(helmet!!) else null
         // A new copy only when the item changed, the overlay re-renders when the icon is a different stack
         // The icon is only relevant for the new GuiLib overlay, avoid comparing all components of the ItemStack every call if legacy text-based overlay is used instead.
         if (overlay.checkCondition() && worn != null && icon.let { it == null || !isSameItemSameComponents(it, helmet!!) }) {
@@ -317,7 +318,6 @@ object CrownOfAvarice {
         lookChanged = true
         updateLines()
     }
-
 
     /** Everything the overlay shows, as text: equal views look the same. */
     private data class View(
@@ -465,7 +465,7 @@ object CrownOfAvarice {
     /** Current COA's coins, or -1 if the item isn't a CoA */
     private fun getCurrentCoins(item: ItemStack? = null): Long {
         val helmet = item ?: helmet
-        if (!helmet.isCoA()) return -1L
+        if (!helmet.isCrownOfAvarice()) return -1L
 
         return ItemLookup(helmet!!).cleanLoreList
             .find { it.contains("Coins Consumed: ") } // Grab the Coins Consumed line
@@ -478,15 +478,6 @@ object CrownOfAvarice {
         if (ms <= 0L) return 0.0
 
         return getTotalCoins() / (ms / 3_600_000.0)
-    }
-
-    fun ItemStack?.isCoA(): Boolean {
-        if (this == null || this.isEmpty()) return false
-
-        val lookup = ItemLookup(this)
-        val sbId = lookup.sbId
-
-        return "CROWN_OF_AVARICE" in sbId || "CROWN_OF_AVARICE_CELEBRATION" in sbId
     }
 
     private fun updateCoaPrice() {

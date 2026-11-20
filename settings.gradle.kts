@@ -1,4 +1,6 @@
 pluginManagement {
+    includeBuild("build-logic")
+
     val kotlinVersion = providers.gradleProperty("kotlin.version").get()
     val preprocessorVersion = providers.gradleProperty("preprocessor.version").get()
 

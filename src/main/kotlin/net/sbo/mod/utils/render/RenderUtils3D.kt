@@ -403,7 +403,7 @@ object RenderUtils3D {
         target: SboVec,
         color: FloatArray,
         lineWidth: Float,
-        alpha: Float = 0.5f
+        alpha: Float
     ) {
         val camera = context.getCamera()
 
@@ -442,7 +442,7 @@ object RenderUtils3D {
         endPos: Vec3,
         color: FloatArray,
         lineWidth: Float,
-        alpha: Float = 0.5f
+        alpha: Float
     ) {
         val camera = context.getCamera()
 
@@ -534,12 +534,12 @@ object RenderUtils3D {
 
     private fun LevelRenderContext.getCamera(): Camera = gameRenderer().mainCamera
 
-    private fun LevelRenderContext.pushPop(function: PoseStack.() -> Unit) {
+    private inline fun LevelRenderContext.pushPop(function: PoseStack.() -> Unit) {
         val matrix = poseStack()
         matrix.pushPop(function)
     }
 
-    private fun PoseStack.pushPop(function: PoseStack.() -> Unit) {
+    private inline fun PoseStack.pushPop(function: PoseStack.() -> Unit) {
         this.pushPose()
         function()
         this.popPose()

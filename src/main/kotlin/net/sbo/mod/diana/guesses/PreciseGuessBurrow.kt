@@ -5,6 +5,7 @@ import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.diana.burrows.ChainTracker
 import net.sbo.mod.settings.categories.Burrows
+import net.sbo.mod.utils.isDianaSpade
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.PlaySoundEvent
@@ -155,8 +156,7 @@ object PreciseGuessBurrow {
         if (item?.isEmpty == true) return
         if (item == null) return
         val lookup = ItemLookup(item)
-        val sbId = lookup.sbId
-        if (sbId != "DEIFIC_SPADE" && sbId != "ARCHAIC_SPADE" && sbId != "ANCESTRAL_SPADE") return
+        if (!lookup.isDianaSpade()) return
         val now = System.nanoTime()
         if (now - this.lastLavaParticle < TimeUnit.MILLISECONDS.toNanos(200L)) {
             event.isCanceled = true

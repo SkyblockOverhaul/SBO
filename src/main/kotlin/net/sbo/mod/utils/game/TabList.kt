@@ -20,10 +20,11 @@ object TabList {
     private var dirty = true
 
     /**
-     * Registers a task that rebuilds the cache on the next tick after the tab list changed.
+     * Registers a task that rebuilds the cache on the next ~4 ticks after the tab list changed.
+     * The server itself only updates the tab list about once every three seconds.
      */
     fun init() {
-        Register.onTick(1) {
+        Register.onTick(4) {
             if (dirty) updateCache()
         }
     }

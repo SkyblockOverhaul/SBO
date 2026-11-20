@@ -24,6 +24,7 @@ import org.gradle.api.tasks.SourceSetContainer
 import dev.detekt.gradle.Detekt
 import dev.detekt.gradle.extensions.DetektExtension
 import net.ltgt.gradle.errorprone.errorprone
+import java.util.Properties
 
 @CacheableTask
 abstract class ReplaceMinecraftSources : DefaultTask() {
@@ -64,6 +65,7 @@ abstract class ReplaceMinecraftSources : DefaultTask() {
 private val kotlinLanguageVersion = "2.5"
 
 plugins {
+    id("net.sbo.build-logic")
     java
     kotlin("jvm")
     kotlin("plugin.serialization")
@@ -304,6 +306,13 @@ val enableDetekt = providers.gradleProperty("enableDetekt")
 if (enableDetekt) {
     apply(plugin = "dev.detekt")
 
+    tasks.withType<Detekt>().configureEach {
+        reports {
+            html.required.set(true)
+            sarif.required.set(true)
+        }
+    }
+
     tasks.named<Detekt>("detektMain") {
         // Analyze the same transformed sources as compileKotlin.
         dependsOn(replaceKotlinSources)
@@ -430,19 +439,20 @@ afterEvaluate {
     }
 }
 
-tasks.withType<JavaCompile> {
+tasks.withType<JavaCompile>().configureEach {
   options.release = Integer.parseInt(versionedProperty("java.version"))
 }
 
-tasks.withType<KotlinJvmCompile> {
+tasks.withType<KotlinJvmCompile>().configureEach {
     compilerOptions.jvmTarget.set(JvmTarget.fromTarget(versionedProperty("java.version")))
 }
 
 val runDirectory = rootProject.file("run")
 runDirectory.mkdirs()
 
-tasks.withType<Test> {
+tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+    maxParallelForks = Runtime.getRuntime().availableProcessors()
     failFast = true
     testLogging {
         showStackTraces = true
@@ -453,6 +463,14 @@ tasks.withType<Test> {
     javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
     workingDir(file(runDirectory))
     systemProperty("junit.jupiter.extensions.autodetection.enabled", "true")
+    val gradleJvmProperties = Properties().apply {
+        rootProject.file("gradle.properties").inputStream().use(::load)
+    }
+    val inheritedJvmArgs = gradleJvmProperties.getProperty("org.gradle.jvmargs", "")
+        .trim().split(Regex("\\s+")).filter(String::isNotBlank)
+    // Keep this first so older test toolchains can ignore options intended for the daemon JDK.
+    jvmArgs("-XX:+IgnoreUnrecognizedVMOptions")
+    jvmArgs(inheritedJvmArgs.filterNot { it == "-XX:+IgnoreUnrecognizedVMOptions" })
     jvmArgs(
         "--add-opens", "java.base/java.lang=ALL-UNNAMED",
         "--add-opens", "java.base/java.util=ALL-UNNAMED",
@@ -601,7 +619,6 @@ dependencies {
     implementation("net.fabricmc:fabric-language-kotlin:${property("fabriclanguagekotlin.version")}")
 
     ksp(project(":event-processor"))
-    ksp("dev.zacsweers.autoservice:auto-service-ksp:${property("autoservice.version")}")
 
     // GuiLib (see settings.gradle.kts for building it from a local checkout)
     implementation(include("net.sbo:guilib-$mcProject:${property("guilib.version")}")!!)

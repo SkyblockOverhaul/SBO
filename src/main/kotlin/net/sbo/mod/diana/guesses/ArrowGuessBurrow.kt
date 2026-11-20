@@ -21,6 +21,7 @@ import net.sbo.mod.utils.math.RaycastUtils
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.waypoint.Waypoint
 import net.sbo.mod.utils.waypoint.WaypointManager
+import net.sbo.mod.utils.chat.Chat
 import java.util.*
 import java.util.function.BooleanSupplier
 import java.util.concurrent.TimeUnit
@@ -56,7 +57,36 @@ object ArrowGuessBurrow {
     val recentClickedBlocks = TimeLimitedSet<SboVec>(4.seconds)
     val allGuesses = mutableListOf<GuessEntry>()
     private val toRemove = mutableMapOf<Waypoint, BooleanSupplier>()
+    private const val MAX_INVALID_CACHE_SIZE = 1_000_000
+
     private val invalidCache = mutableSetOf<SboVec>()
+
+    private var invalidCacheCapWarningSent = false
+
+    fun invalidCacheSize(): String = "${invalidCache.size} / $MAX_INVALID_CACHE_SIZE"
+
+    fun estimatedInvalidCacheMemoryBytes(): Long {
+        val size = invalidCache.size
+        if (size == 0) return 0L
+
+        // LinkedHashSet's backing table uses a power-of-two capacity
+        // and a default load factor of 0.75.
+        var capacity = 16
+        while (size > capacity * 0.75) {
+            capacity *= 2
+        }
+
+        // Approximate:
+        // SboVec: 40 bytes
+        // LinkedHashMap entry: 40 bytes
+        // Bucket reference: 4 bytes per table slot
+        return size * 80L + capacity * 4L
+    }
+
+    fun clearInvalidCache() {
+        invalidCache.clear()
+        invalidCacheCapWarningSent = false
+    }
 
     fun queueRemoval(waypoint: Waypoint, condition: BooleanSupplier) {
         toRemove[waypoint] = condition
@@ -492,8 +522,14 @@ object ArrowGuessBurrow {
         val valid = isGroundBlock(pos)
 
         // Second condition is for an edge case where you would mine an arrow guess block and your network goes off - recentClickedBlocks would stop having the block after 4 seconds, and since network went off the server will not be able to put grass block back in again. So we check that server connection is healthy before proceeding to cache it as invalid.
-        if (!valid && System.nanoTime() - ServerStats.lastPacket < TimeUnit.SECONDS.toNanos(4L)) {
+        if (!valid && System.nanoTime() - ServerStats.lastPacket < TimeUnit.SECONDS.toNanos(4L) && invalidCache.size < MAX_INVALID_CACHE_SIZE) {
             invalidCache.add(pos)
+
+            if (invalidCache.size >= MAX_INVALID_CACHE_SIZE && !invalidCacheCapWarningSent) {
+                invalidCacheCapWarningSent = true
+
+                Chat.chat("§6[SBO] §eThe Arrow Guess invalid-block cache has reached its limit of $MAX_INVALID_CACHE_SIZE entries. This is harmless, but please report it to the developers so we can investigate whether some code is calling isBlockValid excessively or for too many unique blocks.")
+            }
         }
 
         return valid

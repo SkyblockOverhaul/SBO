@@ -35,6 +35,8 @@ class OverlayTextLine(
 
     private val textWidth: Int
         get() {
+            if (text.isEmpty()) return 0
+
             val currentText = text
 
             if (orderedTextSource == currentText && cachedTextWidth != -1) {
