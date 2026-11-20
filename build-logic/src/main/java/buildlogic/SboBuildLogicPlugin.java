@@ -89,8 +89,7 @@ public final class SboBuildLogicPlugin implements Plugin<Project> {
 
     private final FingerprintOutputs configureMixinTestFingerprint(final Project project) {
         final var mixinTest = project.getTasks().findByName("mixinTest");
-        final var runtime = project.getConfigurations().findByName("mixinTestRuntime");
-        if (!(mixinTest instanceof Test) || runtime == null) {
+        if (!(mixinTest instanceof Test)) {
             return null;
         }
 
@@ -107,10 +106,11 @@ public final class SboBuildLogicPlugin implements Plugin<Project> {
                     versionResources.include("fabric.mod.json", "sbo.mixins.json", "sbo.classtweaker");
                     final var buildFiles = root.fileTree(root.getProjectDir());
                     buildFiles.include("build.gradle.kts", "root.gradle.kts", "settings.gradle.kts",
-                            "gradle.properties", "gradle/libs.versions.toml", "versions/mainProject");
+                            "gradle.properties", "gradle/libs.versions.toml", "versions/mainProject",
+                            "build-logic/**/*.java", "build-logic/**/*.gradle.kts");
 
                     task.getRelevantFiles().from(mixinSources, mixinTestSource, rootResources,
-                            versionResources, buildFiles, runtime);
+                            versionResources, buildFiles);
                     task.getRelevantProperties().set(List.of(
                             project.getName(),
                             project.getVersion().toString(),
