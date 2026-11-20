@@ -7,7 +7,6 @@ import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.decoration.ArmorStand
 import net.minecraft.world.entity.player.Player
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.diana.tracker.Tracker
 import net.sbo.mod.settings.categories.RareMobs
 import net.sbo.mod.utils.Helper
@@ -140,7 +139,7 @@ object DianaMobDetect {
         return null
     }
 
-    private fun parseStarFromName(name: String): Boolean = name.contains("") || name.contains("✯") // mf rework update changes the shuriken icon to depend on resourcepack. still check for legacy since that's only on alpha and to keep compatibility with RitualPractice
+    private fun parseStarFromName(name: String): Boolean = name.contains("") || name.contains("✯") // mf rework update changed the shuriken icon to depend on resourcepack. still check for legacy to keep compatibility with RitualPractice
 
     private fun shouldAlertForMob(name: String) = RareMob.fromName(name) != null && (RareMobs.hpAlert > 0.0 || RareMobs.soundHpAlert > 0.0)
 
