@@ -23,6 +23,7 @@ data class SboData(
     var highestChimMagicFind: Int = 0,
     var highestStickMagicFind: Int = 0,
     var highestFoodMagicFind: Int = 0,
+    var highestLootingMagicFind: Int = 0,
     var highestWoolMagicFind: Int = 0,
     var highestCoreMagicFind: Int = 0,
     var highestStingerMagicFind: Int = 0,
@@ -71,6 +72,10 @@ data class SboData(
     var b2bFood: Boolean = false,
     var sphinxSinceLsFood: Int = 0,
     var b2bFoodLs: Boolean = false,
+    var sphinxSinceLooting: Int = 0,
+    var b2bLooting: Boolean = false,
+    var sphinxSinceLsLooting: Int = 0,
+    var b2bLootingLs: Boolean = false,
 
     var lastStatsProfile: String = "",
 

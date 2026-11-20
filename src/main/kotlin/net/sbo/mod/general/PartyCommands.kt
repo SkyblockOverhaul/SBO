@@ -158,6 +158,12 @@ object PartyCommands {
         PartyCommand(listOf("!foodls", "!brainfoodls", "!lsbrainfood", "!lsbrain"), { settings.dianaPartyCommands }) {
             fmt("Brain Food LS", dianaTrackerMayorData.items.BRAIN_FOOD_LS, dianaTrackerMayorData.mobs.SPHINX_LS)
         },
+        PartyCommand(listOf("!looting", "!looting7", "!loot7"), { settings.dianaPartyCommands }) {
+            fmt("Looting 7", dianaTrackerMayorData.items.LOOTING_7, dianaTrackerMayorData.mobs.SPHINX)
+        },
+        PartyCommand(listOf("!lootingls", "!looting7ls", "!lslooting", "!lsloot7"), { settings.dianaPartyCommands }) {
+            fmt("Looting 7 LS", dianaTrackerMayorData.items.LOOTING_7_LS, dianaTrackerMayorData.mobs.SPHINX_LS)
+        },
         PartyCommand(listOf("!braided", "!braideds"), { settings.dianaPartyCommands }) {
             fmt("Braided feathers", dianaTrackerMayorData.items.BRAIDED_GRIFFIN_FEATHER, dianaTrackerMayorData.mobs.TOTAL_MOBS)
         },
@@ -300,6 +306,8 @@ object PartyCommands {
             "wool", "wools" -> "Kings since wool: ${sboData.kingSinceWool}"
             "corels", "lscore" -> "Mantis since lootshare core: ${sboData.mantiSinceLsCore}"
             "woolls", "lswool" -> "Kings since lootshare wool: ${sboData.kingSinceLsWool}"
+            "looting", "looting7", "loot7" -> "Sphinx since looting 7: ${sboData.sphinxSinceLooting}"
+            "lootingls", "lslooting", "looting7ls" -> "Sphinx since lootshare looting 7: ${sboData.sphinxSinceLsLooting}"
             else -> return
         }
         sendResponse(response)

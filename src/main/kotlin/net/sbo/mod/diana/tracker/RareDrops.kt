@@ -20,8 +20,8 @@ internal object RareDrops {
     /** The drops of the rare mobs that also count lootshares. */
     class RareDrop(
         val name: String,
-        /** All of these are in the drop message. */
-        val match: List<String>,
+        /** Found in the drop message. */
+        val match: Regex,
         val customKey: String,
         val sinceText: String,
         val droppedBy: String,
@@ -41,21 +41,24 @@ internal object RareDrops {
     }
 
     val rareDrops = listOf(
-        RareDrop("Shimmering Wool", listOf("Shimmering Wool"), "wool", "Shimmering Wool", "King Minos",
+        RareDrop("Shimmering Wool", Regex("Shimmering Wool"), "wool", "Shimmering Wool", "King Minos",
             SboData::kingSinceWool, SboData::kingSinceLsWool, SboData::b2bWool, SboData::b2bWoolLs,
             SoundSettingsData::woolSound, SoundSettingsData::woolVolume, { MedalIntegration.saveWoolClip() }, b2bAch = 81, lsB2bAch = 82),
-        RareDrop("Manti-core", listOf("Manti-core"), "core", "Manti-core", "Manticores",
+        RareDrop("Manti-core", Regex("Manti-core"), "core", "Manti-core", "Manticores",
             SboData::mantiSinceCore, SboData::mantiSinceLsCore, SboData::b2bCore, SboData::b2bCoreLs,
             SoundSettingsData::coreSound, SoundSettingsData::coreVolume, { MedalIntegration.saveMantiCoreClip() }, b2bAch = 94, lsB2bAch = 95),
-        RareDrop("Fateful Stinger", listOf("Fateful Stinger"), "stinger", "Fateful Stinger", "Manticores",
+        RareDrop("Fateful Stinger", Regex("Fateful Stinger"), "stinger", "Fateful Stinger", "Manticores",
             SboData::mantiSinceStinger, SboData::mantiSinceLsStinger, SboData::b2bStinger, SboData::b2bStingerLs,
             SoundSettingsData::stingerSound, SoundSettingsData::stingerVolume, { MedalIntegration.saveFatefulStingerClip() }),
-        RareDrop("Chimera", listOf("Enchanted Book", "Chimera"), "chimera", "a Chimera", "Inquisitors",
+        RareDrop("Chimera", Regex("Enchanted Book.*Chimera"), "chimera", "a Chimera", "Inquisitors",
             SboData::inqsSinceChim, SboData::inqsSinceLsChim, SboData::b2bChim, SboData::b2bChimLs,
             SoundSettingsData::chimSound, SoundSettingsData::chimVolume, { MedalIntegration.saveChimeraClip() }, b2bAch = 1, b2b2bAch = 2, lsB2bAch = 66, lsB2b2bAch = 67),
-        RareDrop("Brain Food", listOf("Brain Food"), "brain food", "Brain Food", "Sphinx",
+        RareDrop("Brain Food", Regex("Brain Food"), "brain food", "Brain Food", "Sphinx",
             SboData::sphinxSinceFood, SboData::sphinxSinceLsFood, SboData::b2bFood, SboData::b2bFoodLs,
             SoundSettingsData::bfSound, SoundSettingsData::bfVolume, { MedalIntegration.saveBrainFoodClip() }, b2bAch = 97, b2b2bAch = 98, lsB2bAch = 99, lsB2b2bAch = 100),
+        RareDrop("Looting 7", Regex("""Enchanted Book.*Looting (7|VII)\b"""), "looting", "a Looting 7", "Sphinx",
+            SboData::sphinxSinceLooting, SboData::sphinxSinceLsLooting, SboData::b2bLooting, SboData::b2bLootingLs,
+            SoundSettingsData::lootingSound, SoundSettingsData::lootingVolume, { MedalIntegration.saveLootingClip() }),
     )
 
     /** Drops that only get tracked, a clip and the misc drop sound. */
@@ -71,13 +74,13 @@ internal object RareDrops {
     fun onChatDrop(drop: String) {
         val isLootShare = gotLootShareRecently()
         val magicFind = Helper.getMagicFind(drop)
-        val rareDrop = rareDrops.firstOrNull { rare -> rare.match.all { drop.contains(it) } }
+        val rareDrop = rareDrops.firstOrNull { rare -> rare.match.containsMatchIn(drop) }
         val miscDrop = miscDrops.firstOrNull { drop.contains(it.first) }
 
         when {
             rareDrop != null -> onMobRareDrop(rareDrop, magicFind, isLootShare)
 
-            drop.contains("Enchanted Book") -> return // a book other than Chimera
+            drop.contains("Enchanted Book") -> return // a book other than Chimera and Looting 7
 
             drop.contains("Daedalus Stick") -> {
                 DropAnnouncer.playSound(SoundSettingsData::stickSound, SoundSettingsData::stickVolume)
@@ -124,7 +127,7 @@ internal object RareDrops {
         DataManager.save(DataManager::sboData)
     }
 
-    /** Wool, Manti-core, Fateful Stinger, Chimera and Brain Food: since message and b2b, separately for lootshares. */
+    /** Wool, Manti-core, Fateful Stinger, Chimera, Brain Food and Looting 7: since message and b2b, separately for lootshares. */
     private fun onMobRareDrop(drop: RareDrop, magicFind: Int, isLootShare: Boolean) {
         drop.clip()
         DropAnnouncer.playSound(drop.sound, drop.volume)

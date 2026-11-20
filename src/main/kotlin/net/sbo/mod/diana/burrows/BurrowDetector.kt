@@ -306,6 +306,7 @@ object BurrowDetector {
 
     private fun burrowDetect(packet: ClientboundLevelParticlesPacket) {
         val particleType = ParticleTypes.getParticleType(packet) ?: return
+        BurrowParticleClock.onBurrowParticle()
         val pos = SboVec(packet.x, packet.y, packet.z).roundLocationToBlock().down()
         val posString = blockKey(pos)
 

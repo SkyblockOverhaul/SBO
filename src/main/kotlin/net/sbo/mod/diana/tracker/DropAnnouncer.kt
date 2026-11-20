@@ -21,7 +21,7 @@ internal object DropAnnouncer {
 
     private val dropColors = mapOf(
         "MANTI_CORE" to "§c", "SHIMMERING_WOOL" to "§c", "MYTHOLOGICAL_DYE" to "§c", "MYTH_THE_FISH" to "§c",
-        "CHIMERA" to "§d", "FATEFUL_STINGER" to "§d",
+        "CHIMERA" to "§d", "FATEFUL_STINGER" to "§d", "LOOTING_7" to "§d",
         "BRAIN_FOOD" to "§5", "MINOS_RELIC" to "§5", "BRAIDED_GRIFFIN_FEATHER" to "§5",
         "DAEDALUS_STICK" to "§6", "MYTHOS_FRAGMENT" to "§6",
         "CROWN_OF_GREED" to "§6", // TODO: Add Seperate LS tracker for LS Crown and clarify if LS or not in the message + party announce
@@ -35,6 +35,7 @@ internal object DropAnnouncer {
         "SHIMMERING_WOOL" to SboData::highestWoolMagicFind,
         "FATEFUL_STINGER" to SboData::highestStingerMagicFind,
         "BRAIN_FOOD" to SboData::highestFoodMagicFind,
+        "LOOTING_7" to SboData::highestLootingMagicFind,
         "MINOS_RELIC" to SboData::highestRelicMagicFind,
     )
 
