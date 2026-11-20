@@ -4,10 +4,11 @@ import net.minecraft.world.level.ChunkPos
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.settings.categories.Burrows
+import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.WorldChangeEvent
-import net.sbo.mod.utils.game.ItemLookup
+import net.sbo.mod.utils.game.InventoryUtils
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.waypoint.Waypoint
@@ -15,7 +16,9 @@ import net.sbo.mod.utils.waypoint.WaypointManager
 import java.io.DataInputStream
 import java.util.concurrent.TimeUnit
 import java.util.zip.GZIPInputStream
+import kotlin.math.ceil
 import kotlin.math.sqrt
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * The Spade Guess Optimizer: places to stand and use the spade to find a new chain.
@@ -34,13 +37,14 @@ import kotlin.math.sqrt
  * that chain however far it is, so nothing is shown until the chain is finished.
  *
  * Every block a burrow can be on in the Hub is shipped in [SPOTS_RESOURCE]. A block counts as searched when:
- * - the spade was held for [HOLD_TICKS] ticks within [HOLD_SEARCH_RADIUS] blocks of it (burrow particles show there)
+ * - the spade was held for [HOLD_TIME] within [HOLD_SEARCH_RADIUS] blocks of it (burrow particles show there)
  * - a spade guess pointed farther away than the block, seen from where the spade was used while it points at the
  *   nearest burrow
  *
  * A place is as good as the amount of unsearched blocks within its reach. The best places are picked
  * one after another, each only counting the blocks the ones before it don't cover, and the nearest of them to you is
- * shown. They stay until they are searched, then the next ones are picked. The shown place only moves after a spade
+ * shown. A place can be on a searched block, what counts is what a spade use there still finds. They stay until
+ * under [MIN_COVERED_SHARE] of the unsearched blocks is within their reach, then the next ones are picked. The shown place only moves after a spade
  * use, holding the spade while walking up to it doesn't move it. Searched blocks are cleared when a chain
  * finishes (a new chain starts anywhere), on a lobby swap and on /sboclearburrows.
  */
@@ -48,7 +52,7 @@ object SpadeGuessOptimizer {
     private const val SPOTS_RESOURCE = "/assets/sbo/diana/hub_spots.bin.gz"
     private const val WAYPOINT_TYPE = "spadeSpot"
     private const val HOLD_SEARCH_RADIUS = 30.0
-    private const val HOLD_TICKS = 15
+    private val HOLD_TIME = 750.milliseconds
     /** Holding the spade only searches again after moving this far. */
     private const val HOLD_MOVE_DISTANCE = 2.0
     /** A burrow just as far as the guessed one could have been the one pointed at, so this much less is searched. */
@@ -77,6 +81,12 @@ object SpadeGuessOptimizer {
     private val NO_GUESS_NANOS = TimeUnit.MILLISECONDS.toNanos(500)
     /** The same for the old spade guess, it needs 4 particles (~420 ms) for its first guess. */
     private val OLD_GUESS_NO_GUESS_NANOS = TimeUnit.MILLISECONDS.toNanos(800)
+    /** A place is only worth going to with this share of all unsearched blocks within its reach. */
+    private const val MIN_COVERED_SHARE = 0.03
+    /** The most places near a finished chain that are tried, evenly out of all of them. */
+    private const val MAX_TRIED_SPOTS = 400
+    /** The waypoint types that are a burrow, found or guessed. */
+    private val BURROW_TYPES = listOf("burrow", "arrow", "guess")
 
     private var spotX = IntArray(0)
     private var spotY = IntArray(0)
@@ -87,8 +97,12 @@ object SpadeGuessOptimizer {
     private var spotsLoaded = false
     /** Goes up every time a spot gets searched or the searched spots are cleared. */
     private var searchVersion = 0
+    /** The unsearched spots per chunk and their middle, as of [unsearchedVersion]. */
+    private var unsearchedByChunk = HashMap<Long, Int>()
+    private var middleByChunk = HashMap<Long, SboVec>()
+    private var unsearchedTotal = 0
+    private var unsearchedVersion = -1
 
-    private var heldSpadeTicks = 0
     private var lastHoldSearch: SboVec? = null
 
     /** The last spade use and the burrow its guess points at, searched once the guess settles. */
@@ -124,6 +138,11 @@ object SpadeGuessOptimizer {
     private val waypoints = mutableListOf<Waypoint>()
     /** The known burrows and searched spots the last pick was made with, nothing changes picking again with them. */
     private var lastPickKey: Any? = null
+    /** The searched spots, startup, detour and shown place the picked spots were last checked with, see [update]. */
+    private var checkedSearchVersion = -1
+    private var checkedShown: Int? = null
+    private var checkedStartup = true
+    private var checkedDetour = 0.0
 
     fun init() {
         Register.onTick(1) { tick() }
@@ -159,7 +178,7 @@ object SpadeGuessOptimizer {
     @SboEvent
     fun onWorldChange(event: WorldChangeEvent) {
         staleWaypoints.clear()
-        for (type in listOf("burrow", "arrow", "guess")) staleWaypoints.addAll(WaypointManager.getWaypointsOfType(type))
+        for (type in BURROW_TYPES) staleWaypoints.addAll(WaypointManager.getWaypointsOfType(type))
         reset("lobby")
     }
 
@@ -180,8 +199,9 @@ object SpadeGuessOptimizer {
      * @param guess The burrow the spade guess points at.
      */
     fun onSpadeGuess(from: SboVec, guess: SboVec) {
-        if (throwFrom != null && throwFrom != from) searchThrow()
-        if (throwFrom != from) knownBeforeThrow = lastKnownBurrows
+        val lastFrom = throwFrom
+        if (lastFrom != null && lastFrom != from) searchThrow()
+        if (lastFrom != from) knownBeforeThrow = lastKnownBurrows
         spadeUseTime = 0L
         throwFrom = from
         throwGuess = guess
@@ -190,13 +210,17 @@ object SpadeGuessOptimizer {
 
     private fun tick() {
         if (!Burrows.spadeGuessOptimizer) {
-            heldSpadeTicks = 0
             picked.clear()
-            show(null)
+            lastPickKey = null
+            throwFrom = null
+            throwGuess = null
+            spadeUseTime = 0L
+            if (shown != null) show(null)
             return
         }
-        if (!World.isInHub()) {
-            heldSpadeTicks = 0
+        // The picked spots stay, the place shows again when you're back with a spade
+        if (!World.isInHub() || !Helper.hasSpade) {
+            if (shown != null) show(null)
             return
         }
         if (!spotsLoaded) loadSpots()
@@ -212,8 +236,7 @@ object SpadeGuessOptimizer {
             spadeUsed = true
         }
 
-        heldSpadeTicks = if (isHoldingSpade()) heldSpadeTicks + 1 else 0
-        if (heldSpadeTicks >= HOLD_TICKS) {
+        if (InventoryUtils.isItemHeld("SPADE", HOLD_TIME)) {
             val pos = SboVec(player.x, player.y, player.z)
             val last = lastHoldSearch
             if (last == null || last.distanceTo(pos) >= HOLD_MOVE_DISTANCE) {
@@ -232,13 +255,6 @@ object SpadeGuessOptimizer {
             titled = spot
             BurrowDetector.requestSpade("spot")
         }
-    }
-
-    private fun isHoldingSpade(): Boolean {
-        val item = mc.player?.mainHandItem ?: return false
-        if (item.isEmpty) return false
-        val sbId = ItemLookup(item).sbId
-        return sbId == "DEIFIC_SPADE" || sbId == "ARCHAIC_SPADE" || sbId == "ANCESTRAL_SPADE"
     }
 
     /**
@@ -266,6 +282,11 @@ object SpadeGuessOptimizer {
         waitingForSpade = false
     }
 
+    /**
+     * Marks every spot within [radius] blocks of [center] as searched.
+     * @param center Where the search is from, the eye position or where you stand.
+     * @param radius How far it reaches.
+     */
     private fun search(center: SboVec, radius: Double) {
         val radiusSq = radius * radius
         val chunkRadius = (radius.toInt() shr 4) + 1
@@ -293,7 +314,7 @@ object SpadeGuessOptimizer {
     /** Every known burrow in this lobby: found burrows, arrow guesses and spade guesses, each burrow counted once. */
     private fun knownBurrows(): List<SboVec> {
         val burrows = mutableListOf<SboVec>()
-        for (type in listOf("burrow", "arrow", "guess")) {
+        for (type in BURROW_TYPES) {
             for (waypoint in WaypointManager.getWaypointsOfType(type)) {
                 if (waypoint.hidden || waypoint in staleWaypoints) continue
                 if (burrows.none { it.distanceTo(waypoint.pos) <= SAME_BURROW_DISTANCE }) burrows.add(waypoint.pos)
@@ -308,10 +329,11 @@ object SpadeGuessOptimizer {
      */
     private fun update(playerPos: SboVec) {
         val burrows = knownBurrows()
+        val burrowsChanged = burrows != lastKnownBurrows
         lastKnownBurrows = burrows
         if (startup && (!Burrows.lookForMaxChains || burrows.size >= STARTUP_CHAINS)) startup = false
         val center = chainEnd
-        if (!pointsAtNearest || (!startup && (center == null || waitingForSpade))) {
+        if (!pointsAtNearest || !startup && (center == null || waitingForSpade)) {
             spadeUsed = false
             if (picked.isNotEmpty() || waypoints.isNotEmpty()) {
                 picked.clear()
@@ -321,14 +343,21 @@ object SpadeGuessOptimizer {
         }
 
         val detour = detourFor(burrows.size)
+        // The picked spots only need checking again once something they depend on changed (a new center clears them)
+        val changed = burrowsChanged || searchVersion != checkedSearchVersion || startup != checkedStartup ||
+            detour != checkedDetour || shown != checkedShown
+        checkedSearchVersion = searchVersion
+        checkedShown = shown
+        checkedStartup = startup
+        checkedDetour = detour
         // The shown place stays till the spade is used, whatever got searched or found meanwhile
-        val removed = picked.removeAll { spot ->
-            (spot != shown || spadeUsed) && (searched[spot] || reachOf(spot, burrows) < HOLD_SEARCH_RADIUS ||
-                (!startup && center != null && distanceSq(spot, center) > detour * detour))
+        val removed = (changed || spadeUsed) && picked.removeAll { spot ->
+            (spot != shown || spadeUsed) && (!worthIt(spot, burrows) ||
+                !startup && center != null && distanceSq(spot, center) > detour * detour)
         }
         spadeUsed = false
-        val pickKey = listOf(burrows.map { it.roundLocationToBlock() }.toSet(), searchVersion, startup, center, detour)
-        val pick = picked.isEmpty() && pickKey != lastPickKey
+        val pickKey = if (picked.isEmpty()) listOf(burrows.mapTo(HashSet()) { it.roundLocationToBlock() }, searchVersion, startup, center, detour) else null
+        val pick = pickKey != null && pickKey != lastPickKey
         if (pick) {
             lastPickKey = pickKey
             picked.addAll(if (startup) pickSpots(burrows, STARTUP_LOCATIONS) else pickSpots(burrows, 1, center, detour))
@@ -357,6 +386,7 @@ object SpadeGuessOptimizer {
     /**
      * How far a spade use at [spot] finds a new chain: it points at the nearest burrow, so up to the nearest known one.
      * [QUALITY_RADIUS] with no known burrow.
+     * @param spot The spot the spade is used at.
      * @param burrows The known burrows.
      */
     private fun reachOf(spot: Int, burrows: List<SboVec>): Double {
@@ -364,18 +394,13 @@ object SpadeGuessOptimizer {
         return sqrt(burrows.minOf { distanceSq(spot, it) }) - THROW_DISTANCE_MARGIN
     }
 
-    /**
-     * Picks the best spots one after another: unsearched, with a reach (see [reachOf]) of at least [HOLD_SEARCH_RADIUS]
-     * blocks, and with the most unsearched spots within their reach that no spot picked before covers. Spots are counted
-     * per chunk, by the middle of its unsearched spots.
-     * @param burrows The known burrows.
-     * @param count How many spots to pick.
-     * @param center Only spots within [radius] blocks of it are picked, the nearest to it of equally good ones. Anywhere in
-     * the Hub if null, then one spot per chunk is tried.
-     */
-    private fun pickSpots(burrows: List<SboVec>, count: Int, center: SboVec? = null, radius: Double = 0.0): List<Int> {
-        val unsearchedByChunk = HashMap<Long, Int>()
-        val middleByChunk = HashMap<Long, SboVec>()
+    /** Counts the unsearched spots per chunk again if any got searched since. */
+    private fun countUnsearched() {
+        if (unsearchedVersion == searchVersion) return
+        unsearchedVersion = searchVersion
+        unsearchedByChunk = HashMap()
+        middleByChunk = HashMap()
+        unsearchedTotal = 0
         for ((chunk, spots) in spotsByChunk) {
             var unsearched = 0
             var x = 0.0
@@ -391,35 +416,75 @@ object SpadeGuessOptimizer {
             if (unsearched == 0) continue
             unsearchedByChunk[chunk] = unsearched
             middleByChunk[chunk] = SboVec(x / unsearched, y / unsearched, z / unsearched)
+            unsearchedTotal += unsearched
         }
+    }
 
-        val reachBySpot = HashMap<Int, Double>()
+    /** The least unsearched spots a place has to have within its reach, see [MIN_COVERED_SHARE]. */
+    private fun minCovered(): Int = ceil(unsearchedTotal * MIN_COVERED_SHARE).toInt().coerceAtLeast(1)
+
+    /**
+     * Whether a spade use at [spot] is still worth it: a reach (see [reachOf]) of at least [HOLD_SEARCH_RADIUS] blocks
+     * with enough unsearched spots within it.
+     * @param spot The spot the spade is used at.
+     * @param burrows The known burrows.
+     */
+    private fun worthIt(spot: Int, burrows: List<SboVec>): Boolean {
+        val reach = reachOf(spot, burrows)
+        if (reach < HOLD_SEARCH_RADIUS) return false
+        countUnsearched()
+        var covered = 0
+        for ((chunk, middle) in middleByChunk) {
+            if (distanceSq(spot, middle) <= reach * reach) covered += unsearchedByChunk.getValue(chunk)
+        }
+        return covered >= minCovered()
+    }
+
+    /**
+     * Picks the best spots one after another: with a reach (see [reachOf]) of at least [HOLD_SEARCH_RADIUS] blocks, and
+     * with the most unsearched spots within their reach that no spot picked before covers, at least [minCovered]. The
+     * spot itself may be searched. Spots are counted per chunk, by the middle of its unsearched spots.
+     * @param burrows The known burrows.
+     * @param count How many spots to pick.
+     * @param center Only spots within [radius] blocks of it are picked, the nearest to it of equally good ones. Anywhere in
+     * the Hub if null, then one spot per chunk is tried.
+     * @param radius How far from [center] spots are picked.
+     */
+    private fun pickSpots(burrows: List<SboVec>, count: Int, center: SboVec? = null, radius: Double = 0.0): List<Int> {
+        countUnsearched()
+        val middles = HashMap(middleByChunk)
+        val minCovered = minCovered()
+
+        val standable = mutableListOf<Int>()
         for (spots in spotsByChunk.values) {
-            val standable = spots.filter { !searched[it] && (center == null || distanceSq(it, center) <= radius * radius) }
-            if (standable.isEmpty()) continue
-            val tried = if (center != null) standable else {
-                val middleX = (spotX[standable[0]] shr 4) * 16 + 8
-                val middleZ = (spotZ[standable[0]] shr 4) * 16 + 8
-                listOf(standable.minBy { (spotX[it] - middleX) * (spotX[it] - middleX) + (spotZ[it] - middleZ) * (spotZ[it] - middleZ) })
+            if (center != null) {
+                for (spot in spots) if (distanceSq(spot, center) <= radius * radius) standable.add(spot)
+            } else if (spots.isNotEmpty()) {
+                val middleX = (spotX[spots[0]] shr 4) * 16 + 8
+                val middleZ = (spotZ[spots[0]] shr 4) * 16 + 8
+                standable.add(spots.minBy { (spotX[it] - middleX) * (spotX[it] - middleX) + (spotZ[it] - middleZ) * (spotZ[it] - middleZ) })
             }
-            for (spot in tried) {
-                val reach = reachOf(spot, burrows)
-                if (reach >= HOLD_SEARCH_RADIUS) reachBySpot[spot] = reach
-            }
+        }
+        val step = if (center == null) 1 else (standable.size + MAX_TRIED_SPOTS - 1) / MAX_TRIED_SPOTS
+        val reachBySpot = HashMap<Int, Double>()
+        for (index in standable.indices step step.coerceAtLeast(1)) {
+            val spot = standable[index]
+            val reach = reachOf(spot, burrows)
+            if (reach >= HOLD_SEARCH_RADIUS) reachBySpot[spot] = reach
         }
 
         val picked = mutableListOf<Int>()
         repeat(count) {
             var best: Int? = null
-            var bestCovered = 0
+            var bestCovered = minCovered - 1
             var bestDistanceSq = Double.MAX_VALUE
             for ((spot, reach) in reachBySpot) {
                 var covered = 0
-                for ((chunk, middle) in middleByChunk) {
+                for ((chunk, middle) in middles) {
                     if (distanceSq(spot, middle) <= reach * reach) covered += unsearchedByChunk.getValue(chunk)
                 }
                 val distanceSq = if (center == null) 0.0 else distanceSq(spot, center)
-                if (covered > bestCovered || (covered == bestCovered && covered > 0 && distanceSq < bestDistanceSq)) {
+                if (covered > bestCovered || covered == bestCovered && covered >= minCovered && distanceSq < bestDistanceSq) {
                     best = spot
                     bestCovered = covered
                     bestDistanceSq = distanceSq
@@ -430,12 +495,17 @@ object SpadeGuessOptimizer {
 
             // What this spot covers no longer counts for the next ones
             val reach = reachBySpot.getValue(spot)
-            middleByChunk.entries.removeIf { distanceSq(spot, it.value) <= reach * reach }
+            middles.entries.removeIf { distanceSq(spot, it.value) <= reach * reach }
             reachBySpot.remove(spot)
         }
         return picked
     }
 
+    /**
+     * The squared distance from [spot] to [pos].
+     * @param spot The spot.
+     * @param pos The position.
+     */
     private fun distanceSq(spot: Int, pos: SboVec): Double {
         val dx = spotX[spot] - pos.x
         val dy = spotY[spot] - pos.y
@@ -470,7 +540,7 @@ object SpadeGuessOptimizer {
                 spotX = IntArray(count)
                 spotY = IntArray(count)
                 spotZ = IntArray(count)
-                for (spot in 0 until count) {
+                for (spot in 0..<count) {
                     spotX[spot] = input.readShort().toInt()
                     spotY[spot] = input.readUnsignedByte()
                     spotZ[spot] = input.readShort().toInt()

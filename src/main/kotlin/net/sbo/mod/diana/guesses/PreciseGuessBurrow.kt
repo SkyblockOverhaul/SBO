@@ -47,7 +47,8 @@ import kotlin.time.Duration.Companion.seconds
  * the cubic fit can end on a burrow next to the one the spade points at.
  *
  * A spade guess within [PARTICLE_DISTANCE] blocks while holding the spade for [NO_PARTICLE_TICKS] ticks with no burrow
- * found at it (its particles would show there) is removed, like arrow guesses.
+ * found at it (its particles would show there) is removed, like arrow guesses. Only with Close Burrow Detection, without
+ * it no burrow is ever found from its particles.
  */
 object PreciseGuessBurrow {
     private val particleLocations = mutableListOf<SboVec>()
@@ -111,13 +112,17 @@ object PreciseGuessBurrow {
     /** Removes the spade guesses that show no burrow particles after [NO_PARTICLE_TICKS] ticks in range of them. */
     private fun removeGuessesWithoutParticles() {
         val player = SBOKotlin.mc.player
-        if (!Burrows.spadeGuess || !World.isInHub() || player == null || !InventoryUtils.isItemHeld("SPADE", 1.seconds)) {
+        val guesses = WaypointManager.getWaypointsOfType("guess")
+        if (
+            guesses.isEmpty() || !Burrows.spadeGuess || !Burrows.closeBurrowDetection || !World.isInHub() ||
+            player == null || !InventoryUtils.isItemHeld("SPADE", 1.seconds)
+        ) {
             ticksInParticleRange.clear()
             return
         }
-        val guesses = WaypointManager.getWaypointsOfType("guess").toList()
-        ticksInParticleRange.keys.retainAll(guesses.toSet())
+        ticksInParticleRange.keys.retainAll(guesses)
         val playerPos = player.position().toSboVec()
+        var noParticles: MutableList<Waypoint>? = null
         for (guess in guesses) {
             if (guess.pos.distanceTo(playerPos) > PARTICLE_DISTANCE) {
                 ticksInParticleRange.remove(guess)
@@ -126,10 +131,12 @@ object PreciseGuessBurrow {
             // A burrow found at the guess replaces it, one still here has no burrow
             val ticks = (ticksInParticleRange[guess] ?: 0) + 1
             ticksInParticleRange[guess] = ticks
-            if (ticks >= NO_PARTICLE_TICKS) {
-                WaypointManager.removeWaypoint(guess)
-                ticksInParticleRange.remove(guess)
-            }
+            if (ticks >= NO_PARTICLE_TICKS) (noParticles ?: mutableListOf<Waypoint>().also { noParticles = it }).add(guess)
+        }
+        // Removed once the loop is done, it iterates the waypoint list itself
+        noParticles?.forEach {
+            WaypointManager.removeWaypoint(it)
+            ticksInParticleRange.remove(it)
         }
     }
 
