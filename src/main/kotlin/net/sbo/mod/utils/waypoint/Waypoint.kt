@@ -6,6 +6,7 @@ import net.minecraft.network.chat.Component
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.RareMob
 import net.sbo.mod.diana.burrows.ChainTracker
+import net.sbo.mod.diana.guesses.SpadeGuessOptimizer
 import net.sbo.mod.settings.categories.Burrows
 import net.sbo.mod.settings.categories.Warps
 import net.sbo.mod.settings.categories.Waypoints
@@ -195,7 +196,12 @@ class Waypoint(
         val chainStepText = getChainStepText()
 
         if (isClosest) {
-            val closest = if (this.type == "rareMob") WaypointManager.getFinalClosestWarpToFixedTarget(this.pos) else WaypointManager.getFinalClosestWarp(this.pos)
+            val closest = when {
+                this.type == "rareMob" -> WaypointManager.getFinalClosestWarpToFixedTarget(this.pos)
+                // The warp key doesn't warp to a place near the chain you just finished
+                SpadeGuessOptimizer.isNearChainEnd(this) -> null
+                else -> WaypointManager.getFinalClosestWarp(this.pos)
+            }
 
             this.formattedText = closest?.let {
                 "$text§7 (warp $it)$waypointDistanceText$chainStepText$timesDugText"
@@ -272,6 +278,9 @@ class Waypoint(
             "subGuess" -> {
                 return Color(Waypoints.SubGuessColor)
             }
+            "spadeSpot" -> {
+                return Color(Burrows.SpadeGuessOptimizerColor)
+            }
             "debug" -> {
                 return Color(255, 255, 255)
             }
@@ -298,7 +307,7 @@ class Waypoint(
         setDistanceText()
 
         when (this.type) {
-            "guess", "arrow", "burrow" -> {
+            "guess", "arrow", "burrow", "spadeSpot" -> {
                 if (isClosest && !rareMobWaypoints.isEmpty()) isClosest = false
                 this.line = Waypoints.guessAndBurrowLine && isClosest
 
