@@ -932,7 +932,7 @@ object WaypointManager {
         var secondClosestPriority = Int.MAX_VALUE
 
         fun isBetter(distance: Double, priority: Int, currentDistance: Double, currentPriority: Int): Boolean =
-            distance < currentDistance || (distance == currentDistance && priority < currentPriority)
+            distance < currentDistance || distance == currentDistance && priority < currentPriority
 
         // Hub has the highest tie priority.
         val hubWarp = hubWarpPoint
