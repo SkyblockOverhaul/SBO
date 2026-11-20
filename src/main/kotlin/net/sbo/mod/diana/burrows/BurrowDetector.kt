@@ -141,7 +141,7 @@ object BurrowDetector {
             lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec.ZERO
             refreshBurrows(deathOriginating = false, expectedTimesDug = 2)
 
-            val anyClose = WaypointManager.getAllGuessesAndBurrows().filter { it.distanceToPlayer() < 90 }
+            val anyClose = WaypointManager.getAllGuessesAndBurrows().filter { it.distanceToPlayer < 90 }
             if (Burrows.showTitleWhenChainEnds && anyClose.isEmpty()) requestSpade("chain")
             true
         }
