@@ -86,6 +86,17 @@ object BurrowDetector {
             Chat.chat("§6[SBO] §4Burrow Waypoints Cleared!")
         }
 
+        Register.command("sboinvalidcachesize") {
+            Chat.chat("The following information is only meant for debugging purposes by developers; you can freely ignore it if you do not understand what it means.")
+            Chat.chat("Arrow Guess invalid cache size: ${ArrowGuessBurrow.invalidCacheSize()}")
+            Chat.chat("Est. memory occupied by invalid cache: ${ArrowGuessBurrow.estimatedInvalidCacheMemoryBytes() / (1024.0 * 1024.0)} MiB")
+        }
+
+        Register.command("sboclearinvalidcache") {
+            ArrowGuessBurrow.clearInvalidCache()
+            Chat.chat("Arrow Guess invalid cache pruned successfully.")
+        }
+
         Register.command("sboaddtestwaypoint") {
             val pos = Player.getLastPosition()
             val wayp = Waypoint("Test", pos.x, pos.y, pos.z, type = "debug", ttl = 30)
