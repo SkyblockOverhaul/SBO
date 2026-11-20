@@ -21,14 +21,14 @@ final class KeyBindsScreenMixin {
     private @Nullable LinearLayout sbo$footer;
 
     @ModifyExpressionValue(method = "addFooter", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/layouts/HeaderAndFooterLayout;addToFooter(Lnet/minecraft/client/gui/layouts/LayoutElement;)Lnet/minecraft/client/gui/layouts/LayoutElement;"))
-    private @NonNull LayoutElement sbo$rememberFooter(@NonNull final LayoutElement footer) {
+    private final @NonNull LayoutElement sbo$rememberFooter(@NonNull final LayoutElement footer) {
         if (footer instanceof LinearLayout row) this.sbo$footer = row;
         return footer;
     }
 
     // After Reset Keys and Done are in the row
     @Inject(method = "addFooter", at = @At("TAIL"))
-    private void sbo$addKeybindsButton(@NonNull final CallbackInfo ci) {
+    private final void sbo$addKeybindsButton(@NonNull final CallbackInfo ci) {
         if (this.sbo$footer == null) return;
         this.sbo$footer.addChild(SboKeyBinds.controlsButton((Screen) (Object) this));
         this.sbo$footer = null;
