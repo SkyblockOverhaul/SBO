@@ -135,7 +135,7 @@ object Burrows : Category("Burrows") {
         this.name = literal("Look For Max Chains")
         this.since = "0.7.2-beta.3"
         depends(::spadeGuessOptimizer)
-        this.description = literal("After starting your game, a lobby swap or /sboclearburrows, shows places across the hub to use your spade until you discover 7 chains. The guess line and warp key go to them during the process until 3 spade guesses in a row fail to discover a new chain, which then the feature stops and redirects you to your guess burrows.")
+        this.description = literal("After starting your game or /sboclearburrows, shows places across the hub to use your spade until you discover 7 chains. The guess line and warp key go to them during the process until 3 spade guesses in a row fail to discover a new chain, which then the feature stops and redirects you to your guess burrows.")
     }
 
     var SpadeGuessOptimizerColor by color(

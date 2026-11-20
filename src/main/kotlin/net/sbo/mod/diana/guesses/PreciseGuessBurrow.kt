@@ -3,6 +3,7 @@ package net.sbo.mod.diana.guesses
 import net.minecraft.core.particles.ParticleTypes
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.burrows.BurrowDetector
+import net.sbo.mod.diana.burrows.BurrowParticleClock
 import net.sbo.mod.diana.burrows.ChainTracker
 import net.sbo.mod.settings.categories.Burrows
 import net.sbo.mod.utils.events.Register
@@ -12,7 +13,6 @@ import net.sbo.mod.utils.events.impl.game.PlayerInteractEvent
 import net.sbo.mod.utils.events.impl.game.WorldChangeEvent
 import net.sbo.mod.utils.events.impl.packets.ParticleReceiveEvent
 import net.sbo.mod.utils.game.World
-import net.sbo.mod.utils.game.InventoryUtils
 import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.utils.math.PolynomialFitter
 import net.sbo.mod.utils.math.SboVec
@@ -21,7 +21,6 @@ import net.sbo.mod.utils.waypoint.Waypoint
 import net.sbo.mod.utils.waypoint.WaypointManager
 import java.util.concurrent.TimeUnit
 import kotlin.math.*
-import kotlin.time.Duration.Companion.seconds
 
 /**
  * Guesses the burrow the spade points at from its dripping lava trail.
@@ -46,7 +45,7 @@ import kotlin.time.Duration.Companion.seconds
  * Full trails (10+ particles) only use the cubic fit when the curve found no block. The curve guess is kept otherwise,
  * the cubic fit can end on a burrow next to the one the spade points at.
  *
- * A spade guess within [PARTICLE_DISTANCE] blocks while holding the spade for [NO_PARTICLE_TICKS] ticks with no burrow
+ * A spade guess within [PARTICLE_DISTANCE] blocks for [NO_PARTICLE_TICKS] ticks while the spade's particles show with no burrow
  * found at it (its particles would show there) is removed, like arrow guesses. Only with Close Burrow Detection, without
  * it no burrow is ever found from its particles.
  */
@@ -84,7 +83,8 @@ object PreciseGuessBurrow {
     private const val PICK_UP = 2
     /** How far burrow particles show while holding the spade. */
     private const val PARTICLE_DISTANCE = 30.0
-    private const val NO_PARTICLE_TICKS = 20
+    /** A burrow's particles come every 1 to 3 ticks while they show, at most 8 ticks apart. */
+    private const val NO_PARTICLE_TICKS = 10
 
     // The step counts tried for the curve: N_MIN, N_MIN + N_STEP, ... up to 200
     private const val N_MIN = 5.0
@@ -115,7 +115,7 @@ object PreciseGuessBurrow {
         val guesses = WaypointManager.getWaypointsOfType("guess")
         if (
             guesses.isEmpty() || !Burrows.spadeGuess || !Burrows.closeBurrowDetection || !World.isInHub() ||
-            player == null || !InventoryUtils.isItemHeld("SPADE", 1.seconds)
+            player == null || !BurrowParticleClock.particlesShown()
         ) {
             ticksInParticleRange.clear()
             return

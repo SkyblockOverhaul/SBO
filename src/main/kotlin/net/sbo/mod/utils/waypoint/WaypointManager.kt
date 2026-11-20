@@ -914,6 +914,8 @@ object WaypointManager {
         val ignoreYLevel = Warps.ignoreYLevel
         // A place to use the spade comes before any burrow
         SpadeGuessOptimizer.shownSpot()?.let { return it }
+        // Nor a burrow while the place is gone for a spade use there, the next place comes once its guess settled
+        if (SpadeGuessOptimizer.hidesBurrows()) return null
         return getAllGuessesAndBurrows()
             .asSequence()
             .filter { !it.hidden }

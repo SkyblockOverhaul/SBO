@@ -3,12 +3,13 @@ package net.sbo.mod.diana.guesses
 import net.minecraft.world.level.ChunkPos
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.burrows.BurrowDetector
+import net.sbo.mod.diana.burrows.BurrowParticleClock
 import net.sbo.mod.settings.categories.Burrows
 import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.WorldChangeEvent
-import net.sbo.mod.utils.game.InventoryUtils
+import net.sbo.mod.utils.game.Mayor
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.waypoint.Waypoint
@@ -18,12 +19,11 @@ import java.util.concurrent.TimeUnit
 import java.util.zip.GZIPInputStream
 import kotlin.math.ceil
 import kotlin.math.sqrt
-import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * The Spade Guess Optimizer: places to stand and use the spade to find a new chain.
  *
- * Look For Max Chains: after starting the game, a lobby swap and /sboclearburrows it shows the best places across the
+ * Look For Max Chains: after starting the game and /sboclearburrows it shows the best places across the
  * Hub until [STARTUP_CHAINS] burrows are known, or until [STARTUP_REPEATS] spade uses in a row point at burrows already
  * known (no new chain is left near enough). Those come before any burrow.
  *
@@ -37,7 +37,7 @@ import kotlin.time.Duration.Companion.milliseconds
  * that chain however far it is, so nothing is shown until the chain is finished.
  *
  * Every block a burrow can be on in the Hub is shipped in [SPOTS_RESOURCE]. A block counts as searched when:
- * - the spade was held for [HOLD_TIME] within [HOLD_SEARCH_RADIUS] blocks of it (burrow particles show there)
+ * - the spade was held within [HOLD_SEARCH_RADIUS] blocks of it till its burrow particles show, see [BurrowParticleClock]
  * - a spade guess pointed farther away than the block, seen from where the spade was used while it points at the
  *   nearest burrow
  *
@@ -45,14 +45,15 @@ import kotlin.time.Duration.Companion.milliseconds
  * one after another, each only counting the blocks the ones before it don't cover, and the nearest of them to you is
  * shown. A place can be on a searched block, what counts is what a spade use there still finds. They stay until
  * under [MIN_COVERED_SHARE] of the unsearched blocks is within their reach, then the next ones are picked. The shown place only moves after a spade
- * use, holding the spade while walking up to it doesn't move it. Searched blocks are cleared when a chain
- * finishes (a new chain starts anywhere), on a lobby swap and on /sboclearburrows.
+ * use, holding the spade while walking up to it doesn't move it. It goes away when the spade is used, the next one shows
+ * once the spade guess settled. Searched blocks are cleared when a chain
+ * finishes (a new chain starts anywhere) and on /sboclearburrows. A lobby swap keeps them, the burrows stay the same.
  */
 object SpadeGuessOptimizer {
     private const val SPOTS_RESOURCE = "/assets/sbo/diana/hub_spots.bin.gz"
     private const val WAYPOINT_TYPE = "spadeSpot"
-    private const val HOLD_SEARCH_RADIUS = 30.0
-    private val HOLD_TIME = 750.milliseconds
+    /** Burrow particles show up to 32 blocks away, measured from 31.8 on. */
+    private const val HOLD_SEARCH_RADIUS = 31.0
     /** Holding the spade only searches again after moving this far. */
     private const val HOLD_MOVE_DISTANCE = 2.0
     /** A burrow just as far as the guessed one could have been the one pointed at, so this much less is searched. */
@@ -111,7 +112,7 @@ object SpadeGuessOptimizer {
     private var throwGuessTime = 0L
     /** Whether the spade points at the nearest burrow, which is before any dig and after a chain is finished. */
     private var pointsAtNearest = true
-    /** Whether Look For Max Chains is still looking: [STARTUP_CHAINS] burrows were not known yet since starting the game, a lobby swap or /sboclearburrows. */
+    /** Whether Look For Max Chains is still looking: [STARTUP_CHAINS] burrows were not known yet since starting the game or /sboclearburrows. */
     private var startup = true
     /** Spade uses in a row at startup that pointed at a burrow already known. */
     private var startupRepeats = 0
@@ -133,8 +134,8 @@ object SpadeGuessOptimizer {
     private var spadeUseTime = 0L
     /** Whether a spade use settled since the last update, only then the shown place can move. */
     private var spadeUsed = false
-    /** Waypoints left from the last lobby, its burrows are gone. */
-    private val staleWaypoints = HashSet<Waypoint>()
+    /** Whether the shown place went away for a spade use, the next one waits for its guess to settle. */
+    private var hiddenForUse = false
     private val waypoints = mutableListOf<Waypoint>()
     /** The known burrows and searched spots the last pick was made with, nothing changes picking again with them. */
     private var lastPickKey: Any? = null
@@ -149,7 +150,7 @@ object SpadeGuessOptimizer {
     }
 
     /**
-     * Clears all searched spots, called when a chain is finished, on a lobby swap and on /sboclearburrows.
+     * Clears all searched spots, called when a chain is finished and on /sboclearburrows.
      * @param reason Why they are cleared: "chain" when a chain is finished, the others start Look For Max Chains again.
      */
     fun reset(reason: String = "clear") {
@@ -164,22 +165,22 @@ object SpadeGuessOptimizer {
         titled = null
         spadeUsed = false
         spadeUseTime = 0L
+        hiddenForUse = false
         waitingForSpade = reason == "chain"
         if (reason == "chain") {
             chainEnd = mc.player?.let { SboVec(it.x, it.y, it.z) }
         } else {
-            if (reason == "clear") staleWaypoints.clear()
             startup = true
             startupRepeats = 0
         }
     }
 
-    /** A new lobby has its own burrows: the chains are found again and the old lobby's waypoints don't count. */
+    /** A lobby swap keeps your burrows, only a spade use cut off by it is dropped. */
     @SboEvent
     fun onWorldChange(event: WorldChangeEvent) {
-        staleWaypoints.clear()
-        for (type in BURROW_TYPES) staleWaypoints.addAll(WaypointManager.getWaypointsOfType(type))
-        reset("lobby")
+        throwFrom = null
+        throwGuess = null
+        spadeUseTime = 0L
     }
 
     /** Called when a burrow of a chain is dug that is not its last one. */
@@ -188,9 +189,12 @@ object SpadeGuessOptimizer {
         pointsAtNearest = false
     }
 
-    /** Called every time the spade is used. */
+    /** Called every time the spade is used, the shown place goes away till its guess settles. */
     fun onUseSpade() {
         spadeUseTime = System.nanoTime()
+        if (shown == null) return
+        show(null)
+        hiddenForUse = true
     }
 
     /**
@@ -215,11 +219,12 @@ object SpadeGuessOptimizer {
             throwFrom = null
             throwGuess = null
             spadeUseTime = 0L
+            hiddenForUse = false
             if (shown != null) show(null)
             return
         }
-        // The picked spots stay, the place shows again when you're back with a spade
-        if (!World.isInHub() || !Helper.hasSpade) {
+        // The picked spots stay, the place shows again when you're back with a spade while Diana is on
+        if (!World.isInHub() || !Helper.hasSpade || !Mayor.dianaActive) {
             if (shown != null) show(null)
             return
         }
@@ -236,12 +241,12 @@ object SpadeGuessOptimizer {
             spadeUsed = true
         }
 
-        if (InventoryUtils.isItemHeld("SPADE", HOLD_TIME)) {
-            val pos = SboVec(player.x, player.y, player.z)
+        val shownFrom = BurrowParticleClock.shownFrom()
+        if (shownFrom != null) {
             val last = lastHoldSearch
-            if (last == null || last.distanceTo(pos) >= HOLD_MOVE_DISTANCE) {
-                lastHoldSearch = pos
-                search(pos, HOLD_SEARCH_RADIUS)
+            if (last == null || last.distanceTo(shownFrom) >= HOLD_MOVE_DISTANCE) {
+                lastHoldSearch = shownFrom
+                search(shownFrom, HOLD_SEARCH_RADIUS)
             }
         }
 
@@ -311,12 +316,12 @@ object SpadeGuessOptimizer {
         if (changed) searchVersion++
     }
 
-    /** Every known burrow in this lobby: found burrows, arrow guesses and spade guesses, each burrow counted once. */
+    /** Every known burrow: found burrows, arrow guesses and spade guesses, each burrow counted once. */
     private fun knownBurrows(): List<SboVec> {
         val burrows = mutableListOf<SboVec>()
         for (type in BURROW_TYPES) {
             for (waypoint in WaypointManager.getWaypointsOfType(type)) {
-                if (waypoint.hidden || waypoint in staleWaypoints) continue
+                if (waypoint.hidden) continue
                 if (burrows.none { it.distanceTo(waypoint.pos) <= SAME_BURROW_DISTANCE }) burrows.add(waypoint.pos)
             }
         }
@@ -328,6 +333,8 @@ object SpadeGuessOptimizer {
      * @param playerPos Where you are.
      */
     private fun update(playerPos: SboVec) {
+        val usingSpade = spadeUseTime != 0L || throwFrom != null
+        if (!usingSpade) hiddenForUse = false
         val burrows = knownBurrows()
         val burrowsChanged = burrows != lastKnownBurrows
         lastKnownBurrows = burrows
@@ -339,6 +346,12 @@ object SpadeGuessOptimizer {
                 picked.clear()
                 show(null)
             }
+            return
+        }
+
+        // A spade use hides the place till its guess settles, the next place depends on how far it points
+        if (usingSpade) {
+            if (shown != null) show(null)
             return
         }
 
@@ -371,6 +384,13 @@ object SpadeGuessOptimizer {
         if (shown == null) return null
         return waypoints.firstOrNull()?.takeIf { !it.hidden }
     }
+
+    /**
+     * Whether nothing but the place to use the spade is led to (line, warp): while it is shown, and after a spade use there
+     * till its guess settled. Only in the Hub with a spade while Diana is on, like the place itself.
+     */
+    fun hidesBurrows(): Boolean =
+        (shown != null || hiddenForUse) && Burrows.spadeGuessOptimizer && World.isInHub() && Helper.hasSpade && Mayor.dianaActive
 
     /** Whether [waypoint] is a place the optimizer picked near a finished chain, those are close enough to never warp to. */
     fun isNearChainEnd(waypoint: Waypoint): Boolean = !startup && waypoint in waypoints
