@@ -24,6 +24,7 @@ import net.sbo.mod.diana.MuteBuggedSpadeSounds
 import net.sbo.mod.diana.achievements.AchievementManager
 import net.sbo.mod.diana.achievements.AchievementManager.unlockAchievement
 import net.sbo.mod.diana.burrows.BurrowDetector
+import net.sbo.mod.diana.burrows.BurrowMap
 import net.sbo.mod.diana.guesses.HubBoundsScan
 import net.sbo.mod.diana.guesses.PreciseGuessBurrow
 import net.sbo.mod.diana.guesses.SpadeGuessOptimizer
@@ -195,6 +196,7 @@ object SBOKotlin : ClientModInitializer {
 		OwnStats.init()
 		StatReporter.init()
 		BurrowDetector.init()
+		BurrowMap.init()
 		PreciseGuessBurrow.init()
 		SpadeGuessOptimizer.init()
 		HubChunkCache.init()
