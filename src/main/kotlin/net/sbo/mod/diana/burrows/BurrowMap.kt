@@ -3,7 +3,9 @@ package net.sbo.mod.diana.burrows
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import net.sbo.mod.SBOKotlin
+import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.utils.events.Register
+import net.sbo.mod.utils.collection.TimeLimitedSet
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.GameCloseEvent
 import net.sbo.mod.utils.http.Http.getBoolean
@@ -11,6 +13,7 @@ import net.sbo.mod.utils.http.SboApi
 import net.sbo.mod.utils.hubcache.HubIsland
 import net.sbo.mod.utils.math.SboVec
 import kotlin.math.floor
+import kotlin.time.Duration.Companion.hours
 
 /**
  * Sends the blocks this player dug a particle-confirmed burrow from to the SBO backend, which adds them to one count
@@ -24,8 +27,8 @@ object BurrowMap {
     private const val MAX_QUEUED = 300
     /** A "not collecting" answer is asked again after this, so collection can start while the game runs. */
     private const val RECHECK_MS = 15 * 60 * 1000L
-    /** The chain finish message and BurrowDugEvent could both report the same dig. */
-    private const val SAME_DIG_MS = 5_000L
+    /** A burrow lives far shorter; its block is released earlier when it is dug, see [forget]. */
+    private val COUNTED_FOR = 1.hours
     private const val MAX_FAILURES = 3
 
     @Serializable
@@ -42,29 +45,38 @@ object BurrowMap {
     private var sending = false
     private var failures = 0
     private val queue = ArrayDeque<Dig>()
-    private var lastDig: Dig? = null
-    private var lastDigAt = 0L
+    /** Blocks counted, so the same burrow seen again (lobby switch, walking away and back) isn't counted twice. */
+    private val counted = TimeLimitedSet<Dig>(COUNTED_FOR)
 
     fun init() {
         Register.onTick(SEND_TICKS) { send() }
     }
 
-    fun record(pos: SboVec) {
-        val dig = Dig(floor(pos.x).toInt(), floor(pos.y).toInt(), floor(pos.z).toInt())
-        if (dig.y !in 0..255 || !HubIsland.contains(dig.x shr 4, dig.z shr 4)) return
+    /** Queues a burrow its particles confirmed, or says why it isn't (for the debug message). */
+    fun record(pos: SboVec): String? {
+        if (!Debug.sendBurrowSpots) return "Send Burrow Spots is off"
+        val dig = digOf(pos)
+        if (dig.y !in 0..255 || !HubIsland.contains(dig.x shr 4, dig.z shr 4)) return "outside the Hub island"
+        if (dig in counted) return "already counted"
 
         val now = System.currentTimeMillis()
-        if (dig == lastDig && now - lastDigAt < SAME_DIG_MS) return
-        lastDig = dig
-        lastDigAt = now
-
         when (state) {
             State.UNKNOWN -> askCollecting()
-            State.OFF -> if (now - checkedAt >= RECHECK_MS) askCollecting() else return
+            State.OFF -> if (now - checkedAt >= RECHECK_MS) askCollecting() else return "the server is not collecting"
             State.ASKING, State.ON -> {}
         }
-        if (queue.size < MAX_QUEUED) queue.addLast(dig)
+        if (queue.size >= MAX_QUEUED) return "queue full"
+        queue.addLast(dig)
+        counted.add(dig)
+        return null
     }
+
+    /** The burrow on this block was dug or is gone, a burrow there later is a new one. */
+    fun forget(pos: SboVec) {
+        counted.remove(digOf(pos))
+    }
+
+    private fun digOf(pos: SboVec) = Dig(floor(pos.x).toInt(), floor(pos.y).toInt(), floor(pos.z).toInt())
 
     @SboEvent
     fun onGameClose(event: GameCloseEvent) {
@@ -85,6 +97,8 @@ object BurrowMap {
     }
 
     private fun send() {
+        // Turned off with digs still queued: they stay on this client
+        if (!Debug.sendBurrowSpots) return queue.clear()
         if (state != State.ON || sending || queue.isEmpty()) return
         val batch = List(minOf(MAX_PER_UPLOAD, queue.size)) { queue.removeFirst() }
         sending = true

@@ -1,7 +1,6 @@
 package net.sbo.mod.diana.burrows
 
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
-import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import net.sbo.mod.settings.categories.Burrows
 import net.sbo.mod.settings.categories.Debug
@@ -129,7 +128,6 @@ object BurrowDetector {
 
             // We need to update lastDugOutBurrowPos manually here since BurrowDugEvent does not set it since it is not triggered.
             lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec.ZERO
-            recordDugBlock(lastDugOutBurrowPos)
             refreshBurrows(deathOriginating = false, expectedTimesDug = 2)
 
             val anyClose = WaypointManager.getAllGuessesAndBurrows().filter { it.distanceToPlayer() < 90 }
@@ -250,6 +248,8 @@ object BurrowDetector {
 
     fun removeFromInternalState(pos: SboVec) {
         burrows.remove(blockKey(pos))
+        // Dug or gone: a new burrow on this block is a new spawn
+        BurrowMap.forget(pos)
     }
 
     fun hasKnownBurrowAt(pos: SboVec): Boolean = burrows.containsKey(blockKey(pos))
@@ -268,18 +268,20 @@ object BurrowDetector {
 
         if (!Burrows.closeBurrowDetection) return
         lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec.ZERO
-        recordDugBlock(lastDugOutBurrowPos)
         refreshBurrows(deathOriginating = false, expectedTimesDug = 2)
     }
 
-    // Only a block its particles showed: a guess promoted from chat would count the guess as the burrow. And only the
-    // block the spade last clicked: lastWaypointClicked stays on an older waypoint when a burrow without one is dug
-    private fun recordDugBlock(pos: SboVec) {
-        val clicked = DianaEvents.lastBlockClicked ?: return
-        if (blockKey(clicked) != blockKey(pos)) return
-        val burrow = burrows[blockKey(pos)]?.takeIf { it.fromParticles } ?: return
-        val player = SBOKotlin.mc.player ?: return
-        if (player.distanceToSqr(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5) <= 64.0) BurrowMap.record(burrow.pos)
+    /**
+     * The particles prove the burrow is there, it counts for the burrow map the first time they do. [BurrowMap] counts
+     * a block once until the burrow is dug or gone, so seeing it again after a lobby switch doesn't count it twice.
+     */
+    private fun confirmFromParticles(burrow: Burrow) {
+        if (burrow.fromParticles) return
+        burrow.fromParticles = true
+        val skipped = BurrowMap.record(burrow.pos)
+        if (Debug.debugOnlyMessages) {
+            Chat.chat("SBO(debug): burrow map ${blockKey(burrow.pos)} " + (skipped?.let { "skipped, $it" } ?: "counted"))
+        }
     }
 
     @SboEvent
@@ -327,7 +329,7 @@ object BurrowDetector {
             "ENCHANT" -> {
                 val burrow = burrows.getOrPut(posString) { Burrow(pos) }
                 burrow.hasEnchant = true
-                burrow.fromParticles = true
+                confirmFromParticles(burrow)
                 registerUnknownBurrow(burrow)
                 return
             }
@@ -367,7 +369,7 @@ object BurrowDetector {
         val burrow = burrows.getOrPut(posString) {
             Burrow(pos)
         }
-        if (source == "particle") burrow.fromParticles = true
+        if (source == "particle") confirmFromParticles(burrow)
 
         if (burrow.type == null || burrow.waypoint?.text == "Guess") {
             burrow.type = type
