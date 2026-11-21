@@ -3,11 +3,13 @@ package net.sbo.mod.utils.data
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
 import net.fabricmc.loader.api.FabricLoader
 import net.sbo.mod.SBOKotlin
+import net.sbo.mod.utils.SboTimerManager
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.GameCloseEvent
@@ -25,7 +27,6 @@ import java.time.format.DateTimeFormatter
 import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.zip.*
-import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty0
 
 /**
@@ -64,7 +65,10 @@ object DataManager {
     private const val MAX_BACKUPS = 10
 
     private val DATA_SAVER_EXECUTOR: ExecutorService = Executors.newSingleThreadExecutor { r ->
-        Thread(r, "sbo-data-saver-thread").apply { isDaemon = true }
+        Thread(r, "sbo-data-saver-thread").apply {
+            isDaemon = true
+            priority = Thread.NORM_PRIORITY - 1 // background save, have little less priority than normal
+        }
     }
 
     private val caseSensitive by lazy { isCaseSensitive(FabricLoader.getInstance().configDir.toFile().toPath()) }
@@ -72,6 +76,25 @@ object DataManager {
 
     private val dirtyConfigs = ConcurrentHashMap.newKeySet<String>()
     private val dirtySaveQueued = AtomicBoolean(false)
+
+    // What write() last put in each file, so saves of unchanged data don't touch the disk
+    private val lastWritten = ConcurrentHashMap<String, String>()
+
+    // Gameplay data that gets its own copy on the Alpha Network (see AlphaData), in the "alpha" sub folder.
+    // Overlay positions, party finder and sound settings stay shared.
+    private val ALPHA_FILES = setOf(
+        "SboData.json", "sbo_achievements.json", "pastDianaEvents.json",
+        "dianaTrackerTotal.json", "dianaTrackerSession.json", "dianaTrackerMayor.json"
+    )
+    private const val ALPHA_DIR = "alpha"
+
+    /** True while the alpha copies are loaded; cloud sync, backups and their loading are off then. */
+    @Volatile
+    var alphaActive = false
+        private set
+
+    // Where [fileName] is saved right now, relative to the data folder
+    private fun pathOf(fileName: String): String = if (alphaActive && fileName in ALPHA_FILES) "$ALPHA_DIR/$fileName" else fileName
 
     init {
         registerDataFields()
@@ -107,7 +130,7 @@ object DataManager {
 
     fun init() {
         loadAllData(dataDir)
-        saveAllDataThreaded(dataDir)
+        saveAllDataThreaded()
         savePeriodically(5)
         Register.onTick(60) { saveDirtyData() }
     }
@@ -146,12 +169,21 @@ object DataManager {
         }
     }
 
-    fun <T> write(modName: String, data: T, fileName: String) {
+    private fun <T> write(modName: String, data: T, fileName: String) {
         val modConfigDir = File(FabricLoader.getInstance().configDir.toFile(), modName)
-        modConfigDir.mkdirs()
         val dataFile = File(modConfigDir, fileName)
-        writeJsonAtomically(dataFile, data as Any)
+        dataFile.parentFile.mkdirs()
+        // Compared without the seal, its random IV would make every save of a tracker look changed
+        val tree = gson.toJsonTree(data as Any)
+        val content = tree.toString()
+        if (lastWritten[dataFile.path] == content && dataFile.exists()) return
+        if (writeJsonAtomically(dataFile, if (data is DianaTracker) TrackerSeal.sealed(tree.asJsonObject, fileName) else tree)) {
+            lastWritten[dataFile.path] = content
+        }
     }
+
+    // The seal is made from the same tree that gets written, the timers change the tracker while it saves
+    private fun sealedTree(data: DianaTracker, fileName: String) = TrackerSeal.sealed(gson.toJsonTree(data).asJsonObject, fileName)
 
     fun <T : Any> save(property: KProperty0<T>) {
         val entryName = property.name.replaceFirstChar { it.uppercase() }
@@ -173,6 +205,8 @@ object DataManager {
                 val data = loadDataForFile(modName, fileName, field.type as Class<Any>) { field.type.getDeclaredConstructor().newInstance() }
                 field.set(this, data)
             }
+        // The save right after loading seals the trackers
+        sboData.trackersSealed = true
         SBOKotlin.logger.info("All data loaded successfully.")
     }
 
@@ -181,8 +215,8 @@ object DataManager {
      */
     @Suppress("UNCHECKED_CAST", "USELESS_CAST")
     private fun loadDataForFile(modName: String, fileName: String, fieldType: Class<*>, defaultSupplier: () -> Any): Any {
-        return when (fileName) {
-            "sbo_achievements.json" -> loadAchievementsData(modName)
+        return when (fileName.substringAfterLast('/')) {
+            "sbo_achievements.json" -> loadAchievementsData(modName, fileName)
             "dianaTrackerTotal.json", "dianaTrackerSession.json", "dianaTrackerMayor.json" -> {
                 loadDianaTrackerData(modName, fileName, fieldType as Class<DianaTracker>, defaultSupplier as () -> DianaTracker)
             }
@@ -197,7 +231,7 @@ object DataManager {
 
         if (!dataFile.exists()) {
             val data = defaultSupplier()
-            writeJsonAtomically(dataFile, data)
+            writeJsonAtomically(dataFile, sealedTree(data, fileName))
             return data
         }
 
@@ -221,46 +255,63 @@ object DataManager {
                 if (oldTime > 0) {
                     loadedData.items.TIME = oldTime
                     SBOKotlin.logger.info("[$modName] Old DianaTracker time format detected and migrated.")
-                    writeJsonAtomically(dataFile, loadedData)
+                    writeJsonAtomically(dataFile, sealedTree(loadedData, fileName))
                 }
             }
 
-            loadedData
+            checkSeal(modName, loadedData, jsonObject, dataFile, fileName, clazz)
         } catch (_: JsonSyntaxException) {
-            SBOKotlin.logger.error("[$modName] Error parsing JSON in $fileName, resetting to default data.")
+            SBOKotlin.logger.error("[$modName] Error parsing JSON in $fileName, resetting to default tracker data.")
             val data = defaultSupplier()
-            writeJsonAtomically(dataFile, data)
+            writeJsonAtomically(dataFile, sealedTree(data, fileName))
             data
         } catch (e: Exception) {
             SBOKotlin.logger.error("[$modName] Error reading $fileName, resetting to default data.", e)
             val data = defaultSupplier()
-            writeJsonAtomically(dataFile, data)
+            writeJsonAtomically(dataFile, sealedTree(data, fileName))
             data
         }
+    }
+
+    // Changes made outside SBO are undone with the sealed copy, only a file without a usable seal stays as it is
+    private fun <T : DianaTracker> checkSeal(modName: String, loaded: T, tree: JsonObject, dataFile: File, fileName: String, clazz: Class<T>): T {
+        val original = TrackerSeal.original(tree, fileName)
+        if (original != null) {
+            if (!TrackerSeal.changed(tree, original)) return loaded
+            val restored = gson.fromJson(original, clazz)
+            SBOKotlin.logger.warn("[$modName] $fileName was changed outside of SBO, restored the last saved values")
+            writeJsonAtomically(dataFile, sealedTree(restored, fileName))
+            return restored
+        }
+        // A missing seal is fine until the first sealed save, and in alpha copies older versions wrote
+        val unsealed = !TrackerSeal.isSealed(tree) && (!sboData.trackersSealed || fileName.contains('/'))
+        if (!unsealed && !loaded.edited) {
+            loaded.edited = true
+            SBOKotlin.logger.warn("[$modName] $fileName has no usable seal, the tracker is marked as edited")
+            writeJsonAtomically(dataFile, sealedTree(loaded, fileName))
+        }
+        return loaded
     }
 
     private fun saveAllData() {
         DataRegistry.entries.forEach { entry ->
             @Suppress("UNCHECKED_CAST")
             val typedEntry = entry as ConfigEntry<Any>
-            write(dataDir, typedEntry.getter(), typedEntry.fileName)
+            write(dataDir, typedEntry.getter(), pathOf(typedEntry.fileName))
         }
     }
 
-    private fun saveAllDataThreaded(modName: String) {
+    private fun saveAllDataThreaded() {
         DATA_SAVER_EXECUTOR.execute {
-            SBOKotlin.logger.info("[$modName] Saving all data to disk...")
             saveAllData()
-            SBOKotlin.logger.info("[$modName] All data saved successfully.")
         }
     }
 
     private fun saveAndBackupAllDataThreadedBlocking(modName: String) {
         DATA_SAVER_EXECUTOR.submit {
-            SBOKotlin.logger.info("Saving all data to disk and creating backup...")
             saveAllData()
-            SBOKotlin.logger.info("All data saved successfully.")
-            createBackup(modName)
+            // Backups hold the main data only
+            if (!alphaActive) createBackup(modName)
         }.get()
     }
 
@@ -275,7 +326,7 @@ object DataManager {
                         if (!dirtyConfigs.remove(configName)) continue
                         val entry = DataRegistry.get(configName) ?: continue
                         @Suppress("UNCHECKED_CAST")
-                        write(dataDir, (entry as ConfigEntry<Any>).getter(), entry.fileName)
+                        write(dataDir, (entry as ConfigEntry<Any>).getter(), pathOf(entry.fileName))
                     }
                 } finally {
                     dirtySaveQueued.set(false)
@@ -293,8 +344,42 @@ object DataManager {
      */
     private fun savePeriodically(interval: Int) {
         Register.onTick(20 * 60 * interval) { _ ->
-            saveAllDataThreaded(dataDir)
+            saveAllDataThreaded()
         }
+    }
+
+    // === ALPHA DATA ===
+
+    /**
+     * Switches the gameplay data between the main files and their alpha copies. The first switch to alpha copies the
+     * main data, like the Alpha Network copies the profile. Client thread only: it waits for the save thread, which
+     * first writes the old data to the old files and then reads the other ones, so no save mixes the two.
+     */
+    fun switchAlphaData(alpha: Boolean) {
+        if (alpha == alphaActive) return
+        val fields = this::class.java.declaredFields.filter {
+            it.isAnnotationPresent(DataField::class.java) && it.getAnnotation(DataField::class.java).fileName in ALPHA_FILES
+        }
+        fields.forEach { it.isAccessible = true }
+        dirtyConfigs.removeAll(fields.asSequence().map { it.name.replaceFirstChar { c -> c.uppercase() } }.toSet())
+
+        val loaded = DATA_SAVER_EXECUTOR.submit<List<Any>> {
+            fields.forEach { write(dataDir, it.get(this), pathOf(it.getAnnotation(DataField::class.java).fileName)) }
+            alphaActive = alpha
+            fields.map { field ->
+                val fileName = field.getAnnotation(DataField::class.java).fileName
+                val path = pathOf(fileName)
+                // Seed the alpha copy from the main data the first time
+                if (alpha && !File(File(FabricLoader.getInstance().configDir.toFile(), dataDir), path).exists()) {
+                    write(dataDir, field.get(this), path)
+                }
+                @Suppress("UNCHECKED_CAST")
+                loadDataForFile(dataDir, path, field.type as Class<Any>) { field.type.getDeclaredConstructor().newInstance() }
+            }
+        }.get()
+
+        fields.zip(loaded).forEach { (field, data) -> field.set(this, data) }
+        SBOKotlin.logger.info("[sbo] Switched to the ${if (alpha) "alpha" else "main"} data")
     }
 
     // === CLOUD SYNC ===
@@ -306,7 +391,7 @@ object DataManager {
         typedEntry.fileName to gson.toJsonTree(typedEntry.getter())
     }
 
-    fun exportAll(): Map<String, String> = DataRegistry.entries.associate { entry ->
+    private fun exportAll(): Map<String, String> = DataRegistry.entries.associate { entry ->
         @Suppress("UNCHECKED_CAST")
         val typedEntry = entry as ConfigEntry<Any>
         typedEntry.fileName to gson.toJson(typedEntry.getter())
@@ -315,21 +400,29 @@ object DataManager {
     // Main thread only
     fun importAll(files: Map<String, String>) {
         val parsed = this::class.java.declaredFields
+            .asSequence()
             .filter { it.isAnnotationPresent(DataField::class.java) }
             .mapNotNull { field ->
                 val json = files[field.getAnnotation(DataField::class.java).fileName] ?: return@mapNotNull null
                 val value = gson.fromJson(json, field.type) ?: throw JsonSyntaxException("${field.name} is empty")
                 field to value
             }
+            .toList()
 
         // Snapshot before the swap, the single thread executor backs it up before the next save
         val snapshot = exportAll()
         DATA_SAVER_EXECUTOR.execute { createBackup(dataDir, snapshot) }
+        val resets = dianaTrackerMayorData.resetCount
+        // The timers write their playtime into the trackers, so they have to move over to the restored ones
+        SboTimerManager.beforeTrackerSwap()
         parsed.forEach { (field, value) ->
             field.isAccessible = true
             field.set(this, value)
         }
-        saveAllDataThreaded(dataDir)
+        // A restore counts as a reset of the tracker
+        dianaTrackerMayorData.resetCount = maxOf(resets, dianaTrackerMayorData.resetCount) + 1
+        SboTimerManager.afterTrackerSwap()
+        saveAllDataThreaded()
     }
 
     // === BACKUP ===
@@ -406,7 +499,7 @@ object DataManager {
                 file.isFile &&
                 file.extension == "zip" &&
                 file.length() > 0L
-            }?.toList() ?: emptyList()
+            }?.toList().orEmpty()
             if (existingBackups.size > MAX_BACKUPS) {
                 val oldestBackup = existingBackups.minByOrNull { it.lastModified() }
                 oldestBackup?.let {
@@ -432,7 +525,10 @@ object DataManager {
      * data loss if crash or power loss during the move.
      * Includes retry logic to handle transient Windows lock errors (AV, indexing, etc.)
      */
-    private fun writeJsonAtomically(file: File, data: Any) {
+    /** @return false when the file could not be written at all */
+    private fun writeJsonAtomically(file: File, data: Any): Boolean {
+        // write() records its content after this returns, any other write leaves the file unknown
+        lastWritten.remove(file.path)
         val parentDirectory = file.parentFile
 
         parentDirectory.listFiles { candidate ->
@@ -465,9 +561,9 @@ object DataManager {
                         StandardCopyOption.REPLACE_EXISTING
                     )
                 }
-                return
+                return true
             } catch (_: IOException) {
-                // AccessDeniedException, FileSystemException etc land here (Windows AV/indexing lock)
+                // AccessDeniedException, FileSystemException etc. land here (Windows AV/indexing lock)
                 if (attempt < maxAttempts) {
                     try {
                         Thread.sleep(50L * attempt)
@@ -486,8 +582,10 @@ object DataManager {
                 gson.toJson(data, writer)
             }
             SBOKotlin.logger.info("[sbo] Direct write succeeded for ${file.name}")
+            return true
         } catch (e: IOException) {
             SBOKotlin.logger.error("[sbo] Direct write also failed for ${file.name}", e)
+            return false
         } finally {
             // Clean up temp file regardless of direct write outcome
             try {
@@ -499,9 +597,9 @@ object DataManager {
 
     // === ACHIEVEMENTS SPECIAL ===
 
-    private fun loadAchievementsData(modName: String): AchievementsData {
+    private fun loadAchievementsData(modName: String, fileName: String = "sbo_achievements.json"): AchievementsData {
         val modConfigDir = File(FabricLoader.getInstance().configDir.toFile(), modName)
-        val dataFile = File(modConfigDir, "sbo_achievements.json")
+        val dataFile = File(modConfigDir, fileName)
         val defaultData = AchievementsData()
 
         if (!dataFile.exists()) {
@@ -512,7 +610,9 @@ object DataManager {
 
         return try {
             val typeToken = object : TypeToken<Map<String, Any>>() {}.type
-            val rawData: Map<String, Any> = gson.fromJson(FileReader(dataFile), typeToken)
+            val rawData: Map<String, Any> = FileReader(dataFile).use { reader ->
+                gson.fromJson(reader, typeToken)
+            }
 
             val foundUnlockedIds = mutableSetOf<Int>()
             var needsMigration = false
@@ -529,7 +629,7 @@ object DataManager {
             // migration 2: "unlocked" list ("unlocked": [1, 2, 3])
             val existingUnlockedList = (rawData["unlocked"] as? List<*>)?.mapNotNull {
                 (it as? Number)?.toInt() ?: it.toString().toIntOrNull()
-            } ?: emptyList()
+            }.orEmpty()
 
             if (existingUnlockedList.isNotEmpty()) {
                 foundUnlockedIds.addAll(existingUnlockedList)
@@ -547,7 +647,7 @@ object DataManager {
             }
 
             if (rawData.containsKey("totalAchievements")) {
-                load(modName, "sbo_achievements.json", AchievementsData::class.java) { AchievementsData() }
+                load(modName, fileName, AchievementsData::class.java) { AchievementsData() }
             } else if (needsMigration) {
                 SBOKotlin.logger.info("[$modName] Legacy achievement format detected. Migrating...")
 
@@ -560,7 +660,7 @@ object DataManager {
                 SBOKotlin.logger.info("[$modName] Successfully migrated ${foundUnlockedIds.size} achievements.")
                 newAchievementsData
             } else {
-                load(modName, "sbo_achievements.json", AchievementsData::class.java) { AchievementsData() }
+                load(modName, fileName, AchievementsData::class.java) { AchievementsData() }
             }
         } catch (e: Exception) {
             SBOKotlin.logger.error("[$modName] Error reading sbo_achievements.json, resetting to default data.", e)
@@ -616,7 +716,7 @@ object DataManager {
                         if (Files.exists(newDir) && !Files.isSameFile(oldDir, newDir)) {
                             if (!Files.isDirectory(newDir)) {
                                 SBOKotlin.logger.error("[$modName] Expected directory but found file: $newDir")
-                                throw RuntimeException("$newDir is a file but supposed to be a directory")
+                                error("$newDir is a file but supposed to be a directory")
                             }
                             val success = mergeDirectories(modName, oldDir, newDir)
                             cleanupIfSafe(modName, oldDir, success)
@@ -700,7 +800,9 @@ object DataManager {
 
         Files.newDirectoryStream(dir).use { stream ->
             for (path in stream) {
-                return@isEffectivelyEmpty Files.isDirectory(path) && isEffectivelyEmpty(path)
+                if (!Files.isDirectory(path) || !isEffectivelyEmpty(path)) {
+                    return false
+                }
             }
         }
 

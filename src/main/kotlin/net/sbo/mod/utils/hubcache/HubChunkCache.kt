@@ -3,20 +3,16 @@ package net.sbo.mod.utils.hubcache
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.multiplayer.ClientChunkCache
 import net.minecraft.client.multiplayer.ClientLevel
-import net.minecraft.network.chat.Component
 import net.minecraft.world.level.ChunkPos
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import net.sbo.mod.settings.categories.General
 import net.sbo.mod.utils.chat.Chat
-import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.DisconnectEvent
 import net.sbo.mod.utils.events.impl.game.WorldChangeEvent
 import net.sbo.mod.utils.game.World
-import java.nio.file.Files
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
@@ -30,6 +26,7 @@ import java.util.concurrent.TimeUnit
  * no Bobby code is used.
  *
  * Differences to Bobby: only the areas from [General.chunkCacheAreas] (tab list "Area:", default Hub),
+ * unless [General.chunkCacheWorkEverywhere] is enabled,
  * optionally only the Hub island and only while the client render distance is above the server's,
  * memory only (cleared on disconnect).
  */
@@ -44,12 +41,20 @@ object HubChunkCache {
     /** Per area, all chunks seen this connection by [ChunkPos.pack]. Client thread only, the maps itself are shared. */
     private val stores = HashMap<String, ConcurrentHashMap<Long, ChunkSnapshot>>()
 
+    /**
+     * All chunks stored for [area] this connection, by [ChunkPos.pack]. Client thread only.
+     *
+     * @param area Lowercase tab list area, e.g. "hub".
+     */
+    fun cachedChunks(area: String): Map<Long, ChunkSnapshot> = stores[area] ?: emptyMap()
+
     @Volatile
     private var manager: FakeChunkManager? = null
     private var levelChangedAt = System.nanoTime()
     /** A level that was already checked and gets no fake chunks (not a cached world, or Bobby runs in it). */
     private var skippedLevel: ClientLevel? = null
     private var lastAreas: Set<String> = emptySet()
+    private var lastWorkEverywhere = General.chunkCacheWorkEverywhere
     private var lastIslandOnly = General.chunkCacheHubIslandOnly
     private var ticks = 0
 
@@ -58,14 +63,26 @@ object HubChunkCache {
     }
 
     @JvmStatic
-    fun managerFor(cache: ClientChunkCache): FakeChunkManager? {
-        val current = manager ?: return null
-        return if (current.chunkCache === cache) current else null
+    fun managerFor(cache: ClientChunkCache?): FakeChunkManager? {
+        val current = manager
+
+        if (current == null) return null
+        if (current.chunkCache !== cache) return null
+
+        return current
     }
 
     /** True while fake chunks are shown, the render distance then ignores the server's limit. */
     @JvmStatic
     fun isActive(): Boolean = manager != null
+
+    /**
+     * True for chunks outside [HubIsland] while "Render Hub Island Only" hides them. Runs for every chunk lookup, so
+     * the plain field checks go before the setting.
+     */
+    @JvmStatic
+    fun hidesChunk(chunkX: Int, chunkZ: Int): Boolean =
+        isActive() && World.isInHub() && renderHubIslandOnlyEnabled() && !HubIsland.contains(chunkX, chunkZ)
 
     /** Debug line for F3, appended to the client chunk cache stats. */
     @JvmStatic
@@ -113,11 +130,13 @@ object HubChunkCache {
         }
 
         val areas = cachedAreas()
-        if (areas != lastAreas) {
+        val workEverywhere = General.chunkCacheWorkEverywhere
+        if (areas != lastAreas || workEverywhere != lastWorkEverywhere) {
             lastAreas = areas
+            lastWorkEverywhere = workEverywhere
             skippedLevel = null // an added area may be the one the player is in
-            stores.keys.retainAll(areas)
-            if (current != null && current.world !in areas) {
+            if (!workEverywhere) stores.keys.retainAll(areas)
+            if (current != null && !isAreaCached(current.world, areas, workEverywhere)) {
                 current.close(unloadFakes = true)
                 manager = null
                 return
@@ -140,7 +159,7 @@ object HubChunkCache {
             if (current.level !== level) {
                 current.close(unloadFakes = false)
                 manager = null
-            } else if (!extendsServerView(level)) {
+            } else if (!extendsServerView()) {
                 current.close(unloadFakes = true)
                 manager = null
             } else {
@@ -154,25 +173,24 @@ object HubChunkCache {
         if (System.nanoTime() - levelChangedAt < CONFIRM_DELAY_NANOS) return
         val world = World.getWorld()
         if (world == "None") return // tab list not there yet
-        if (world.lowercase() !in areas) {
+        if (!isAreaCached(world.lowercase(), areas, workEverywhere)) {
             skippedLevel = level
             return
         }
         if (!World.isInSkyblock()) return // scoreboard not there yet
-        if (!extendsServerView(level)) return // checked again every tick, the setting and render distance can change
+        if (!extendsServerView()) return // checked again every tick, the setting and render distance can change
         skippedLevel = level
         if (bobbyLoaded && BobbyCompat.isEnabled()) {
-            // Bobby already shows fake chunks in this level, two caches would fight. Ours starts on the
-            // next level, once Bobby is off.
-            BobbyCompat.disableOnce()
+            // Bobby already shows fake chunks in this level, two caches would fight. Bobby wins. Turning Bobby
+            // off keeps its manager for this level, so ours only starts on the next one.
+            BobbyCompat.notifyOnce()
             return
         }
 
         val key = world.lowercase()
         val store = stores.getOrPut(key) { ConcurrentHashMap() }
         skippedLevel = null
-        val area = if (key == "hub" && General.chunkCacheHubIslandOnly) ArrowGuessBurrow.HUB_BOUNDS else null
-        manager = FakeChunkManager(level, key, store, area)
+        manager = FakeChunkManager(level, key, store, key == "hub" && General.chunkCacheHubIslandOnly)
         SBOKotlin.logger.info("[HubChunkCache] Showing fake chunks in $world, ${store.size} chunks stored")
     }
 
@@ -180,25 +198,36 @@ object HubChunkCache {
      * Fake chunks only fill the client render distance, so while the server already sends that far they only
      * help right after a lobby switch. [General.chunkCacheAboveServerOnly] skips them then.
      */
-    private fun extendsServerView(level: ClientLevel): Boolean {
+    private fun extendsServerView(): Boolean {
         if (!General.chunkCacheAboveServerOnly) return true
         return mc.options.renderDistance().get() > 8
     }
 
     private fun logStats(current: FakeChunkManager) {
         val runtime = Runtime.getRuntime()
-        val usedMb = (runtime.totalMemory() - runtime.freeMemory()) shr 20
+        val usedMb = runtime.totalMemory() - runtime.freeMemory() shr 20
         SBOKotlin.logger.debug(
-            "[HubChunkCache] ${current.world}: fake=${current.fakeChunkCount} stored=${current.storedChunkCount} " +
-                "areas=${stores.mapValues { it.value.size }} heap=${usedMb}MB/${runtime.maxMemory() shr 20}MB"
+            "[HubChunkCache] {}: fake={} stored={} areas={} heap={}MB/{}MB",
+            current.world,
+            current.fakeChunkCount,
+            current.storedChunkCount,
+            stores.mapValues { it.value.size },
+            usedMb,
+            runtime.maxMemory() shr 20
         )
     }
 
+    // One area per line, commas also split since no area name has one
     private fun cachedAreas(): Set<String> =
-        General.chunkCacheAreas.mapNotNullTo(HashSet()) { it.trim().lowercase().ifEmpty { null } }
+        General.chunkCacheAreas.asSequence().flatMap { it.split(',') }.mapNotNullTo(HashSet()) { it.trim().lowercase().ifEmpty { null } }
 
-    /** Bobby is not a dependency, so it is only reached through its config file and reflection. */
+    private fun isAreaCached(area: String, areas: Set<String>, workEverywhere: Boolean): Boolean =
+        workEverywhere || area in areas
+
+    /** Bobby is not a dependency, so it is only reached through reflection. SBO never changes its config. */
     private object BobbyCompat {
+        private var notified = false
+
         fun isEnabled(): Boolean = try {
             val bobby = Class.forName("de.johni0702.minecraft.bobby.Bobby")
             val instance = bobby.getMethod("getInstance").invoke(null)
@@ -208,32 +237,11 @@ object HubChunkCache {
             true // play safe, never run both
         }
 
-        /**
-         * Turns Bobby off in its config, but only the first time: if the player turns it back on, SBO leaves it
-         * alone and just does not cache. Bobby watches its config file and picks the change up by itself.
-         */
-        fun disableOnce() {
-            if (DataManager.sboData.bobbyDisabledBySbo) return
-
-            val config = FabricLoader.getInstance().configDir.resolve("bobby.conf")
-            try {
-                val text = if (Files.exists(config)) Files.readString(config) else ""
-                val enabledLine = Regex("""(?m)^([ \t]*)enabled[ \t]*[=:][ \t]*true\b""")
-                val updated = if (enabledLine.containsMatchIn(text)) {
-                    enabledLine.replace(text) { "${it.groupValues[1]}enabled=false" }
-                } else {
-                    "enabled=false\n$text"
-                }
-                Files.writeString(config, updated)
-                DataManager.sboData.bobbyDisabledBySbo = true
-            } catch (e: Exception) {
-                SBOKotlin.logger.error("[HubChunkCache] Could not disable Bobby", e)
-                Chat.chat("§6[SBO] §cCould not disable Bobby, please turn it off yourself so the SBO Chunk Cache can work.")
-                return
-            }
-
-            Chat.chat("§6[SBO] §eBobby was disabled, the SBO Chunk Cache replaces it. It starts on your next lobby. §7You can turn Bobby back on in its settings, SBO will not touch it again.")
-            SBOKotlin.toast(Component.literal("SBO disabled Bobby"), Component.literal("The SBO Chunk Cache replaces it, from your next lobby on."))
+        /** Tells the player once per game start that the SBO Chunk Cache is paused while Bobby runs. */
+        fun notifyOnce() {
+            if (notified) return
+            notified = true
+            Chat.chat("§6[SBO] §eBobby is active, so the SBO Chunk Cache is paused. §7Turn Bobby off if you want to use the SBO Chunk Cache instead, it starts from your next lobby.")
         }
     }
 }

@@ -1,18 +1,18 @@
 package net.sbo.mod.overlays
 
 import net.minecraft.ChatFormatting.*
-import net.sbo.mod.settings.categories.Diana
-import net.sbo.mod.utils.Helper
+import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.utils.data.DataManager.sboData
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.overlay.DirtyFlushableOverlay
 import net.sbo.mod.utils.overlay.Overlay
 import net.sbo.mod.utils.overlay.OverlayTextLine
+import net.sbo.mod.diana.DianaState
 
 object MagicFind : DirtyFlushableOverlay() {
     override val overlay = Overlay("Diana MagicFind", 10f, 10f)
-        .setCondition { Diana.magicFindTracker }
-        .setExtraCondition { Helper.hasSpade && World.isInHub() }
+        .setCondition { Trackers.magicFindTracker }
+        .setExtraCondition { DianaState.hasSpade && World.isInHub() }
 
     fun init() {
         overlay.init()
@@ -27,6 +27,7 @@ object MagicFind : DirtyFlushableOverlay() {
             OverlayTextLine("$GRAY - ${RED}Stinger: $AQUA${sboData.highestStingerMagicFind}%"),
             OverlayTextLine("$GRAY - ${LIGHT_PURPLE}Chimera: $AQUA${sboData.highestChimMagicFind}%"),
             OverlayTextLine("$GRAY - ${DARK_PURPLE}Food: $AQUA${sboData.highestFoodMagicFind}%"),
+            OverlayTextLine("$GRAY - ${LIGHT_PURPLE}Looting 7: $AQUA${sboData.highestLootingMagicFind}%"),
             OverlayTextLine("$GRAY - ${DARK_PURPLE}Relic: $AQUA${sboData.highestRelicMagicFind}%"),
             OverlayTextLine("$GRAY - ${GOLD}Stick: $AQUA${sboData.highestStickMagicFind}%")
         )

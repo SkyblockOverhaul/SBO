@@ -95,6 +95,7 @@ body {
 }
 
 .cfg-window {
+    position: relative;
     display: flex;
     flex-direction: column;
     width: min(96vw, 620px);
@@ -173,6 +174,10 @@ body {
 .cfg-category:hover { color: var(--text-strong); background-color: var(--tint); }
 .cfg-category.active { color: var(--text-strong); background-color: var(--accent-faint); border-color: var(--accent-soft); }
 .cfg-category.no-hits { color: var(--dim); }
+/* All Settings, apart from the categories below it */
+.cfg-category.home { margin-bottom: 4px; font-weight: bold; }
+/* What's New, above All Settings while there are new settings */
+.cfg-category.whats-new { color: var(--title); }
 .cfg-category-name { flex-grow: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cfg-count {
     padding: 0 3px;
@@ -185,6 +190,11 @@ body {
 .cfg-body { flex-grow: 1; min-width: 0; min-height: 0; padding: 4px 10px 10px 10px; }
 .cfg-page-title { margin: 4px 0 2px 0; font-size: 12px; color: var(--text-strong); }
 .cfg-page-description { margin-bottom: 4px; color: var(--muted); }
+/* The home page, every category below each other */
+.cfg-home-section { margin-bottom: 14px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+.cfg-home-section:last-child { border-bottom: none; }
+.cfg-home-title { cursor: pointer; color: var(--title); }
+.cfg-home-title:hover { color: var(--text-strong); text-decoration: underline; }
 .cfg-child-category { margin: 12px 0 2px 0; font-size: 10px; color: var(--text-strong); }
 
 .cfg-sub { margin: 10px 0 2px 0; padding: 0 4px 2px 4px; border-bottom: 1px solid var(--border); }
@@ -264,12 +274,40 @@ body {
 .cfg-text { width: 160px; }
 .cfg-button { padding: 1px 8px; }
 
-.cfg-strings { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-.cfg-strings-line { display: flex; gap: 2px; }
-.cfg-strings-remove { padding: 0 4px; }
-.cfg-strings-add { padding: 0 6px; font-size: 7px; color: var(--subtle); background-color: transparent; border-color: transparent; }
-.cfg-strings-add:hover { color: var(--text-strong); background-color: var(--tint); }
+.cfg-keybind { display: flex; align-items: center; gap: 2px; }
+.cfg-keybind-button { min-width: 80px; }
+.cfg-keybind-button.listening { color: var(--text-strong); }
+/* A warning, the key still works */
+.cfg-keybind-button.conflict { color: var(--toast-warning); border-color: var(--toast-warning); }
+.cfg-keybind-conflict { color: var(--toast-warning); padding: 0 2px; }
 
+.cfg-strings { display: flex; align-items: stretch; gap: 2px; }
+.cfg-textarea { width: 160px; }
+/* The icons next to the field, spread over its height */
+.cfg-strings-actions { display: flex; flex-direction: column; justify-content: space-between; }
+.cfg-strings-action { display: flex; align-items: center; justify-content: center; padding: 2px; color: var(--subtle); background-color: transparent; border-color: transparent; }
+.cfg-strings-action:hover { color: var(--text-strong); background-color: var(--tint); }
+.cfg-strings-icon { width: 8px; height: 8px; }
+
+/* The big editor of a multi-line setting, over the whole window */
+.cfg-editor {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 6px;
+    background-color: var(--bg);
+}
+.cfg-editor-header { display: flex; align-items: center; gap: 8px; }
+.cfg-editor-title { flex-grow: 1; min-width: 0; font-weight: bold; color: var(--title); }
+.cfg-editor-done { padding: 1px 8px; }
+.cfg-editor-text { flex-grow: 1; min-height: 0; }
+
+.cfg-new-actions { display: flex; gap: 4px; margin: 4px 0 6px 0; }
 .cfg-results-info { margin: 4px 0; color: var(--muted); font-size: 7px; }
 .cfg-result-group { margin-bottom: 6px; }
 .cfg-result-category { margin: 6px 0 2px 0; padding: 0 4px 2px 4px; font-size: 8px; color: var(--title); border-bottom: 1px solid var(--border); }

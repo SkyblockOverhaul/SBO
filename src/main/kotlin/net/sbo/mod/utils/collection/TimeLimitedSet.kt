@@ -69,9 +69,9 @@ class TimeLimitedSet<T : Any>(
     override fun iterator(): MutableIterator<T> {
         expireEntries()
         val iterator = addedAt.keys.iterator()
-        var current: T? = null
-        var canRemove = false
         return object : MutableIterator<T> {
+            private var current: T? = null
+            private var canRemove = false
             override fun hasNext(): Boolean = iterator.hasNext()
 
             override fun next(): T {

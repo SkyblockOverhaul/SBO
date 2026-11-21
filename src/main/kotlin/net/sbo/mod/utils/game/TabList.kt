@@ -1,7 +1,6 @@
 package net.sbo.mod.utils.game
 
 import net.minecraft.client.multiplayer.PlayerInfo
-import net.minecraft.network.chat.Component
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent

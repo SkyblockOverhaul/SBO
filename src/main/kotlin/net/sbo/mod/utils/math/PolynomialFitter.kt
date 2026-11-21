@@ -23,3 +23,4 @@ class PolynomialFitter(private val degree: Int) {
         return coeffsMatrix.transpose().data[0]
     }
 }
+

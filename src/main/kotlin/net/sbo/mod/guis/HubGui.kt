@@ -24,16 +24,17 @@ import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.config.Category
 import net.sbo.mod.config.ConfigGui
-import net.sbo.mod.general.SboBadges
+import net.sbo.mod.customizer.SboCustomizer
 import net.sbo.mod.utils.data.cloud.CloudSync
 import net.sbo.mod.general.HelpCommand
+import net.sbo.mod.customizer.gui.CustomizerGui
 import net.sbo.mod.guis.look.SboLook
 import net.sbo.mod.guis.look.useFitScale
 import net.sbo.mod.guis.look.useSboScale
 import net.sbo.mod.guis.look.useSboTheme
 import net.sbo.mod.partyfinder.gui.PartyFinderGui
 import net.sbo.mod.settings.Settings
-import net.sbo.mod.utils.events.Register
+import net.sbo.mod.settings.SettingsChanges
 import net.sbo.mod.utils.overlay.OverlayEditScreen
 import org.lwjgl.glfw.GLFW
 import java.util.Collections
@@ -46,11 +47,31 @@ object HubGui {
         GuiLib.open(App, STYLES, title = "Skyblock Overhaul")
     }
 
-    fun openSettings() {
-        ConfigGui.open(Settings, "SBO Settings", onBack = ::open)
+    /** [whatsNew] opens on What's New even when it was seen already. */
+    fun openSettings(whatsNew: Boolean = false) {
+        ConfigGui.open(Settings, "SBO Settings", onBack = ::open, whatsNew = SettingsChanges.whatsNew(force = whatsNew))
     }
 
-    fun settingsScreen(): GuiLibScreen = ConfigGui.screen(Settings, "SBO Settings", onBack = ::open)
+    /** The settings categories as typed after /sboconfig: "rare_mobs". */
+    val settingsPages: List<String> get() = Settings.children.map { it.name.lowercase().replace(' ', '_') }
+
+    /** Opens the settings on the category [arg] names, or with [arg] in the search when it names none. */
+    fun openSettings(arg: String) {
+        if (arg.isBlank()) return openSettings()
+        val key = pageKey(arg)
+        val page = Settings.children.firstOrNull { pageKey(it.name) == key }
+        ConfigGui.open(Settings, "SBO Settings", onBack = ::open, whatsNew = SettingsChanges.whatsNew(), page = page, query = if (page == null) arg else "")
+    }
+
+    /** [name] in lower case without spaces or "_", so "Rare Mobs", "rare_mobs" and "raremobs" name the same category. */
+    private fun pageKey(name: String) = name.lowercase().filter { it.isLetterOrDigit() }
+
+    /** Opens the settings on [page], back goes to [onBack]. */
+    fun openSettings(page: Category, onBack: () -> Unit) {
+        ConfigGui.open(Settings, "SBO Settings", onBack = onBack, whatsNew = SettingsChanges.whatsNew(), page = page)
+    }
+
+    fun settingsScreen(): GuiLibScreen = ConfigGui.screen(Settings, "SBO Settings", onBack = ::open, whatsNew = SettingsChanges.whatsNew())
 
     private class Tile(
         val title: String,
@@ -96,7 +117,7 @@ object HubGui {
 
     private val TILES = listOf(
         Tile("Settings", "Every option, with a search over all of them", "/sbosettings", Items.COMPARATOR) { openSettings() },
-        Tile("Party Finder", "Join a party in seconds or create your own", "/sbopf", Items.PLAYER_HEAD) { PartyFinderGui.open() },
+        Tile("Party Finder", "Join a party or create your own", "/sbopf", Items.PLAYER_HEAD) { PartyFinderGui.open() },
         Tile("Events", "Your Diana events, trackers and comparisons", "/sboevents", Items.CLOCK) { EventsGui.open() },
         Tile("Achievements", "Everything you unlocked and what is left", "/sboachievements", Items.NETHER_STAR) { AchievementsGui.open() },
         Tile("Sounds", "Your own sounds for spawns and drops", "/sbosounds", Items.JUKEBOX) { SoundsGui.open() },
@@ -104,13 +125,13 @@ object HubGui {
         Tile(
             "Cloud Sync", "Keep your settings and trackers on every PC", "/sbocloud", Items.ENDER_CHEST,
             supporter = Supporter("Patreon and Ko-fi supporters and server boosters") {
-                if (CloudSync.premium() == true || SboBadges.hasAccess() == true) true else CloudSync.premium()
+                if (CloudSync.premium() == true || SboCustomizer.hasAccess() == true) true else CloudSync.premium()
             },
         ) { CloudSyncGui.open() },
         Tile(
-            "SBO Badge", "Your logo, stat and name color", "/sbobadge", Items.NAME_TAG,
-            supporter = Supporter("Patreon and Ko-fi supporters, maintainers and moderators") { SboBadges.hasAccess() },
-        ) { BadgeGui.open() },
+            "SBO Customizer", "Your customizer, name look and player size", "/sbocustomizer", Items.NAME_TAG,
+            supporter = Supporter("Patreon and Ko-fi supporters, maintainers and moderators") { SboCustomizer.hasAccess() },
+        ) { CustomizerGui.open() },
     )
 
     private val COMMANDS = Tile("Commands", "Every SBO command and what it does", "/sbohelp", Items.COMMAND_BLOCK) {}
@@ -132,6 +153,8 @@ object HubGui {
         Link("hm-api", "Hypixel Mod API wrapper (AzureAaron)", "https://github.com/AzureAaron/hm-api"),
         Link("RenderChest", "Glow API (AzureAaron)", "https://github.com/AzureAaron/RenderChest"),
         Link("Fabric API", "Modding API (FabricMC)", "https://github.com/FabricMC/fabric-api"),
+        Link("Stat Icons", "From the Hypixel SkyBlock Resource Pack by Hypixel Inc., via the Hypixel SkyBlock Wiki", "https://github.com/skyblock-wiki/wiki-assets"),
+        Link("NEU Repo", "Pet heads, pet lore and level tables (NotEnoughUpdates, MIT)", "https://github.com/NotEnoughUpdates/NotEnoughUpdates-REPO"),
     )
 
     private var openCommandsOnNextOpen = false
@@ -141,7 +164,7 @@ object HubGui {
         var showCommands by useState(openCommandsOnNextOpen)
         openCommandsOnNextOpen = false
         useSboScale()
-        useSboTheme()
+        useSboTheme("hub")
         val fit = useFitScale()
 
         div(className = "hub-window", ref = fit.ref, style = fit.style) {
@@ -155,7 +178,7 @@ object HubGui {
                     div(className = "hub-hero-text") {
                         div(className = "hub-eyebrow") { +"Hypixel Skyblock · Diana · Party Finder" }
                         h1(className = "hub-title") { +"Skyblock Overhaul" }
-                        div(className = "hub-tagline") { +"Find a party in seconds with the SBO Party Finder or use our Amazing Diana Features." }
+                        div(className = "hub-tagline") { +"Find a party with the SBO Party Finder or use our Amazing Diana Features." }
                         div(className = "hub-chips") {
                             span(className = "hub-chip hub-chip-version") { +"SBO ${SBOKotlin.version}" }
                             span(className = "hub-chip") { +"Minecraft ${SBOKotlin.mcVersion}" }

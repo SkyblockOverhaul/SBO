@@ -14,7 +14,7 @@ private fun ownText(element: ConfigElement): List<String> = when (element) {
     is Sub -> emptyList()
 }
 
-// Category and sub names count too, so "diana color" finds the colors in the Diana category
+// Category and sub names count too, so "rare mobs color" finds the glow colors in the Rare Mobs category
 fun search(config: Config, query: String): List<SearchHit> {
     val words = query.lowercase().split(' ').filter { it.isNotBlank() }
     if (words.isEmpty()) return emptyList()
@@ -22,7 +22,7 @@ fun search(config: Config, query: String): List<SearchHit> {
 
     fun visit(path: List<Category>) {
         val category = path.last()
-        val names = path.drop(1).joinToString(" ") { it.name }
+        val names = path.asSequence().drop(1).joinToString(" ") { it.name }
         var sub: Sub? = null
         for (element in category.elements) {
             if (element is Sub) {

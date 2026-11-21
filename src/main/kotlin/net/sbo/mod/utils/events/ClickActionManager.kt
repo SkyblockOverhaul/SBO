@@ -40,3 +40,4 @@ object ClickActionManager {
         actions.remove(id)?.invoke()
     }
 }
+

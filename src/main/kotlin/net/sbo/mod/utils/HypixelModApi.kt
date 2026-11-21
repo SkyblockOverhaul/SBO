@@ -1,5 +1,6 @@
 package net.sbo.mod.utils
 
+import net.azureaaron.hmapi.data.server.Environment
 import net.azureaaron.hmapi.events.HypixelPacketEvents
 import net.azureaaron.hmapi.network.HypixelNetworking
 import net.azureaaron.hmapi.network.packet.s2c.ErrorS2CPacket
@@ -8,12 +9,16 @@ import net.azureaaron.hmapi.network.packet.s2c.HypixelS2CPacket
 import net.azureaaron.hmapi.network.packet.v1.s2c.LocationUpdateS2CPacket
 import net.azureaaron.hmapi.network.packet.v2.s2c.PartyInfoS2CPacket
 import net.sbo.mod.partyfinder.PartyFinderManager
+import net.sbo.mod.utils.data.AlphaData
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.DisconnectEvent
 
 object HypixelModApi {
     var isOnHypixel: Boolean = false
+    /** On the Alpha Network (or another non-production Hypixel server), where profiles are copies. */
+    var isAlpha: Boolean = false
+        private set
     private var isOnSkyblock: Boolean = false
     private var isLeader: Boolean = false
     private var isInParty: Boolean = false
@@ -35,6 +40,10 @@ object HypixelModApi {
     @SboEvent
     fun onDisconnect(event: DisconnectEvent) {
         isOnHypixel = false
+        if (isAlpha) {
+            isAlpha = false
+            AlphaData.check()
+        }
         isOnSkyblock = false
         isLeader = false
         isInParty = false
@@ -45,7 +54,7 @@ object HypixelModApi {
 
     private fun handlePacket(packet: HypixelS2CPacket) {
         when (packet) {
-            is HelloS2CPacket -> onHelloPacket()
+            is HelloS2CPacket -> onHelloPacket(packet)
             is LocationUpdateS2CPacket -> onLocationUpdatePacket(packet)
             is PartyInfoS2CPacket -> onPartyInfoPacket(packet)
             is ErrorS2CPacket -> onErrorPacket(packet)
@@ -58,16 +67,21 @@ object HypixelModApi {
         mode = packet.mode.orElse("")
     }
 
-    private fun onHelloPacket() {
+    private fun onHelloPacket(packet: HelloS2CPacket) {
         isOnHypixel = true
+        val alpha = packet.environment() != Environment.PRODUCTION
+        if (alpha != isAlpha) {
+            isAlpha = alpha
+            AlphaData.check()
+        }
         sendPartyInfoPacket()
     }
 
     private fun onPartyInfoPacket(packet: PartyInfoS2CPacket) {
         this.isInParty = packet.inParty
-        partyRoles = packet.members?.entries?.associate { (uuid, role) -> uuid.toString().replace("-", "") to role.toString() } ?: emptyMap()
+        partyRoles = packet.members?.entries?.associate { (uuid, role) -> uuid.toString().replace("-", "") to role.toString() }.orEmpty()
 
-        val membersList = packet.members?.map { it.key.toString() }?.toMutableList() ?: mutableListOf()
+        val membersList = packet.members?.asSequence()?.map { it.key.toString() }?.toMutableList() ?: mutableListOf()
         if (isInParty) {
             val leaderUUID = packet.members?.entries?.find { it.value.toString() == "LEADER" }?.key.toString()
 
@@ -89,7 +103,7 @@ object HypixelModApi {
     /** LEADER, MODERATOR or MEMBER from the last party packet, null when unknown. */
     fun partyRole(uuid: String): String? = partyRoles[uuid.replace("-", "")]
 
-    /** After a promote or demote, until the next party packet confirms it. */
+    /** After a promotion or demotion, until the next party packet confirms it. */
     fun markRole(uuid: String, role: String) {
         partyRoles = partyRoles + (uuid.replace("-", "") to role)
     }

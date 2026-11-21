@@ -7,6 +7,11 @@ import net.sbo.mod.SBOKotlin
 import net.sbo.mod.utils.events.Register
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
+import net.minecraft.core.component.DataComponents
+import net.minecraft.network.chat.Component
+import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.utils.Player
+import net.sbo.mod.utils.data.Item
 
 object InventoryUtils {
     private var currentItemId: String = "AIR"
@@ -59,6 +64,13 @@ object InventoryUtils {
     }
 
     /**
+     * When the held item was taken out.
+     * @param itemId Part of the held item's ID (e.g. "SPADE")
+     * @return The System.nanoTime() it was taken out at, null when another item is held
+     */
+    fun heldSince(itemId: String): Long? = if (itemId in currentItemId) currentItemStartTime else null
+
+    /**
      * Checks if an item is currently held OR was recently held.
      * @param itemId The Item ID (e.g. "HYPERION" or "minecraft:stick")
      * @param duration The minimum time it must have been held (e.g. 500.milliseconds)
@@ -70,8 +82,8 @@ object InventoryUtils {
         val now = System.nanoTime()
         val requiredNs = duration.inWholeNanoseconds
 
-        if (itemId in currentItemId) {
-            if (now - currentItemStartTime >= requiredNs) return true
+        if (itemId in currentItemId && now - currentItemStartTime >= requiredNs) {
+            return true
         }
 
         return heldHistory.any { (histId, histDuration, stoppedAt) ->
@@ -79,5 +91,93 @@ object InventoryUtils {
             histDuration >= requiredNs &&
             now - stoppedAt <= RECENT_HOLD_NS
         }
+    }
+
+    private var prevInv = mutableMapOf<String, Item>()
+
+    private fun getCursorItemStack(): ItemStack? {
+        val handler = mc.player?.containerMenu ?: return null
+        return handler.carried
+    }
+
+    fun readPlayerInv(): Map<String, Item> {
+        val inventory = Player.getPlayerInventory()?.getNonEquipmentItems() ?: return emptyMap<String, Item>()
+        val invItems = mutableMapOf<String, Item>()
+
+        if (getCursorItemStack()?.count != 0) return prevInv
+
+        for ((slot, stack) in inventory.withIndex()) {
+            if (slot == 8) continue // Skip SB Star
+            if (!stack.isEmpty) {
+                val id: String
+                val item: Item
+                val lookup = ItemLookup(stack)
+                val sbId = lookup.sbId
+                var isChimera = false
+                if (sbId == "ENCHANTED_BOOK") {
+                    val lore = lookup.cleanLoreList
+                    for (line in lore) {
+                        if (line.contains("Chimera")) {
+                            isChimera = true
+                            break
+                        }
+                    }
+                }
+
+                if (!isChimera) {
+                    item = Item(
+                        sbId,
+                        lookup.uuid,
+                        lookup.displayName,
+                        lookup.timestamp,
+                        stack.count
+                    )
+                    id = if (item.itemUUID != "") item.itemUUID else item.itemId
+                } else {
+                    item = Item(
+                        "CHIMERA",
+                        lookup.uuid,
+                        "§d§lChimera",
+                        lookup.timestamp,
+                        stack.count
+                    )
+                    id = "CHIMERA"
+                }
+
+                val existing = invItems.putIfAbsent(id, item)
+
+                if (existing != null) {
+                    existing.count += item.count
+                }
+            }
+        }
+        prevInv = invItems
+        return invItems
+    }
+
+    fun playerHasItem(sbId: String): Boolean {
+        val inventory = Player.getPlayerInventory() ?: return false
+        return inventory.getNonEquipmentItems().any { stack -> !stack.isEmpty && ItemLookup(stack).sbId == sbId }
+    }
+
+    fun getKillsFromLore(stack: ItemStack?): Int {
+        if (stack == null || stack.isEmpty) return 0
+
+        val linesList: List<Component> = stack.get(DataComponents.LORE)?.lines ?: return 0
+
+        if (linesList.isEmpty()) return 0
+
+        for (lineText in linesList) {
+            val line = lineText.string
+            if (line.startsWith("Kills: ")) {
+                val numberString = line.substringAfter("Kills: ")
+                    .replace(",", "")
+                    .trim()
+
+                return numberString.toIntOrNull() ?: 0
+            }
+        }
+
+        return 0
     }
 }

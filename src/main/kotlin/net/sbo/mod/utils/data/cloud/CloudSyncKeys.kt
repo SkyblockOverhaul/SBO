@@ -23,7 +23,7 @@ object CloudSyncKeys {
 
     fun hasKey(): Boolean = key() != null
 
-    // null if no key is set or it was set before the text was kept
+    // null if no key is set, or it was set before the text was kept
     fun text(uuid: String = Player.accountUuid()): String? = texts[uuid]
 
     // Slow (key derivation), call off the render thread

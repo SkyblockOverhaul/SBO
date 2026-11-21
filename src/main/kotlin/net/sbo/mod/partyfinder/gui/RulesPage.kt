@@ -24,12 +24,11 @@ internal val RulesPage = component<Unit>("RulesPage") {
         PartyFinderApi.rules(onError = { e -> error = ProblemText.error(e) }) { rules = it }
     }
 
-    val loaded = rules
-    when {
-        loaded == null && error != null -> message("Could not load the rules. $error") {
+    when (val loaded = rules) {
+        null if error != null -> message("Could not load the rules. $error") {
             button(onClick = { attempt++ }) { +"Try again" }
         }
-        loaded == null -> message("Loading the rules...")
+        null -> message("Loading the rules...")
         else -> scroll(className = "pf-form pf-rules guilib-autohide") {
             h3(className = "pf-section") { +"Party Finder Rules" }
             p(className = "pf-hint") { +loaded.intro }

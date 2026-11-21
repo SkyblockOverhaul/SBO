@@ -22,7 +22,10 @@ object BlockedPlayers {
 
     fun list(): List<BlockedPlayer> = config.blockedPlayers.toList()
 
-    fun isBlocked(uuid: String): Boolean = normalize(uuid).let { id -> config.blockedPlayers.any { it.uuid == id } }
+    fun isBlocked(uuid: String): Boolean {
+        val id = normalize(uuid)
+        return config.blockedPlayers.any { it.uuid == id }
+    }
 
     fun isBlockedName(name: String): Boolean = config.blockedPlayers.any { it.name.equals(name, ignoreCase = true) }
 

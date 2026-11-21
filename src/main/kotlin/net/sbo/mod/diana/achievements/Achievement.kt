@@ -3,9 +3,8 @@ package net.sbo.mod.diana.achievements
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.sounds.SoundSource
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.settings.categories.General
-import net.sbo.mod.utils.Helper
+import net.sbo.mod.settings.categories.Debug
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.chat.Chat.textComponent
 import net.sbo.mod.utils.data.DataManager
@@ -20,7 +19,7 @@ class Achievement(
     val hidden: Boolean = false,
     val repeatable: Boolean = false,
     // Only a chat message on unlock, no title and no sound
-    val chatOnly: Boolean = false,
+    private val chatOnly: Boolean = false,
 ) {
     val color = AchievementManager.rarityColorDict[rarity] ?: "§f"
 
@@ -45,13 +44,13 @@ class Achievement(
         if (this.rarity == "Divine" || this.rarity == "Impossible" || this.rarity == "Celestial") {
             Chat.chat(textComponent("§6[SBO] §aAchievement Unlocked §7>> $color§kd§r $color$name §kd§r", "$hiddenExtra§a$description"))
             if (chatOnly) return
-            Helper.showTitle("§kd§r $color$name §kd§r", "§aAchievement Unlocked!", 0, 50, 20)
+            Chat.showTitle("§kd§r $color$name §kd§r", "§aAchievement Unlocked!", 0, 50, 20)
             mc.level?.playSound(player, player?.blockPosition()!!, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 1.0f, 1.0f)
 
         } else {
             Chat.chat(textComponent("§6[SBO] §aAchievement Unlocked §7>> $color$name", "$hiddenExtra§a$description"))
             if (chatOnly) return
-            Helper.showTitle("$color$name", "§aAchievement Unlocked!", 0, 50, 20)
+            Chat.showTitle("$color$name", "§aAchievement Unlocked!", 0, 50, 20)
             mc.level?.playSound(player, player?.blockPosition()!!, SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 1.0f, 1.0f)
         }
     }
@@ -98,7 +97,7 @@ class Achievement(
         checkYearReset()
 
         if (this.repeatable && Debug.repeatableAchie && !total) {
-            return achievementsData.currentEventAchievements[id] ?: false
+            return achievementsData.currentEventAchievements[id] == true
         }
         return achievementsData.totalAchievements[id] ?: 0 > 0
     }

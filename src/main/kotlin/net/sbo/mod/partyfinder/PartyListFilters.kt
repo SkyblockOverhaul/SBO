@@ -44,7 +44,7 @@ object PartyListFilters {
     fun filterValues(option: PartyOption) = option.values.filter { it.id != ANY }
 
     /** [wanted] is a comma list for fields with several values. */
-    fun optionMatches(party: PartyView, option: PartyOption, wanted: String): Boolean {
+    private fun optionMatches(party: PartyView, option: PartyOption, wanted: String): Boolean {
         val value = party.options[option.id] ?: option.default
         // Old saved filters may still hold "any"
         if (!filtersSeveral(option)) return wanted == ANY || value == wanted
@@ -58,12 +58,12 @@ object PartyListFilters {
     fun filterableReqs(target: PartyTarget): List<ReqDef> = target.reqs.filter { it.type in REQ_TYPES }
 
     /** Parties that don't ask for the stat never match. */
-    fun asksAtLeast(party: PartyView, def: ReqDef, wanted: String): Boolean {
+    private fun asksAtLeast(party: PartyView, def: ReqDef, wanted: String): Boolean {
         val need = if (def.type == "min") wanted.toDoubleOrNull()?.let(::JsonPrimitive) ?: return true else JsonPrimitive(wanted)
         return ReqMatcher.meets(def.type, party.reqs[def.stat], need)
     }
 
-    fun freeSlots(party: PartyView): Int = (party.partySize - party.memberCount).coerceAtLeast(0)
+    private fun freeSlots(party: PartyView): Int = (party.partySize - party.memberCount).coerceAtLeast(0)
 
     private fun matches(party: PartyView, filter: PartyListFilter, target: PartyTarget, me: MemberView?, query: String): Boolean {
         if (filter.notFull && ReqMatcher.isFull(party)) return false

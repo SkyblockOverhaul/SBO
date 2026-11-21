@@ -4,14 +4,21 @@ import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.network.chat.Component
 import net.minecraft.util.FormattedCharSequence
+import net.minecraft.world.item.ItemStack
 import net.sbo.mod.SBOKotlin.mc
-import java.awt.Color
 
+/**
+ * A line of an [Overlay]. In front of the text it can draw an item [icon]: [ICON_SMALL] fits the text line, a bigger
+ * one like [ICON_LARGE] makes the line taller.
+ * Item icons cost more to draw than text, so only use them on a few lines.
+ */
 class OverlayTextLine(
     var text: String,
     private var shadow: Boolean = true,
     var linebreak: Boolean = true,
-    var centered: Boolean = false
+    var centered: Boolean = false,
+    var icon: ItemStack? = null,
+    private var iconSize: Int = ICON_SMALL
 ) {
     private var orderedText: FormattedCharSequence? = null
     private var orderedTextSource: String? = null
@@ -24,23 +31,32 @@ class OverlayTextLine(
     var x: Int = 0
     var y: Int = 0
 
-    var width: Int = -1
+    private var cachedTextWidth: Int = -1
+
+    private val textWidth: Int
         get() {
             val currentText = text
 
-            if (orderedTextSource == currentText && field != -1) {
-                return field
+            if (orderedTextSource == currentText && cachedTextWidth != -1) {
+                return cachedTextWidth
             }
 
             val computedWidth = mc.font.width(getOrderedText())
-            field = computedWidth
+            cachedTextWidth = computedWidth
 
             return computedWidth
         }
-        private set
 
-    private var height: Int = 0
-    private var renderDebugBox: Boolean = false
+    private val prefixWidth: Int
+        get() = if (icon != null) iconSize + GAP else 0
+
+    /** The width of the icon and text together. */
+    val width: Int
+        get() = prefixWidth + textWidth
+
+    /** The height of the line including the 1px gap below it. */
+    val height: Int
+        get() = maxOf(mc.font.lineHeight, if (icon != null) iconSize else 0) + 1
 
     private var condition: () -> Boolean = { true }
     private var cachedCondition = true
@@ -58,6 +74,7 @@ class OverlayTextLine(
 
         orderedText = computed
         orderedTextSource = currentText
+        cachedTextWidth = -1
 
         return computed
     }
@@ -123,18 +140,18 @@ class OverlayTextLine(
         if (isHovered) hoverAction?.invoke(drawContext, textRenderer)
     }
 
-    fun lineClicked(mouseX: Double, mouseY: Double, x: Float, y: Float, textRenderer: Font, scale: Float) {
+    fun lineClicked(mouseX: Double, mouseY: Double, x: Float, y: Float, scale: Float) {
         if (text.isEmpty() || clickAction == null) return
-        if (isMouseOver(mouseX, mouseY, x, y, textRenderer, scale)) {
+        if (isMouseOver(mouseX, mouseY, x, y, scale)) {
             clickAction?.invoke()
         }
     }
 
-    private fun isMouseOver(mouseX: Double, mouseY: Double, x: Float, y: Float, textRenderer: Font, scale: Float): Boolean {
-        val textWidth = width * scale
-        val textHeight = (textRenderer.lineHeight + 1) * scale - 1
+    private fun isMouseOver(mouseX: Double, mouseY: Double, x: Float, y: Float, scale: Float): Boolean {
+        val lineWidth = width * scale
+        val lineHeight = height * scale - 1
 
-        return mouseX >= x && mouseX <= x + textWidth && mouseY >= y && mouseY <= y + textHeight
+        return mouseX >= x && mouseX <= x + lineWidth && mouseY >= y && mouseY <= y + lineHeight
     }
 
     fun updateMouseInteraction(mouseX: Double, mouseY: Double, x: Float, y: Float, textRenderer: Font, scale: Float, drawContext: GuiGraphicsExtractor) {
@@ -143,7 +160,7 @@ class OverlayTextLine(
             return
         }
         val wasHovered = isHovered
-        val isNowHovered = isMouseOver(mouseX, mouseY, x, y, textRenderer, scale)
+        val isNowHovered = isMouseOver(mouseX, mouseY, x, y, scale)
         isHovered = isNowHovered
 
         if (isNowHovered && !wasHovered) {
@@ -158,16 +175,36 @@ class OverlayTextLine(
     }
 
     fun draw(drawContext: GuiGraphicsExtractor, x: Int, y: Int, textRenderer: Font) {
-        if (text.isEmpty()) return
+        if (text.isEmpty() && icon == null) return
 
         this.x = x
         this.y = y
-        this.height = textRenderer.lineHeight
+        val lineHeight = height
 
-        if (renderDebugBox) {
-            drawContext.fill(x, y, x + width, y + height + 1, Color(128, 128, 128, 130).rgb)
+        // Everything is centered vertically in the line, which is taller than the text with a large icon
+        var currentX = x
+        icon?.let { stack ->
+            drawIcon(drawContext, stack, currentX, y + (lineHeight - 1 - iconSize) / 2)
+            currentX += iconSize + GAP
         }
+        if (text.isNotEmpty()) {
+            drawContext.text(textRenderer, getOrderedText(), currentX, y + (lineHeight - 1 - textRenderer.lineHeight) / 2, -1, shadow)
+        }
+    }
 
-        drawContext.text(textRenderer, getOrderedText(), x, y, -1, shadow)
+    // Items are 16px, scaled down to the icon size
+    private fun drawIcon(drawContext: GuiGraphicsExtractor, stack: ItemStack, x: Int, y: Int) {
+        val scale = iconSize / 16f
+        drawContext.pose().pushMatrix()
+        drawContext.pose().translate(x.toFloat(), y.toFloat())
+        drawContext.pose().scale(scale, scale)
+        drawContext.item(stack, 0, 0)
+        drawContext.pose().popMatrix()
+    }
+
+    companion object {
+        const val ICON_SMALL = 8
+        const val ICON_LARGE = 16
+        private const val GAP = 2
     }
 }

@@ -3,9 +3,11 @@ package net.sbo.mod.config
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonPrimitive
+import com.mojang.blaze3d.platform.InputConstants
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.Locale
+import java.util.EnumSet
 import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty0
 import kotlin.reflect.jvm.isAccessible
@@ -51,6 +53,7 @@ internal fun notifyChanges(roots: Collection<ConfigEntry<*>>, includeRoots: Bool
 
     val before = watched.associateWith { it.get() }
     change()
+    for (entry in watched) entry.invalidate()
     for ((entry, old) in before) {
         val new = entry.get()
         if (old != new) entry.onChange(old, new)
@@ -71,12 +74,21 @@ class Condition internal constructor(
         get() = resolved ?: (property.apply { isAccessible = true }.getDelegate() as? ConfigEntry<*>)?.also { resolved = it }
 
     // Counts as met until the setting is found, so a read during init doesn't lock anything
-    val met: Boolean get() = entry?.let { check(it.get()) } ?: true
+    val met: Boolean get() = entry?.let { check(it.get()) } != false
 }
 
 /** A group of [conditions] that all, or with [any] at least one, have to be met. */
 class Requirement internal constructor(val conditions: List<Condition>, val any: Boolean) {
-    val met: Boolean get() = if (any) conditions.any { it.met } else conditions.all { it.met }
+    val met: Boolean
+        get() {
+            var index = 0
+            while (index < conditions.size) {
+                val conditionMet = conditions[index].met
+                if (conditionMet == any) return any
+                index++
+            }
+            return !any
+        }
 }
 
 class Button(
@@ -87,7 +99,7 @@ class Button(
     val onClick: () -> Unit,
 ) : ConfigElement
 
-// The JSON matches what ResourcefulConfig wrote, so existing config.jsonc files and cloud saves load unchanged
+// The JSON keeps the layout ResourcefulConfig wrote (comments, version key), older files are converted by the config's migration
 sealed class ConfigEntry<T>(
     val id: String,
     val default: T,
@@ -102,6 +114,10 @@ sealed class ConfigEntry<T>(
 
     internal var sub: Sub? = null
 
+    /** The version that added the setting, from `since` in its builder; listed under What's New after updating. */
+    var since: ModVersion? = null
+        internal set
+
     /** From `depends(...)`, `dependsOff(...)` and `dependsAny(...)` in the entry's builder. */
     var requirements: List<Requirement> = emptyList()
         internal set
@@ -111,13 +127,30 @@ sealed class ConfigEntry<T>(
 
     internal fun linkRequirements() {
         if (this !is BooleanEntry) return
-        for (requirement in requirements) for (condition in requirement.conditions) condition.entry?.dependents?.add(this)
+        var all = true
+        for (requirement in requirements) for (condition in requirement.conditions) {
+            val target = condition.entry
+            if (target == null) all = false else target.dependents.add(this)
+        }
+        linked = all
+        invalidate()
     }
 
     /** False while a requirement isn't met, the settings screen then locks this one. */
-    val requirementsMet: Boolean get() = requirements.all { it.met }
+    val requirementsMet: Boolean
+        get() {
+            var index = 0
+            while (index < requirements.size) {
+                if (!requirements[index].met) return false
+                index++
+            }
+            return true
+        }
 
     internal open val effectiveValue: T get() = value
+
+    /** Drops a kept [effectiveValue], called whenever something it follows from may have changed. */
+    internal open fun invalidate() {}
 
     fun get(): T = effectiveValue
 
@@ -125,6 +158,7 @@ sealed class ConfigEntry<T>(
         notifyChanges(listOf(this), includeRoots = false) {
             val old = effectiveValue
             value = newValue
+            invalidate()
             val new = effectiveValue
             if (!same(old, new)) onChange(old, new)
         }
@@ -149,11 +183,36 @@ sealed class ConfigEntry<T>(
 class BooleanEntry internal constructor(id: String, default: Boolean, name: String, description: String) :
     ConfigEntry<Boolean>(id, default, name, description) {
 
+    // Some features read their setting for every frame or chunk, and a requirement chain makes that a walk over
+    // several settings, so the result is kept until its own set, its sub switching or a setting it depends on
+    // changing (all of these go through notifyChanges)
+    @Volatile private var cache = UNKNOWN
+
+    /** Every setting its requirements point at knows about this one, so a change there drops [cache]. */
+    internal var linked = false
+
     // A requirement switching does not call onChange here, only the sub does that
-    override val effectiveValue: Boolean get() = value && sub?.enabled != false && requirementsMet
+    override val effectiveValue: Boolean
+        get() {
+            val cached = cache
+            if (cached != UNKNOWN) return cached == ON
+            val result = value && sub?.enabled != false && requirementsMet
+            if (linked) cache = if (result) ON else OFF
+            return result
+        }
+
+    override fun invalidate() {
+        cache = UNKNOWN
+    }
 
     override fun toJson() = JsonPrimitive(value)
     override fun parse(json: JsonElement) = (json as? JsonPrimitive)?.takeIf { it.isBoolean }?.asBoolean
+
+    private companion object {
+        const val UNKNOWN = 0
+        const val OFF = 1
+        const val ON = 2
+    }
 }
 
 class NumberEntry<T> internal constructor(
@@ -217,6 +276,39 @@ class StringEntry internal constructor(id: String, default: String, name: String
 
 class Choice(val id: String, val label: String, val description: String = "")
 
+/** An enum constant in a dropdown: the settings screen shows [label], [description] when hovered. */
+interface Option {
+    val label: String
+    val description: String get() = ""
+}
+
+/** Marks the constant that turns the feature off, see [isOff] and [nextOption]. */
+@Target(AnnotationTarget.FIELD)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class OffOption
+
+private val offConstants = object : ClassValue<Set<String>>() {
+    override fun computeValue(type: Class<*>): Set<String> =
+        type.fields.asSequence().filter { it.isEnumConstant && it.isAnnotationPresent(OffOption::class.java) }.mapTo(HashSet()) { it.name }
+}
+
+// A constant with a body is a subclass of its enum
+private val Enum<*>.enumClass: Class<*> get() = javaClass.let { if (it.isEnum) it else it.superclass }
+
+/** True for the constant marked with [OffOption]. */
+val Enum<*>.isOff: Boolean get() = name in offConstants[enumClass]
+
+val Enum<*>.optionLabel: String get() = (this as? Option)?.label ?: name.lowercase().replaceFirstChar { it.uppercase() }
+
+val Enum<*>.optionDescription: String get() = (this as? Option)?.description.orEmpty()
+
+/** The next constant, from the last one back to the first. The [OffOption] one is skipped, so cycling never turns a feature off. */
+fun <E : Enum<E>> E.nextOption(): E {
+    @Suppress("UNCHECKED_CAST")
+    val cycle = (enumClass.enumConstants as Array<E>).filterNot { it.isOff }
+    return cycle.getOrNull((cycle.indexOf(this) + 1) % cycle.size) ?: this
+}
+
 // A string out of options that can change while the game runs (e.g. files in a folder), shown as a dropdown.
 // Ids that aren't an option (anymore) are kept, the code reading the entry picks the fallback.
 class ChoiceEntry internal constructor(
@@ -231,7 +323,7 @@ class ChoiceEntry internal constructor(
     override fun parse(json: JsonElement) = (json as? JsonPrimitive)?.takeIf { it.isString }?.asString
 }
 
-class StringsEntry internal constructor(id: String, default: Array<String>, name: String, description: String) :
+class StringsEntry internal constructor(id: String, default: Array<String>, name: String, description: String, val template: String? = null) :
     ConfigEntry<Array<String>>(id, default, name, description) {
 
     override fun same(a: Array<String>, b: Array<String>) = a.contentEquals(b)
@@ -243,7 +335,41 @@ class StringsEntry internal constructor(id: String, default: Array<String>, name
     }
 }
 
-class EnumEntry<E : Enum<E>> @PublishedApi internal constructor(
+/**
+ * A key or mouse button, saved by Minecraft's name for it ("key.keyboard.g", "key.mouse.4") like options.txt does, so
+ * the same file works with GLFW and SDL key codes. Unbound while its [sub] is off or a requirement isn't met.
+ *
+ * @property menuOnly true for a key that only works in a menu, it can share its key with Minecraft's keys
+ */
+class KeybindEntry internal constructor(id: String, default: String, name: String, description: String, val menuOnly: Boolean) :
+    ConfigEntry<String>(id, default, name, description) {
+
+    /** The names of everything else bound to the same key, shown on the key in the settings screen. */
+    var conflicts: () -> List<String> = { emptyList() }
+
+    override val effectiveValue: String
+        get() = if (sub?.enabled == false || !requirementsMet) UNBOUND else value
+
+    override fun toJson() = JsonPrimitive(value)
+    override fun parse(json: JsonElement) = (json as? JsonPrimitive)?.takeIf { it.isString }?.asString
+
+    companion object {
+        /** The saved name of no key. */
+        val UNBOUND: String = InputConstants.UNKNOWN.name
+
+        /** The key [name] stands for, [InputConstants.UNKNOWN] for unbound and names Minecraft doesn't know. */
+        fun keyOf(name: String): InputConstants.Key =
+            runCatching { InputConstants.getKey(name) }.getOrDefault(InputConstants.UNKNOWN)
+    }
+}
+
+// Saved as the constant's name in lower case. Read ignoring case, so files from before (upper case names) load too.
+private fun <E : Enum<E>> List<E>.byId(id: String) = firstOrNull { it.name.equals(id, ignoreCase = true) }
+
+private fun Enum<*>.id() = name.lowercase()
+
+// One constant of an enum, shown as a dropdown
+class OptionEntry<E : Enum<E>> @PublishedApi internal constructor(
     id: String,
     default: E,
     name: String,
@@ -251,44 +377,51 @@ class EnumEntry<E : Enum<E>> @PublishedApi internal constructor(
     val constants: List<E>,
 ) : ConfigEntry<E>(id, default, name, description) {
 
-    override fun toJson() = JsonPrimitive(value.name)
-    override fun parse(json: JsonElement) = (json as? JsonPrimitive)?.takeIf { it.isString }?.let { p -> constants.find { it.name == p.asString } }
+    override fun toJson() = JsonPrimitive(value.id())
+    override fun parse(json: JsonElement) = (json as? JsonPrimitive)?.takeIf { it.isString }?.let { constants.byId(it.asString) }
 
     fun setName(name: String) {
-        constants.find { it.name == name }?.let(::set)
+        constants.byId(name)?.let(::set)
     }
-    override fun typeComments() = listOf("Valid Values: " + constants.joinToString { it.name })
+
+    /** The [OffOption] constant, null when there is none. */
+    val off: E? get() = constants.firstOrNull { it.isOff }
+
+    /** On is the default, or the first constant that isn't off when the default is off. */
+    fun switchTo(on: Boolean) {
+        val target = if (on) default.takeUnless { it.isOff } ?: constants.firstOrNull { !it.isOff } else off
+        target?.let(::set)
+    }
+
+    override fun typeComments() = listOf("Valid Values: " + constants.joinToString { it.id() })
 }
 
-class SelectEntry<E : Enum<E>> @PublishedApi internal constructor(
+// Any number of constants of an enum, shown as a multi select, kept in the order of the enum
+class OptionsEntry<E : Enum<E>> @PublishedApi internal constructor(
     id: String,
-    default: Array<E>,
+    default: EnumSet<E>,
     name: String,
     description: String,
+    val constants: List<E>,
     private val enumClass: Class<E>,
-) : ConfigEntry<Array<E>>(id, default, name, description) {
+) : ConfigEntry<Set<E>>(id, default, name, description) {
 
-    val constants: List<E> = enumClass.enumConstants.toList()
+    override fun toJson() = JsonArray().apply { value.forEach { add(it.id()) } }
 
-    override fun same(a: Array<E>, b: Array<E>) = a.contentEquals(b)
-    override fun toJson() = JsonArray().apply { value.forEach { add(it.name) } }
-
-    // Unknown names (e.g. a removed warp) are dropped instead of rejecting the whole list.
-    override fun parse(json: JsonElement): Array<E>? {
+    // Unknown names (e.g. a removed warp) are dropped instead of rejecting the whole list
+    override fun parse(json: JsonElement): Set<E>? {
         val array = json as? JsonArray ?: return null
-        val names = array.mapNotNull { (it as? JsonPrimitive)?.takeIf { p -> p.isString }?.asString }
-        return arrayOf(names.mapNotNull { name -> constants.find { it.name == name } })
+        val ids = array.mapNotNull {
+            (it as? JsonPrimitive)?.takeIf { p -> p.isString }?.asString?.uppercase()
+        }.toHashSet()
+
+        return constants.filterTo(EnumSet.noneOf(enumClass)) { it.name.uppercase() in ids }
     }
 
-    fun setNames(names: Collection<String>) = set(arrayOf(constants.filter { it.name in names }))
-
-    // A real E[], code reading the entry casts it to its enum's array type
-    private fun arrayOf(constants: List<E>): Array<E> {
-        @Suppress("UNCHECKED_CAST")
-        val result = java.lang.reflect.Array.newInstance(enumClass, constants.size) as Array<E>
-        constants.forEachIndexed { i, constant -> result[i] = constant }
-        return result
+    fun setNames(names: Collection<String>) {
+        val nameSet = names.toHashSet()
+        set(constants.filterTo(EnumSet.noneOf(enumClass)) { it.name in nameSet })
     }
 
-    override fun typeComments() = listOf("Valid Values: " + constants.joinToString { it.name })
+    override fun typeComments() = listOf("Valid Values: " + constants.joinToString { it.id() })
 }

@@ -99,7 +99,7 @@ private const val EARLY_LISTING_MS = 60 * 60 * 1000L
  */
 data class PartyTarget(val category: CategoryDef, val sub: SubcategoryDef?, val all: Boolean = false) {
     val partyType: String get() = category.id
-    val subType: String get() = if (all) ALL else sub?.id ?: ""
+    val subType: String get() = if (all) ALL else sub?.id.orEmpty()
     // All shares the key of the category, so its star is the one of the party type
     val key: String get() = if (sub == null) partyType else "$partyType/$subType"
     val label: String get() = if (sub == null) category.label else "${category.label}: ${sub.label}"
@@ -109,7 +109,7 @@ data class PartyTarget(val category: CategoryDef, val sub: SubcategoryDef?, val 
         all -> category.subcategories.maxOf { it.maxSize ?: category.maxSize }
         else -> sub?.maxSize ?: category.maxSize
     }
-    val open: Boolean get() = sub?.open ?: true
+    val open: Boolean get() = sub?.open != false
     val opensAt: Long? get() = sub?.opensAt
     val createOpen: Boolean get() = sub?.createOpen ?: open
 

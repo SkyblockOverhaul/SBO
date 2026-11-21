@@ -185,6 +185,13 @@
             ]
         },
         {
+            "type": "bitmap",
+            "file": "sbo:font/symbols.png",
+            "height": 8,
+            "ascent": 4,
+            "chars": ["✿❀✦✧☾☘♛♚✪✌☕✈"]
+        },
+        {
             "type": "reference",
             "id": "minecraft:include/unifont"
         }

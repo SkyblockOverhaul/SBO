@@ -9,19 +9,21 @@ import net.minecraft.client.renderer.blockentity.BeaconRenderer
 import net.minecraft.gizmos.GizmoStyle
 import net.minecraft.gizmos.Gizmos
 import net.minecraft.network.chat.Component
-import net.minecraft.util.FormattedCharSequence
+//#if MC > 26.1
+//$$ import net.minecraft.util.FormattedCharSequence
+//#endif
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.settings.categories.Customization
-import net.sbo.mod.settings.categories.Diana
-import net.sbo.mod.settings.categories.Debug
+import net.sbo.mod.settings.categories.Waypoints
 import net.sbo.mod.utils.math.SboVec
 import java.awt.Color
 import kotlin.math.max
 import kotlin.math.sqrt
+//#if MC < 26.3
 import org.joml.Matrix4f
-//#if MC > 26.1
+//#endif
+//#if MC > 26.1 && MC < 26.3
 //$$ import net.fabricmc.fabric.api.client.rendering.v1.SubmitRenderPhases
 //$$ import net.minecraft.client.renderer.feature.TextFeatureRenderer
 //#endif
@@ -30,12 +32,20 @@ object RenderUtils3D {
     fun renderWaypoint(
         context: LevelRenderContext,
         renderText: Boolean,
+        //#if MC < 26.2
         text: Component,
+        //#endif
         textWidth: Int,
-        visualOrderText: FormattedCharSequence,
+        //#if MC > 26.1
+        //$$ visualOrderText: FormattedCharSequence,
+        //#endif
+        //#if MC < 26.2
         secondaryText: Component?,
+        //#endif
         secondaryTextWidth: Int,
-        secondaryVisualOrderText: FormattedCharSequence?,
+        //#if MC > 26.1
+        //$$ secondaryVisualOrderText: FormattedCharSequence?,
+        //#endif
         pos: SboVec,
         colorComponents: FloatArray,
         hexColor: Int,
@@ -72,28 +82,40 @@ object RenderUtils3D {
             drawString(
                 context,
                 pos,
-                if (Customization.lookAlike) 1.0 else 1.5,
+                if (Waypoints.lookAlike) 1.0 else 1.5,
                 0.0,
+                //#if MC < 26.2
                 text,
+                //#endif
                 textWidth,
-                visualOrderText,
+                //#if MC > 26.1
+                //$$ visualOrderText,
+                //#endif
                 hexColor,
-                Customization.waypointTextShadow,
-                if (Customization.lookAlike) 1.5 * Customization.waypointTextScale / 12.0 else Customization.waypointTextScale / 100.0
+                Waypoints.waypointTextShadow,
+                if (Waypoints.lookAlike) 1.5 * Waypoints.waypointTextScale / 12.0 else Waypoints.waypointTextScale / 100.0
             )
 
-            if (secondaryText != null && secondaryVisualOrderText != null) {
+            //#if MC > 26.1
+            //$$ if (secondaryVisualOrderText != null) {
+            //#else
+            if (secondaryText != null) {
+            //#endif
                 drawString(
                     context,
                     pos,
-                    if (Customization.lookAlike) 1.0 else 11.5,
-                    if (Customization.lookAlike) 10.0 else 0.0,
+                    if (Waypoints.lookAlike) 1.0 else 11.5,
+                    if (Waypoints.lookAlike) 10.0 else 0.0,
+                    //#if MC < 26.2
                     secondaryText,
+                    //#endif
                     secondaryTextWidth,
-                    secondaryVisualOrderText,
+                    //#if MC > 26.1
+                    //$$ secondaryVisualOrderText,
+                    //#endif
                     hexColor,
-                    Customization.waypointTextShadow,
-                    if (Customization.lookAlike) 1.7 * Customization.waypointTextScale / 12.0 else Customization.waypointTextScale / 100.0
+                    Waypoints.waypointTextShadow,
+                    if (Waypoints.lookAlike) 1.7 * Waypoints.waypointTextScale / 12.0 else Waypoints.waypointTextScale / 100.0
                 )
             }
         }
@@ -119,6 +141,7 @@ object RenderUtils3D {
         Gizmos.cuboid(AABB.encapsulatingFullBlocks(bPos, bPos), GizmoStyle.fill(argbColor)).setAlwaysOnTop()
     }
 
+    //#if MC < 26.2
     private val legacyDrawString = mutableListOf<DrawInBatchParameters>()
 
     class DrawInBatchParameters(
@@ -132,12 +155,17 @@ object RenderUtils3D {
         val packedLightCoords: Int,
         val pose: Matrix4f
     )
+    //#endif
 
     /**
      * Draws a string in the 3D world that always faces the player.
-     * @param context The matrix stack for transformations.
+     * @param context The render context used for transformations.
      * @param pos The position in the world where the text should be drawn.
-     * @param text The text to draw.
+     * @param worldYOffset The vertical offset of the text in world space.
+     * @param screenYOffset The vertical offset of the text in screen space, used when [Waypoints.lookAlike] is enabled.
+     * @param text The text [Component] to draw. Only used in Minecraft versions below 26.2, above 26.2 the visualOrderText is used instead.
+     * @param textWidth The width of the text in pixels, used to center it horizontally.
+     * @param visualOrderText The text in visual order for rendering. Only used in Minecraft versions 26.2 and above, lower versions use the text parameter (a [Component]).
      * @param color The color of the text in ARGB format.
      * @param shadow Whether to draw the text with a shadow.
      * @param scale The scale of the text.
@@ -147,9 +175,13 @@ object RenderUtils3D {
         pos: SboVec,
         worldYOffset: Double,
         screenYOffset: Double,
+        //#if MC < 26.2
         text: Component,
+        //#endif
         textWidth: Int,
-        visualOrderText: FormattedCharSequence,
+        //#if MC > 26.1
+        //$$ visualOrderText: FormattedCharSequence,
+        //#endif
         color: Int,
         shadow: Boolean,
         scale: Double
@@ -182,13 +214,13 @@ object RenderUtils3D {
             val textDistance = textOffset.length()
             val effectiveDistance = minOf(distance, maxTextDistance)
 
-            val dynamicScale = if (Customization.lookAlike) {
+            val dynamicScale = if (Waypoints.lookAlike) {
                 distRender * scale * 0.05
             } else {
                 max(effectiveDistance, 2.5) * scale
             }
 
-            val renderPos = if (Customization.lookAlike) {
+            val renderPos = if (Waypoints.lookAlike) {
                 val compression = distRender / distToPlayer
 
                 Vec3(
@@ -209,14 +241,18 @@ object RenderUtils3D {
             mulPose(Axis.YP.rotationDegrees(-cameraYaw))
             mulPose(Axis.XP.rotationDegrees(cameraPitch))
 
-            if (Customization.lookAlike) translate(0.0, -screenYOffset * dynamicScale, 0.0)
+            if (Waypoints.lookAlike) translate(0.0, -screenYOffset * dynamicScale, 0.0)
 
             scale(-dynamicScale.toFloat(), -dynamicScale.toFloat(), dynamicScale.toFloat())
 
             val xOffset = -textWidth / 2f
             val yOffset = 0f
 
-            submitText(context, xOffset, yOffset, text, visualOrderText, color, shadow)
+            //#if MC > 26.1
+            //$$ submitText(context, xOffset, yOffset, visualOrderText, color, shadow)
+            //#else
+            submitText(context, xOffset, yOffset, text, color, shadow)
+            //#endif
         }
     }
 
@@ -246,10 +282,18 @@ object RenderUtils3D {
 
             val visualOrderText = text.visualOrderText
             val yOffset = -(mc.font.lineHeight * (linesUp + 1) + linesUp).toFloat()
-            submitText(context, -mc.font.width(visualOrderText) / 2f, yOffset, text, visualOrderText, -1, true)
+            //#if MC > 26.1
+            //$$ submitText(context, -mc.font.width(visualOrderText) / 2f, yOffset, visualOrderText, -1, true)
+            //#else
+            submitText(context, -mc.font.width(visualOrderText) / 2f, yOffset, text, -1, true)
+            //#endif
         }
     }
 
+    /** Lines are cut this far in front of the camera, a bit past the near plane (0.05). See [drawLine]. */
+    private const val LINE_NEAR_PLANE = 0.1
+    /** How far in front of the camera the line from the crosshair starts, see [drawLineFromCursor]. */
+    private const val CURSOR_LINE_START_DISTANCE = 32.0
     private const val VANILLA_NAME_TAG_SCALE = 0.025
     private const val LABEL_VANILLA_SIZE_DISTANCE = 16.0
     private const val LABEL_MAX_GROWTH = 5.0
@@ -261,13 +305,19 @@ object RenderUtils3D {
         context: LevelRenderContext,
         xOffset: Float,
         yOffset: Float,
+        //#if MC < 26.2
         text: Component,
-        visualOrderText: FormattedCharSequence,
+        //#endif
+        //#if MC > 26.1
+        //$$ visualOrderText: FormattedCharSequence,
+        //#endif
         color: Int,
         shadow: Boolean
     ) {
         val layerType = Font.DisplayMode.SEE_THROUGH
-        val outlineColor = 0 // NOTE: has to be zero or otherwise SEE_THROUGH won't work since buildGroup overrides it to NORMAL and then POLYGLON_OFFSET if outlineColor is not zero. So zero is required to render the text through walls.
+        //#if MC > 26.1
+        //$$ val outlineColor = 0 // NOTE: has to be zero or otherwise SEE_THROUGH won't work since buildGroup overrides it to NORMAL and then POLYGLON_OFFSET if outlineColor is not zero. So zero is required to render the text through walls.
+        //#endif
 
         val backgroundColor = 0
 
@@ -315,10 +365,8 @@ object RenderUtils3D {
         //#endif
     }
 
+    //#if MC < 26.2
     fun flushLegacyDrawString(context: LevelRenderContext) {
-        //#if MC > 26.1
-        //$$ throw IllegalStateException("legacy code-path called in 26.2+")
-        //#else
         val iterator = legacyDrawString.iterator()
 
         while (iterator.hasNext()) {
@@ -339,8 +387,8 @@ object RenderUtils3D {
 
             iterator.remove()
         }
-        //#endif
     }
+    //#endif
 
     /**
      * Draws a line from the player's eyes to a target point in the world.
@@ -359,8 +407,11 @@ object RenderUtils3D {
     ) {
         val camera = context.getCamera()
 
+        // Any point straight ahead lands on the crosshair and gives the same line on screen. A far one makes a line to
+        // a target behind the player reach the screen edge: from 1 block ahead it passes so close to the camera that
+        // [drawLine] cuts it off in the middle of the screen.
         val startPos = camera.position()
-            .add(Vec3.directionFromRotation(camera.xRot(), camera.yRot()))
+            .add(Vec3.directionFromRotation(camera.xRot(), camera.yRot()).scale(CURSOR_LINE_START_DISTANCE))
 
         val endPos = target.center()
             .toVec3d()
@@ -377,10 +428,10 @@ object RenderUtils3D {
     }
 
     /**
-     * Draws a line from a start point to a target point in the world.
+     * Draws a line from a start point to a target point in the world. The part behind the camera is cut off.
      * @param context The world render context.
      * @param startPos The start position in the world.
-     * @param target The target position in the world.
+     * @param endPos The end position in the world.
      * @param color The RGB color of the line as a FloatArray (0.0 to 1.0).
      * @param lineWidth The width of the line.
      * @param alpha The alpha value for transparency (0.0 to 1.0).
@@ -393,49 +444,49 @@ object RenderUtils3D {
         lineWidth: Float,
         alpha: Float = 0.5f
     ) {
-        context.pushPop {
-            val cameraPos = context.getCamera().position()
+        val camera = context.getCamera()
 
-            translate(cameraPos.reverse())
+        // Made camera relative in doubles: world coordinates as floats lose precision far from 0 0.
+        var start = startPos.subtract(camera.position())
+        var end = endPos.subtract(camera.position())
 
-            val lineDir = endPos.subtract(startPos)
-            val viewDir = startPos.subtract(cameraPos)
+        // The lines shader widens a line on screen from its projected end points. An end point behind the camera
+        // projects to a flipped, meaningless spot, which made the line wobble whenever its target was behind the
+        // player. Cut the line at a plane just in front of the camera, the part behind it is not visible anyway.
+        val forward = Vec3.directionFromRotation(camera.xRot(), camera.yRot())
+        val startDepth = start.dot(forward)
+        val endDepth = end.dot(forward)
+        if (startDepth < LINE_NEAR_PLANE && endDepth < LINE_NEAR_PLANE) return
+        if (startDepth < LINE_NEAR_PLANE) {
+            start = start.lerp(end, (LINE_NEAR_PLANE - startDepth) / (endDepth - startDepth))
+        } else if (endDepth < LINE_NEAR_PLANE) {
+            end = end.lerp(start, (LINE_NEAR_PLANE - endDepth) / (startDepth - endDepth))
+        }
 
-            val sideVec = lineDir.cross(viewDir).normalize()
-            val upVec = sideVec.cross(lineDir).normalize()
+        // The lines shader uses the normal as the line direction: it projects position + normal to get the direction
+        // on screen and widens the line sideways from it. Any other normal makes the line wobble with the view angle.
+        // Only its axis matters, so it points away from the camera: position + normal then never lands behind it.
+        var dir = end.subtract(start).normalize()
+        if (dir.dot(forward) < 0) dir = dir.reverse()
+        val nx = dir.x.toFloat()
+        val ny = dir.y.toFloat()
+        val nz = dir.z.toFloat()
 
-            val nx = upVec.x.toFloat()
-            val ny = upVec.y.toFloat()
-            val nz = upVec.z.toFloat()
+        context.submitNodeCollector().submitCustomGeometry(
+            context.poseStack(),
+            SboRenderLayers.LINES_THROUGH_WALLS
+        ) { pose, consumer ->
+            consumer
+                .addVertex(pose, start.x.toFloat(), start.y.toFloat(), start.z.toFloat())
+                .setNormal(pose, nx, ny, nz)
+                .setColor(color[0], color[1], color[2], alpha)
+                .setLineWidth(lineWidth)
 
-            val renderLayer = SboRenderLayers.LINES_THROUGH_WALLS
-
-            context.submitNodeCollector().submitCustomGeometry(
-                context.poseStack(),
-                renderLayer
-            ) { pose, consumer ->
-                consumer
-                    .addVertex(
-                        pose,
-                        startPos.x.toFloat(),
-                        startPos.y.toFloat(),
-                        startPos.z.toFloat()
-                   )
-                    .setNormal(pose, nx, ny, nz)
-                    .setColor(color[0], color[1], color[2], alpha)
-                    .setLineWidth(lineWidth)
-
-                consumer
-                    .addVertex(
-                        pose,
-                        endPos.x.toFloat(),
-                        endPos.y.toFloat(),
-                        endPos.z.toFloat()
-                    )
-                    .setNormal(pose, nx, ny, nz)
-                    .setColor(color[0], color[1], color[2], alpha)
-                    .setLineWidth(lineWidth)
-            }
+            consumer
+                .addVertex(pose, end.x.toFloat(), end.y.toFloat(), end.z.toFloat())
+                .setNormal(pose, nx, ny, nz)
+                .setColor(color[0], color[1], color[2], alpha)
+                .setLineWidth(lineWidth)
         }
     }
 
@@ -444,7 +495,6 @@ object RenderUtils3D {
      * @param ctx The world render context.
      * @param vec The position in the world where the beacon beam should be rendered.
      * @param colorComponents The RGB color components as a FloatArray (0.0 to
-     * @param phase Whether the beam should render through walls.
      */
     private fun renderBeaconBeam(
         ctx: LevelRenderContext,
@@ -452,7 +502,7 @@ object RenderUtils3D {
         colorComponents: FloatArray
     ) {
         val player = mc.player ?: return
-        if (vec.center().distanceTo(player.x, player.y, player.z) < Diana.beamDistance) return
+        if (vec.center().distanceTo(player.x, player.y, player.z) < Waypoints.beamDistance) return
 
         val world = mc.level ?: return
         val partialTicks = mc.deltaTracker.getGameTimeDeltaPartialTick(true)

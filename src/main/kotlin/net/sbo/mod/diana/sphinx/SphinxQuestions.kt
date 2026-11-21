@@ -24,5 +24,6 @@ object SphinxQuestions {
         SphinxQuestion("Where is the Titanoboa found?", "Backwater Bayou")
     )
 
-    val CORRECT_ANSWERS: Set<String> = QUESTIONS.map { it.answer }.toSet()
+    val CORRECT_ANSWERS: Set<String> = QUESTIONS.asSequence().map { it.answer }.toSet()
 }
+

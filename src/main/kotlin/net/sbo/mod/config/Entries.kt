@@ -2,6 +2,10 @@ package net.sbo.mod.config
 
 import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty0
+import java.util.EnumSet
+
+fun <T> Collection<T>.asList(): List<T> =
+    this as? List<T> ?: toList()
 
 open class EntriesBuilder {
 
@@ -9,7 +13,7 @@ open class EntriesBuilder {
     internal val elements = mutableListOf<ConfigElement>()
     private var currentSub: Sub? = null
 
-    val subs: List<Sub> get() = elements.filterIsInstance<Sub>().filter { it.toggleable }
+    val subs: List<Sub> get() = elements.asSequence().filterIsInstance<Sub>().filter { it.toggleable }.toList()
 
     internal fun add(element: ConfigElement) {
         if (element is ConfigEntry<*>) {
@@ -35,7 +39,7 @@ open class EntriesBuilder {
 
     private fun <T> number(value: T, convert: (Number) -> T, builder: NumberBuilder<T>.() -> Unit)
         where T : Number, T : Comparable<T> =
-        EntryProvider(null, { NumberBuilder<T>(it) }, builder) { id, b ->
+        EntryProvider(null, { NumberBuilder(it) }, builder) { id, b ->
             NumberEntry(id, value, b.name, b.description, b.range, b.slider, convert)
         }
 
@@ -45,17 +49,30 @@ open class EntriesBuilder {
     fun string(value: String, builder: TypeBuilder.() -> Unit = {}) =
         EntryProvider(null, ::TypeBuilder, builder) { id, b -> StringEntry(id, value, b.name, b.description) }
 
+    /** A key or mouse button, [default] is Minecraft's name for it ("key.keyboard.1"), unbound when left out. */
+    fun keybind(default: String = KeybindEntry.UNBOUND, builder: KeybindBuilder.() -> Unit = {}) =
+        EntryProvider(null, ::KeybindBuilder, builder) { id, b -> KeybindEntry(id, default, b.name, b.description, b.menuOnly) }
+
     fun choice(value: String, builder: ChoiceBuilder.() -> Unit = {}) =
         EntryProvider(null, ::ChoiceBuilder, builder) { id, b -> ChoiceEntry(id, value, b.name, b.description, b.options) }
 
-    fun strings(vararg value: String, builder: TypeBuilder.() -> Unit = {}) =
-        EntryProvider(null, ::TypeBuilder, builder) { id, b -> StringsEntry(id, arrayOf(*value), b.name, b.description) }
+    fun strings(vararg value: String, builder: StringsBuilder.() -> Unit = {}) =
+        EntryProvider(null, ::StringsBuilder, builder) { id, b -> StringsEntry(id, arrayOf(*value), b.name, b.description, b.template) }
 
-    inline fun <reified E : Enum<E>> enum(value: E, noinline builder: TypeBuilder.() -> Unit = {}) =
-        EntryProvider(null, ::TypeBuilder, builder) { id, b -> EnumEntry(id, value, b.name, b.description, enumValues<E>().toList()) }
+    /** One constant of [E], options show the [Option] label and description. */
+    inline fun <reified E : Enum<E>> option(value: E, noinline builder: TypeBuilder.() -> Unit = {}) =
+        EntryProvider(null, ::TypeBuilder, builder) { id, b -> OptionEntry(id, value, b.name, b.description, enumValues<E>().toList()) }
 
-    inline fun <reified E : Enum<E>> select(vararg value: E, noinline builder: TypeBuilder.() -> Unit = {}) =
-        EntryProvider(null, ::TypeBuilder, builder) { id, b -> SelectEntry(id, arrayOf(*value), b.name, b.description, E::class.java) }
+    /** Any number of constants of [E], [value] is the default selection. */
+    inline fun <reified E : Enum<E>> options(vararg value: E, noinline builder: TypeBuilder.() -> Unit = {}) =
+        EntryProvider(null, ::TypeBuilder, builder) { id, b -> OptionsEntry(id, EnumSet.noneOf(E::class.java).apply { addAll(value.toSet()) }, b.name, b.description, enumValues<E>().toList(), E::class.java) }
+
+    inline fun <reified E : Enum<E>> options(
+        value: Collection<E>,
+        noinline builder: TypeBuilder.() -> Unit = {},
+    ) = EntryProvider(null, ::TypeBuilder, builder) { id, b ->
+        OptionsEntry(id, EnumSet.noneOf(E::class.java).apply { addAll(value) }, b.name, b.description, enumValues<E>().asList(), E::class.java)
+    }
 
     fun button(builder: ButtonBuilder.() -> Unit) {
         val button = ButtonBuilder().apply(builder)
@@ -71,7 +88,7 @@ open class EntriesBuilder {
 
     companion object {
         // Kept from ResourcefulConfigKt so the existing categories compile unchanged
-        fun Literal(value: String): String = value
+        fun literal(value: String): String = value
     }
 }
 
@@ -91,6 +108,7 @@ class EntryProvider<T, B : TypeBuilder> @PublishedApi internal constructor(
         val built = builderFactory(id).apply(builder)
         val entry = create(id, built)
         entry.requirements = built.requirements
+        entry.since = built.since?.let { requireNotNull(ModVersion.parse(it)) { "Setting $id has an invalid since version: $it" } }
         entries.add(entry)
         return entry
     }
@@ -109,6 +127,10 @@ class ObservableEntry<T>(
 open class TypeBuilder(val id: String) {
     var name: String = id
     var description: String = ""
+
+    /** The mod version that adds the setting ("0.7.2-beta.2"), it is listed under What's New for players updating to it. */
+    var since: String? = null
+
     internal var requirements: List<Requirement> = emptyList()
 
     // Until a requirement is met an on/off setting reads as off, and the settings screen locks the row and links the requirement
@@ -122,7 +144,7 @@ open class TypeBuilder(val id: String) {
     /** Only usable while at least one of [settings] is on: `dependsAny(::guessAndBurrowLine, ::inqLine)`. */
     fun dependsAny(vararg settings: KProperty0<Boolean>) = addRequirement(settings.map(::on), any = true)
 
-    /** For settings that aren't on/off: `depends(state(::lootTracker, "on") { it != Tracker.OFF })`. */
+    /** For settings that aren't on/off: `depends(state(::waypointOpacity, "above 0") { it > 0 })`, an option with an [OffOption] uses [notOff]. */
     fun depends(vararg conditions: Condition) = addRequirement(conditions.toList(), any = false)
 
     /** At least one of [conditions] has to be met, they can mix [state] and [on]. */
@@ -133,6 +155,9 @@ open class TypeBuilder(val id: String) {
     fun <T> state(setting: KProperty0<T>, state: String, check: (T) -> Boolean) = Condition(setting, state) { check(it as T) }
 
     fun on(setting: KProperty0<Boolean>) = state(setting, "") { it }
+
+    /** [setting] isn't on its [OffOption] constant: `depends(notOff(::lootTracker))`. */
+    fun <E : Enum<E>> notOff(setting: KProperty0<E>) = state(setting, "on") { !it.isOff }
 
     private fun addRequirement(conditions: List<Condition>, any: Boolean) {
         requirements = requirements + Requirement(conditions, any)
@@ -149,7 +174,18 @@ class ColorBuilder(id: String) : TypeBuilder(id) {
     var presets: IntArray = intArrayOf()
 }
 
+class KeybindBuilder(id: String) : TypeBuilder(id) {
+    /** True for a key that only works in a menu, it can share its key with Minecraft's keys then. */
+    var menuOnly: Boolean = false
+}
+
+class StringsBuilder(id: String) : TypeBuilder(id) {
+    /** Text the settings screen can put into the field with its template button, one line per entry. Null: no button. */
+    var template: String? = null
+}
+
 class ChoiceBuilder(id: String) : TypeBuilder(id) {
+    /** Read every time the settings screen shows the entry, so the options can change while the game runs. */
     var options: () -> List<Choice> = { emptyList() }
 }
 

@@ -18,12 +18,20 @@ abstract class DirtyFlushableOverlay {
     }
 
     private fun flushUpdateLines() {
-        if (!dirty || !overlay.checkCondition()) {
+        if (!dirty || !isShown()) {
             return
         }
 
-        overlay.setLines(generateLines())
+        flush()
         dirty = false
+    }
+
+    /** Whether it is drawn, the lines are only made while it is. */
+    protected open fun isShown(): Boolean = overlay.checkCondition()
+
+    /** Shows the current data, by default as the [generateLines] of [overlay]. */
+    protected open fun flush() {
+        overlay.setLines(generateLines())
     }
 
     abstract fun generateLines(): List<OverlayTextLine>

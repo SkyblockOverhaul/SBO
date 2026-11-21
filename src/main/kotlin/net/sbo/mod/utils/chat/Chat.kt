@@ -242,10 +242,11 @@ object Chat {
 
     /**
      * Gets a message that fills one line of chat by repeating the separator.
-     * @param separator The string to repeat. Defaults to -.
-     * @return The message string that fills the chat line.
+     * @param separator The message to repeat. Defaults to -.
+     * @param color     The color to append before the repeated text. Defaults to §b.
+     * @return The message that fills the chat line, with the given color.
      */
-    fun getChatBreak(separator: String = "-", colorCodes: String = "§b"): String {
+    fun getChatBreak(separator: String = "-", color: String = "§b"): String {
         if (separator.isEmpty()) {
             return ""
         }
@@ -258,6 +259,25 @@ object Chat {
         }
 
         val repeatCount = chatWidth / separatorWidth
-        return colorCodes + separator.repeat(repeatCount)
+        return color + separator.repeat(repeatCount)
+    }
+
+    fun showTitle(title: String?, subtitle: String?, fadeIn: Int, time: Int, fadeOut: Int, overwrite: Boolean = true) {
+        val currentDurationTicks = mc.gui.titleTime
+        // A title whose time ran out is not drawn anymore, even if Minecraft did not clear it (a times packet can set its time to 0)
+        val currentTitle = if (currentDurationTicks > 0) mc.gui.title?.string else null
+        val currentSubtitle = if (currentDurationTicks > 0) mc.gui.subtitle?.string else null
+
+        if (overwrite || time >= currentDurationTicks) {
+            mc.gui.setTimes(fadeIn, time, fadeOut)
+        }
+
+        if (title != null && (overwrite || currentTitle.isNullOrEmpty())) {
+            mc.gui.setTitle(Component.nullToEmpty(title))
+        }
+
+        if (subtitle != null && (overwrite || currentSubtitle.isNullOrEmpty())) {
+            mc.gui.setSubtitle(Component.nullToEmpty(subtitle))
+        }
     }
 }

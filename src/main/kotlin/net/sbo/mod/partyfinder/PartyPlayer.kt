@@ -2,7 +2,9 @@ package net.sbo.mod.partyfinder
 
 import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.diana.achievements.AchievementManager.trackWithCheckPlayer
-import net.sbo.mod.utils.Helper.sleep
+import net.sbo.mod.partyfinder.api.PfError
+import net.sbo.mod.partyfinder.api.PlayerStats
+import net.sbo.mod.utils.events.TickScheduler.sleep
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.AchievementStats
@@ -46,17 +48,10 @@ object PartyPlayer {
 
     fun init() {
         Register.command("sboreloadstats") {
-            val waitSeconds = cacheBypassReadyIn()
-            if (waitSeconds > 0) {
-                Chat.chat("§6[SBO] §cPlease wait ${waitSeconds}s before reloading stats again.")
-                return@command
-            }
-            reloadStats(
-                onError = { error ->
-                    Chat.chat("§6[SBO] §cFailed to reload stats: ${error.message}")
-                }
-            ) { stats ->
-                Chat.chat("§6[SBO] §aPlayer stats reloaded: ${stats.name} (SB Level: ${stats.sbLvl})")
+            reloadStats(onError = { Chat.chat("§6[SBO] §cCould not reload your stats: ${ProblemText.error(it)}") }) { stats ->
+                val wait = reloadWait(stats)
+                if (wait != null) Chat.chat("§6[SBO] §e$wait")
+                else Chat.chat("§6[SBO] §aPlayer stats reloaded: ${stats.name} (SB Level: ${stats.general?.sbLevel ?: 0})")
             }
         }
 
@@ -82,19 +77,20 @@ object PartyPlayer {
         }
     }
 
-    /**
-     * Refetches with readCache=false, for /sboreloadstats.
-     * @param onError Called on failure instead of [callback], which otherwise gets the old stats.
-     */
-    private fun reloadStats(
-        onError: ((Exception) -> Unit)? = null,
-        callback: (AchievementStats) -> Unit
-    ) {
-        if (refreshing) {
-            callback(stats)
-            return
+    /** Loads all stats fresh from Hypixel API. Within 5 minutes of the last refresh the backend sends what it has cached. */
+    fun reloadStats(onError: (PfError) -> Unit, onDone: (PlayerStats) -> Unit) {
+        PlayerStatsCache.own(refresh = true, onError = onError) { stats ->
+            load()
+            onDone(stats)
         }
-        fetch(readCache = false, profile = currentProfile(), onError = onError, callback = callback)
+    }
+
+    /** The message when the force reload is still on cooldown, null when it went through. */
+    fun reloadWait(stats: PlayerStats): String? {
+        val minutes = (System.currentTimeMillis() - stats.dataAt) / 60_000
+        if (minutes < 1 || stats.refreshIn <= 0) return null
+        val wait = if (stats.refreshIn >= 60) "${stats.refreshIn / 60}m ${stats.refreshIn % 60}s" else "${stats.refreshIn}s"
+        return "Your stats are from $minutes min ago. SBO loads them from Hypixel at most every 5 minutes, try again in $wait."
     }
 
     private fun fetch(

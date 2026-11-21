@@ -9,3 +9,4 @@ import net.minecraft.world.entity.Entity
  * @param world The world the entity was loaded into.
  */
 class EntityLoadEvent(val entity: Entity, val world: ClientLevel)
+

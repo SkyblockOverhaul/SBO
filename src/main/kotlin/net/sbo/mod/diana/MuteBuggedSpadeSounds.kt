@@ -3,8 +3,7 @@ package net.sbo.mod.diana
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.PlaySoundEvent
 import net.sbo.mod.utils.game.World
-import net.sbo.mod.utils.Helper
-import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.settings.categories.Burrows
 
 object MuteBuggedSpadeSounds {
     fun init() {
@@ -16,13 +15,16 @@ object MuteBuggedSpadeSounds {
      */
     @SboEvent
     fun onPlaySound(event: PlaySoundEvent) {
-        if (!Diana.muteBuggedSpadeSounds || !World.isInHub() || !Helper.hasSpade) return
+        if (!Burrows.muteBuggedSpadeSounds || !World.isInHub() || !DianaState.hasSpade) return
 
         val sound = event.sound
         val isRealMusic = sound.pitch == 1f && sound.volume == 1f && sound.x == 0.0 && sound.y == 0.0 && sound.z == 0.0
 
-        if (sound.identifier.toString().replace("minecraft:", "").startsWith("music") && !isRealMusic) {
-            event.isCanceled = true
+        if (!isRealMusic) {
+            val identifier = sound.identifier.toString()
+            if (identifier.startsWith("minecraft:music") || identifier.startsWith("music")) {
+                event.isCanceled = true
+            }
         }
     }
 }

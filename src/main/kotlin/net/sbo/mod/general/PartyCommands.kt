@@ -2,15 +2,16 @@ package net.sbo.mod.general
 
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.DianaStats
+import net.sbo.mod.overlays.CrownOfAvarice
 import net.sbo.mod.overlays.DianaLoot
-import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.partyfinder.PartyFinderManager
+import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.settings.categories.PartyCommands
-import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.Helper.calcPercentOne
-import net.sbo.mod.utils.Helper.formatNumber
-import net.sbo.mod.utils.Helper.formatTime
-import net.sbo.mod.utils.Helper.getPlayerName
-import net.sbo.mod.utils.Helper.removeFormatting
+import net.sbo.mod.diana.DianaRates.calcPercentOne
+import net.sbo.mod.utils.math.NumberUtil.formatNumber
+import net.sbo.mod.utils.time.TimeUtil.formatTime
+import net.sbo.mod.utils.TextUtil.getPlayerName
+import net.sbo.mod.utils.TextUtil.removeFormatting
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.SboTimerManager
 import net.sbo.mod.utils.chat.Chat
@@ -18,12 +19,13 @@ import net.sbo.mod.utils.data.DataManager.dianaTrackerMayorData
 import net.sbo.mod.utils.data.DataManager.sboData
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.game.ServerStats
-import net.sbo.mod.utils.version.UpdateChecker
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
+import net.sbo.mod.diana.DianaRates
+import net.sbo.mod.utils.TextUtil
 
 object PartyCommands {
     // How to add a new party command:
@@ -123,8 +125,9 @@ object PartyCommands {
         },
         PartyCommand(listOf("!burrows", "!burrow"), { settings.dianaPartyCommands }) {
             val burrows = dianaTrackerMayorData.items.TOTAL_BURROWS
-            val perHr = Helper.getBurrowsPerHr(dianaTrackerMayorData, SboTimerManager.timerMayor)
-            "Burrows: ${formatNumber(burrows, withCommas = true)} ($perHr/h)"
+            val perHr = DianaRates.getBurrowsPerHr(dianaTrackerMayorData, SboTimerManager.timerMayor)
+            val edited = if (dianaTrackerMayorData.edited) " (edited)" else ""
+            "Burrows: ${formatNumber(burrows, withCommas = true)} ($perHr/h)$edited"
         },
         PartyCommand(listOf("!relic", "!relics"), { settings.dianaPartyCommands }) {
             fmt("Relics", dianaTrackerMayorData.items.MINOS_RELIC, dianaTrackerMayorData.mobs.MINOS_CHAMPION)
@@ -155,6 +158,12 @@ object PartyCommands {
         },
         PartyCommand(listOf("!foodls", "!brainfoodls", "!lsbrainfood", "!lsbrain"), { settings.dianaPartyCommands }) {
             fmt("Brain Food LS", dianaTrackerMayorData.items.BRAIN_FOOD_LS, dianaTrackerMayorData.mobs.SPHINX_LS)
+        },
+        PartyCommand(listOf("!looting", "!looting7", "!loot7"), { settings.dianaPartyCommands }) {
+            fmt("Looting 7", dianaTrackerMayorData.items.LOOTING_7, dianaTrackerMayorData.mobs.SPHINX)
+        },
+        PartyCommand(listOf("!lootingls", "!looting7ls", "!lslooting", "!lsloot7"), { settings.dianaPartyCommands }) {
+            fmt("Looting 7 LS", dianaTrackerMayorData.items.LOOTING_7_LS, dianaTrackerMayorData.mobs.SPHINX_LS)
         },
         PartyCommand(listOf("!braided", "!braideds"), { settings.dianaPartyCommands }) {
             fmt("Braided feathers", dianaTrackerMayorData.items.BRAIDED_GRIFFIN_FEATHER, dianaTrackerMayorData.mobs.TOTAL_MOBS)
@@ -191,7 +200,7 @@ object PartyCommands {
         },
         PartyCommand(listOf("!mobs", "!mob"), { settings.dianaPartyCommands }) {
             val totalMobs = dianaTrackerMayorData.mobs.TOTAL_MOBS
-            val perHr = Helper.getMobsPerHr(dianaTrackerMayorData, SboTimerManager.timerMayor)
+            val perHr = DianaRates.getMobsPerHr(dianaTrackerMayorData, SboTimerManager.timerMayor)
             "Mobs: $totalMobs ($perHr/h)"
         },
         PartyCommand(listOf("!mf", "!magicfind"), { settings.dianaPartyCommands }) {
@@ -203,10 +212,10 @@ object PartyCommands {
         PartyCommand(listOf("!profits", "!profit"), { settings.dianaPartyCommands }) {
             val playtime = dianaTrackerMayorData.items.TIME
             val playTimeHrs = playtime.toDouble() / TimeUnit.HOURS.toMillis(1)
-            val profit = DianaLoot.totalProfit(dianaTrackerMayorData)
-            val offerType = if (Diana.ironmanOverrides) "NPC Sell" else Diana.bazaarSettingDiana.toString()
+            val profit = DianaLoot.totalProfit(dianaTrackerMayorData) + CrownOfAvarice.getProfit()
+            val offerType = if (Trackers.npcOnlyPrices) "NPC Sell" else Trackers.bazaarSettingDiana.name
             val profitHour = profit / playTimeHrs
-            "Profit: ${formatNumber(profit)} (${Helper.toTitleCase(offerType)}) ${formatNumber(profitHour)}/h"
+            "Profit: ${formatNumber(profit)} (${TextUtil.toTitleCase(offerType)}) ${formatNumber(profitHour)}/h"
         },
     )
 
@@ -232,7 +241,7 @@ object PartyCommands {
 
     private fun registerPartyChatListeners() {
         DianaStats.registerReplaceStatsMessage()
-        Register.onChatMessage(commandRegex) { message, matchResult ->
+        Register.onChatMessage(commandRegex) { _, matchResult ->
             val unformattedPlayerName = matchResult.groupValues[1]
             val fullMessage = matchResult.groupValues[2]
             val messageParts = fullMessage.trim().split(Regex("\\s+"))
@@ -248,16 +257,19 @@ object PartyCommands {
                 "!w", "!warp" -> if (settings.warpCommand) sendCommand("p warp")
                 "!allinv", "!allinvite" -> if (settings.allinviteCommand) sendCommand("p setting allinvite")
                 // Names from party chat end up in /p commands
-                "!ptme", "!transfer" -> if (settings.transferCommand && Helper.isPlayerName(playerName)) sendCommand("p transfer $playerName")
+                "!ptme", "!transfer" -> if (settings.transferCommand && TextUtil.isPlayerName(playerName)) sendCommand("p transfer $playerName")
                 "!demote" -> (secondArg ?: playerName).let { name ->
-                    if (settings.moteCommand && Helper.isPlayerName(name)) sendCommand("p demote $name")
+                    if (settings.moteCommand && TextUtil.isPlayerName(name)) sendCommand("p demote $name")
                 }
                 "!promote" -> (secondArg ?: playerName).let { name ->
-                    if (settings.moteCommand && Helper.isPlayerName(name)) sendCommand("p promote $name")
+                    if (settings.moteCommand && TextUtil.isPlayerName(name)) sendCommand("p promote $name")
                 }
                 "!c", "!carrot" -> if (settings.carrotCommand) sendResponse(carrot.random())
                 "!time" -> if (settings.timeCommand) sendResponse(SimpleDateFormat("HH:mm:ss").format(Date()))
                 "!tps" -> if (settings.tpsCommand) sendResponse(ServerStats.getTpsString())
+                "!q" -> if (PartyFinderManager.isLeader) {
+                    sendResponse(if (PartyFinderManager.inQueue) "Party is in queue." else "Party is not in queue.")
+                }
                 "!stats", "!stat" -> if (settings.dianaPartyCommands && secondArg.equals(user, ignoreCase = true)) {
                     DianaStats.sendPlayerStats()
                 }
@@ -295,6 +307,8 @@ object PartyCommands {
             "wool", "wools" -> "Kings since wool: ${sboData.kingSinceWool}"
             "corels", "lscore" -> "Mantis since lootshare core: ${sboData.mantiSinceLsCore}"
             "woolls", "lswool" -> "Kings since lootshare wool: ${sboData.kingSinceLsWool}"
+            "looting", "looting7", "loot7" -> "Sphinx since looting 7: ${sboData.sphinxSinceLooting}"
+            "lootingls", "lslooting", "looting7ls" -> "Sphinx since lootshare looting 7: ${sboData.sphinxSinceLsLooting}"
             else -> return
         }
         sendResponse(response)

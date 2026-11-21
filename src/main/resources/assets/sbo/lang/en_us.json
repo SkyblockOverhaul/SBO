@@ -1,9 +1,4 @@
 {
-  "key.category.sbo-kotlin.keybinds": "SBO - Keybinds",
-
-  "key.sbo-kotlin.guess_warp": "Guess Warp Key",
-  "key.sbo-kotlin.rare_mob_warp": "Rare Mob Warp Key",
-  "key.sbo-kotlin.general_warp": "General Warp Key",
-  "key.sbo-kotlin.send_coords": "Send Coordinates",
-  "key.sbo-kotlin.sphinx_solver": "Sphinx Solver (!!UAYOR!!)"
+  "sbo.controls.keybinds": "SBO Keybinds...",
+  "sbo.controls.keybinds.tooltip": "SBO keys are set in the SBO settings now, under Keybinds"
 }

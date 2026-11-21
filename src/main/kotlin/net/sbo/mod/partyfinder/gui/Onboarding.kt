@@ -6,7 +6,6 @@ import kotlinx.serialization.json.doubleOrNull
 import net.sbo.guilib.core.dom.Element
 import net.sbo.guilib.core.dom.Rect
 import net.sbo.guilib.core.dom.component
-import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.guilib.core.dsl.b
 import net.sbo.guilib.core.dsl.button
 import net.sbo.guilib.core.dsl.div
@@ -47,7 +46,7 @@ internal val ONBOARDING_STEPS = listOf(
     ),
     OnboardingStep(
         "Quick Filters",
-        "\"Can I join\" hides parties whose requirements you don't meet, \"Not full\" hides full parties.",
+        """"Can I join" hides parties whose requirements you don't meet, "Not full" hides full parties.""",
         ".pf-filters"
     ),
     OnboardingStep(
@@ -217,16 +216,13 @@ internal val Onboarding = component<OnboardingProps>("Onboarding") { props ->
     val vw = document.viewportWidth
     val vh = document.viewportHeight
     val hole = spot.rect?.let { highlight(it, vw, vh) }
-    // Without a hole the four dims meet in the middle, so they move smoothly into the next hole
-    val dimmed = hole ?: Rect(vw / 2, vh / 2, 0f, 0f)
+    // The ring's shadow dims the surrounding screen. Without a hole it shrinks to a dimmed dot in the middle, so it
+    // grows smoothly into the next hole (a shadow needs a box of at least one pixel)
+    val ring = hole ?: Rect(vw / 2 - 1f, vh / 2 - 1f, 2f, 2f)
 
     portal {
         div(className = "pf-tour") {
-            dim("top", 0f, 0f, vw, dimmed.y)
-            dim("bottom", 0f, dimmed.bottom, vw, vh - dimmed.bottom)
-            dim("left", 0f, dimmed.y, dimmed.x, dimmed.height)
-            dim("right", dimmed.right, dimmed.y, vw - dimmed.right, dimmed.height)
-            if (hole != null) div(className = "pf-tour-ring", style = box(hole.x, hole.y, hole.width, hole.height), key = "ring")
+            div(className = if (hole == null) "pf-tour-ring pf-tour-closed" else "pf-tour-ring", style = box(ring.x, ring.y, ring.width, ring.height), key = "ring")
 
             val current = ONBOARDING_STEPS.getOrNull(step)
             if (current == null) {
@@ -257,7 +253,7 @@ internal val Onboarding = component<OnboardingProps>("Onboarding") { props ->
                     button(className = "pf-small", disabled = step == 0, onClick = { go(step - 1) }) { +"Back" }
                     val last = step == ONBOARDING_STEPS.lastIndex
                     button(className = "pf-small primary", onClick = { go(step + 1) }) {
-                        +(if (last) "Finish" else "Next")
+                        +if (last) "Finish" else "Next"
                     }
                 }
             }
@@ -268,15 +264,15 @@ internal val Onboarding = component<OnboardingProps>("Onboarding") { props ->
 // One requirement met and one not, so the requirements step shows both colors
 internal fun tourParty(target: PartyTarget, own: MemberView?): PartyView {
     val shown = target.subTargets().first()
-    val reqs = shown.reqs.filter { it.type == "min" }.take(2).mapIndexed { i, def ->
+    val reqs = shown.reqs.asSequence().filter { it.type == "min" }.take(2).mapIndexed { i, def ->
         val have = floor((own?.stats?.get(def.stat) as? JsonPrimitive)?.doubleOrNull ?: 0.0).toLong()
-        def.stat to (JsonPrimitive(if (i == 0) have else have * 2 + 1) as JsonElement)
+        def.stat to JsonPrimitive(if (i == 0) have else have * 2 + 1) as JsonElement
     }.toMap()
     val leader = MemberView(TOUR_LEADER, "ExampleLeader")
     return PartyView(
         id = TOUR_LEADER,
         partyType = shown.partyType,
-        subType = shown.sub?.id ?: "",
+        subType = shown.sub?.id.orEmpty(),
         partySize = shown.maxSize,
         memberCount = 2,
         note = "Example party for the tour",
@@ -310,10 +306,6 @@ private fun tipPosition(hole: Rect?, width: Float, height: Float, vw: Float, vh:
 
 private fun box(x: Float, y: Float, width: Float, height: Float) =
     "left: ${x}px; top: ${y}px; width: ${width.coerceAtLeast(0f)}px; height: ${height.coerceAtLeast(0f)}px;"
-
-private fun NodeBuilder.dim(key: String, x: Float, y: Float, width: Float, height: Float) {
-    div(className = "pf-tour-dim", style = box(x, y, width, height), key = key)
-}
 
 private fun scrollIntoView(element: Element) {
     var parent = element.parent

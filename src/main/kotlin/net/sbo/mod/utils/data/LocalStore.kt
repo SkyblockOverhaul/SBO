@@ -24,7 +24,7 @@ class LocalStore(fileName: String) {
         val modified = runCatching { Files.getLastModifiedTime(file) }.getOrNull()
         if (modified == cachedAt) return cache
         cache = try {
-            if (modified != null) gson.fromJson(Files.readString(file), mapType) ?: emptyMap() else emptyMap()
+            if (modified != null) gson.fromJson<Map<String, String>>(Files.readString(file), mapType).orEmpty() else emptyMap()
         } catch (e: Exception) {
             SBOKotlin.logger.error("Could not read $file", e)
             emptyMap()

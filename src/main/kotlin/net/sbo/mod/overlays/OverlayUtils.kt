@@ -12,7 +12,10 @@ object OverlayUtils {
         val combined: Boolean = false,
         val dropMobId: String? = null,
         val dropMobLsId: String? = null,
-        val isRarerDrop: Boolean = false
+        val isRarerDrop: Boolean = false,
+        val negativeValue: Boolean = false,
+        // The name in the compact look, only the main loot has one
+        val short: String? = null
     )
 
     internal fun createClickableTextLine(
@@ -32,3 +35,4 @@ object OverlayUtils {
         return line
     }
 }
+

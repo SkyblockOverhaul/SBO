@@ -1,12 +1,11 @@
 package net.sbo.mod.utils
 
-import net.minecraft.world.item.ItemStack
 import net.minecraft.world.entity.player.Inventory
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.utils.math.SboVec
 import java.util.*
 
-val ZERO_UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
+private val ZERO_UUID: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
 
 object Player {
     fun getLastPosition(): SboVec {
@@ -14,16 +13,14 @@ object Player {
         return SboVec(player.x, player.y, player.z)
     }
 
-    fun getUUIDString(): String = mc.player?.stringUUID ?: ""
+    fun getUUIDString(): String = mc.player?.stringUUID.orEmpty()
 
     // Works in the main menu
     fun accountUuid(): String = mc.user.profileId.toString().replace("-", "").lowercase()
 
     fun getUUID(): UUID = mc.player?.uuid ?: ZERO_UUID
 
-    fun getPlayerInventory(): Inventory? {
-        return mc.player?.inventory
-    }
+    fun getPlayerInventory(): Inventory? = mc.player?.inventory
 
     fun getName(): String? = mc.player?.name?.string
 

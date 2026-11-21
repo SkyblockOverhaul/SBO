@@ -1,6 +1,5 @@
 package net.sbo.mod.diana.guesses
 
-import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.waypoint.WaypointManager
 

@@ -35,7 +35,7 @@ internal object StatView {
 
     /** [value] in pieces, colored by themes with Hypixel colors. */
     fun valuePieces(statId: String, value: JsonElement?): List<Piece> {
-        if (value == null || value is JsonNull) return listOf(Piece(ProblemText.value(statId, value)))
+        if (value == null || value === JsonNull) return listOf(Piece(ProblemText.value(statId, value)))
         val pieces = when {
             value is JsonArray && value.isNotEmpty() -> value.flatMapIndexed { i, item ->
                 val id = (item as? JsonObject)?.get("id")?.text() ?: item.text() ?: "?"
@@ -80,7 +80,7 @@ internal object StatView {
             val color = choice?.rarity?.let(::itemRarityClass) ?: (minRarity ?: choice?.rarities?.firstOrNull())?.let(::rarityColor)
             // The tier note in brackets stays uncolored
             val bracket = text.indexOf(" (")
-            val pieces = if (bracket > 0) listOf(Piece(text.substring(0, bracket), color), Piece(text.substring(bracket))) else listOf(Piece(text, color))
+            val pieces = if (bracket > 0) listOf(Piece(text.take(bracket), color), Piece(text.substring(bracket))) else listOf(Piece(text, color))
             if (i == 0) pieces else listOf(Piece(if (ReqMatcher.matchesAll(need)) " and " else " or ")) + pieces
         }
         else -> {
@@ -170,7 +170,7 @@ internal object StatView {
         }
     }
 
-    private fun JsonElement.text(): String? = (this as? JsonPrimitive)?.takeUnless { it is JsonNull }?.contentOrNull
+    private fun JsonElement.text(): String? = (this as? JsonPrimitive)?.takeUnless { it === JsonNull }?.contentOrNull
 
     /** True or false when [own] stats are known, null otherwise. */
     fun meets(def: ReqDef, need: JsonElement, own: MemberView?): Boolean? {
@@ -180,7 +180,7 @@ internal object StatView {
 
     fun accuracyText(stat: StatDef): String = when (stat.accuracy) {
         "minimum" -> {
-            val more = stat.unverifiedUpTo?.let { " The real value can be up to ${ProblemText.number(it)} higher." } ?: ""
+            val more = stat.unverifiedUpTo?.let { " The real value can be up to ${ProblemText.number(it)} higher." }.orEmpty()
             "Estimated: SBO only counts what it can check, so this is the lowest possible value.$more"
         }
         "reported" -> "Estimated: sent by the player's own SBO mod, cannot be verified by Hypixel API."
@@ -197,11 +197,20 @@ internal fun NodeBuilder.pieces(pieces: List<Piece>) {
 }
 
 /** Label of a stat with an info icon; hovering shows what the stat means and where it comes from. */
-internal fun NodeBuilder.statLabel(statId: String, own: MemberView? = null, className: String? = null) {
+internal fun NodeBuilder.statLabel(statId: String, own: MemberView? = null, className: String? = null, icons: Boolean = false) {
     val stat = PartyCategories.stat(statId)
     tooltip(content = { statInfo(statId, own) }, className = "pf-tip") {
         span(className = classNames("pf-stat-label", className)) {
-            +(stat?.label ?: statId)
+            val hypixel = if (icons) HypixelStats.ofStat(statId) else null
+            val label = stat?.label ?: statId
+            // Hypixel colors
+            if (hypixel != null) {
+                statIcon(hypixel)
+                span(className = "pf-c-${hypixel.color}") { +label }
+            } else {
+                if (icons) statItem(statId)
+                +label
+            }
             img(src = "${StatView.ICONS}/info.svg", className = "pf-icon pf-info")
         }
     }

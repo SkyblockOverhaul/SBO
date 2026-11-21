@@ -1,18 +1,48 @@
 pluginManagement {
+    val kotlinVersion = providers.gradleProperty("kotlin.version").get()
+    val preprocessorVersion = providers.gradleProperty("preprocessor.version").get()
+
+    plugins {
+        id("org.jetbrains.kotlin.jvm") version kotlinVersion
+        id("org.jetbrains.kotlin.plugin.serialization") version kotlinVersion
+        id("com.replaymod.preprocess-root") version preprocessorVersion
+    }
+
     repositories {
         gradlePluginPortal()
-        mavenCentral()
 
-        maven("https://maven.deftu.dev/releases")
-        maven("https://maven.deftu.dev/snapshots")
+        exclusiveContent {
+            forRepository {
+                maven("https://maven.fabricmc.net")
+            }
 
-        maven("https://maven.fabricmc.net")
-        maven("https://maven.architectury.dev/")
-        maven("https://maven.minecraftforge.net")
+            filter {
+                includeGroupByRegex("net\\.fabricmc(\\..*)?")
+            }
+        }
 
-        maven("https://repo.essential.gg/repository/maven-public")
+        exclusiveContent {
+            forRepository {
+                maven("https://jitpack.io")
+            }
+
+            filter {
+                includeGroupByRegex("com\\.github\\.replaymod(\\..*)?")
+            }
+        }
+    }
+
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id == "com.replaymod.preprocess-root") {
+                useModule("com.github.replaymod:preprocessor:$preprocessorVersion")
+            }
+        }
     }
 }
+
+rootProject.name = "SBO"
+rootProject.buildFileName = "root.gradle.kts"
 
 include("event-processor")
 
@@ -27,8 +57,6 @@ listOf(
         buildFileName = "../../build.gradle.kts"
     }
 }
-
-rootProject.buildFileName = "root.gradle.kts"
 
 // GuiLib (web-style UI library) lives in its own repository. It normally comes from the SkyblockOverhaul Maven repo;
 // when ../SBO-GuiLib is checked out it is built from source instead (composite build). Disable with -Pguilib.local=false.

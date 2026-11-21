@@ -6,24 +6,36 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.toasts.SystemToast
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
+//#if MC > 26.2
+//$$ import com.mojang.blaze3d.Blaze3D
+//$$ import java.net.URI
+//#else
 import net.minecraft.util.Util
+//#endif
 import net.sbo.mod.compat.IrisCompatibility
 import net.sbo.mod.diana.DianaMobDetect
-import net.sbo.mod.diana.DianaTracker
+import net.sbo.mod.diana.DianaState
+import net.sbo.mod.diana.tracker.MayorReset
+import net.sbo.mod.diana.tracker.Tracker
 import net.sbo.mod.diana.LootshareDisplay
 import net.sbo.mod.diana.LootshareParty
 import net.sbo.mod.diana.RareMobHighlight
+import net.sbo.mod.diana.RareMobKillTime
 import net.sbo.mod.diana.MuteBuggedSpadeSounds
 import net.sbo.mod.diana.achievements.AchievementManager
 import net.sbo.mod.diana.achievements.AchievementManager.unlockAchievement
 import net.sbo.mod.diana.burrows.BurrowDetector
+import net.sbo.mod.diana.burrows.BurrowMap
+import net.sbo.mod.diana.guesses.HubBoundsScan
+import net.sbo.mod.diana.guesses.PreciseGuessBurrow
+import net.sbo.mod.diana.guesses.SpadeGuessOptimizer
 import net.sbo.mod.utils.hubcache.HubChunkCache
 import net.sbo.mod.diana.sphinx.SphinxSolver
 import net.sbo.mod.utils.data.cloud.CloudSync
 import net.sbo.mod.general.HelpCommand
 import net.sbo.mod.general.PartyCommands
 import net.sbo.mod.general.ModConflicts
-import net.sbo.mod.general.SboBadges
+import net.sbo.mod.customizer.SboCustomizer
 import net.sbo.mod.general.Pickuplog
 import net.sbo.mod.guis.AchievementsGui
 import net.sbo.mod.guis.EventsGui
@@ -36,24 +48,48 @@ import net.sbo.mod.partyfinder.PartyFinderSocket
 import net.sbo.mod.partyfinder.OwnStats
 import net.sbo.mod.partyfinder.StatReporter
 import net.sbo.mod.partyfinder.gui.PartyFinderGui
+import net.sbo.mod.profileviewer.ProfileViewerGui
 import net.sbo.mod.partyfinder.PartyPlayer
+import net.sbo.mod.qol.LoadoutKeybinds
 import net.sbo.mod.qol.MessageHider
 import net.sbo.mod.settings.Settings
+import net.sbo.mod.settings.SettingsChanges
 import net.sbo.mod.guis.look.SboLook
 import net.sbo.mod.utils.*
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.events.*
 import net.sbo.mod.utils.game.InventoryUtils
+import net.sbo.mod.utils.game.ItemPrices
 import net.sbo.mod.utils.game.Mayor
 import net.sbo.mod.utils.game.TabList
 import net.sbo.mod.utils.game.World
+import net.sbo.mod.utils.http.ActiveUsers
+import net.sbo.mod.utils.input.KeybindConflicts
 import net.sbo.mod.utils.time.TimeUtil
 import net.sbo.mod.utils.overlay.OverlayManager
 import net.sbo.mod.utils.version.UpdateChecker
 import net.sbo.mod.utils.waypoint.WaypointManager
 import org.slf4j.LoggerFactory
+import java.io.File
+import java.nio.file.Path
 import java.util.regex.Pattern
+
+fun openFolder(folder: File) {
+    //#if MC > 26.2
+    //$$ Blaze3D.openPath(folder.toPath())
+    //#else
+    Util.getPlatform().openFile(folder)
+    //#endif
+}
+
+fun openPath(path: Path) {
+    //#if MC > 26.2
+    //$$ Blaze3D.openPath(path)
+    //#else
+    Util.getPlatform().openPath(path)
+    //#endif
+}
 
 object SBOKotlin : ClientModInitializer {
 	@JvmField
@@ -84,7 +120,11 @@ object SBOKotlin : ClientModInitializer {
     }
 
     fun openInBrowser(url: String) {
+        //#if MC > 26.2
+        //$$ Blaze3D.openUri(URI(url))
+        //#else
         Util.getPlatform().openUri(url)
+        //#endif
     }
 
 	override fun onInitializeClient() {
@@ -109,6 +149,7 @@ object SBOKotlin : ClientModInitializer {
 
 		// Load configuration and data
 		DataManager.init()
+		SettingsChanges.init()
 		SboLook.init()
 
 		// Load Custom Sound System
@@ -121,25 +162,36 @@ object SBOKotlin : ClientModInitializer {
 
 		// load Main Features
 		PartyCommands.init()
-		Register.command("sbo") { args ->
-			val settings = args.firstOrNull()?.lowercase() in setOf("settings", "config")
-			mc.schedule { if (settings) HubGui.openSettings() else HubGui.open() }
+		val settingsWords = listOf("settings", "config")
+		Register.command("sbo", argName = "settings", completions = { previous ->
+			when {
+				previous.isEmpty() -> settingsWords
+				previous.size == 1 && previous[0].lowercase() in settingsWords -> HubGui.settingsPages
+				else -> emptyList()
+			}
+		}) { args ->
+			val settings = args.firstOrNull()?.lowercase() in settingsWords
+			val rest = args.drop(1).joinToString(" ")
+			mc.schedule { if (settings) HubGui.openSettings(rest) else HubGui.open() }
 		}
-		Register.command("sbosettings", "sboconfig") {
-			mc.schedule { HubGui.openSettings() }
+		Register.command("sbosettings", "sboconfig", argName = "category|search", completions = { if (it.isEmpty()) HubGui.settingsPages else emptyList() }) { args ->
+			mc.schedule { HubGui.openSettings(args.joinToString(" ")) }
 		}
 
 		PartyFinderGui.register()
+		ProfileViewerGui.register()
 		SoundsGui.register()
 		AchievementsGui.register()
 		EventsGui.register()
 		HubGui.register()
 		HelpCommand.init()
+		HubBoundsScan.init()
 		CloudSync.init()
-		SboBadges.init()
+		SboCustomizer.init()
 		ModConflicts.init()
 		ClickActionManager.init()
-		SboKeyBinds.init()
+		LoadoutKeybinds.init()
+		KeybindConflicts.init()
 		WaypointManager.init()
 		HypixelModApi.init()
 		PartyFinderManager.init()
@@ -147,20 +199,26 @@ object SBOKotlin : ClientModInitializer {
 		OwnStats.init()
 		StatReporter.init()
 		BurrowDetector.init()
+		BurrowMap.init()
+		PreciseGuessBurrow.init()
+		SpadeGuessOptimizer.init()
 		HubChunkCache.init()
 		TimeUtil.start()
-		DianaTracker.init()
+		Tracker.init()
 		PartyPlayer.init()
 		Pickuplog.init()
 		OverlayManager.init()
 		SboTimerManager.init()
-		Helper.init()
+		DianaState.init()
+		ItemPrices.init()
+		ActiveUsers.init()
 		Bobber.init()
 		Legion.init()
 		DianaStats.init()
 		MagicFind.init()
 		DianaMobs.init()
 		DianaMobDetect.init()
+		RareMobKillTime.init()
 		DianaLoot.init()
 		AchievementManager.init()
 		MessageHider.init()
@@ -171,16 +229,18 @@ object SBOKotlin : ClientModInitializer {
 		InventoryUtils.init()
 		Chains.init()
 		MuteBuggedSpadeSounds.init()
+		CrownOfAvarice.init()
 
 		Register.onTick(100) { unregister ->
 			val player = mc.player
 			if (player != null && World.isInSkyblock()) {
 				if (UpdateChecker.isUpdateAvailable) UpdateChecker.printUpdateMessage()
-				DianaTracker.checkMayorTracker()
+				SettingsChanges.announce()
+				MayorReset.check()
 				PartyPlayer.load()
 				unlockAchievement(38)
 				if (!Debug.disableAutoTweaks) {
-				    Register.onChatMessageCancelable(Pattern.compile("^§aMaximum Particles per Tick now: 50$")) { message, matchResult, unregister ->
+				    Register.onChatMessageCancelable(Pattern.compile("^§aMaximum Particles per Tick now: 50$")) { _, _, unregister ->
 				        unregister()
 				        false
 				    }

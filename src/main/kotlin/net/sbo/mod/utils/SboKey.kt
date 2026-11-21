@@ -10,7 +10,7 @@ object SboKey {
 
     fun get(): String {
         migrateLegacy()
-        return store[Player.accountUuid()] ?: ""
+        return store[Player.accountUuid()].orEmpty()
     }
 
     fun set(key: String) {

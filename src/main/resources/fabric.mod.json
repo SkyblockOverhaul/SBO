@@ -51,7 +51,7 @@
     "fabricloader": ">=${fabric_loader_constraint}",
     "minecraft": "${mc_version_constraint}",
     "java": ">=${java_version_major}",
-    "fabric-api": ">=${fabric_api_version}",
+    "fabric-api": ">=${fabric_api_constraint}",
     "fabric-language-kotlin": ">=${fabric_language_kotlin_version}",
     "hm-api": ">=${hm_api_version}",
     "guilib": ">=${guilib_version}"

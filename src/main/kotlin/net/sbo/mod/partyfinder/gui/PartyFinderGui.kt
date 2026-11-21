@@ -73,7 +73,7 @@ object PartyFinderGui {
 
     private fun startKey(): String {
         val config = DataManager.partyFinderConfigState
-        return if (config.startWithFavorites) config.favorites.firstOrNull() ?: "" else ""
+        return if (config.startWithFavorites) config.favorites.firstOrNull().orEmpty() else ""
     }
 
     private val App = component("PartyFinder") {
@@ -85,9 +85,9 @@ object PartyFinderGui {
         var settingsSection by useState("general")
         var favorites by useState(config.favorites.toList())
         var own by useState<MemberView?>(null)
-        var ownBySub by useState(mapOf<String, MemberView>())
+        var ownBySub by useState(emptyMap<String, MemberView>())
         // Answers arrive one by one, the ref always holds all of them so far
-        val ownCollected = useRef(mapOf<String, MemberView>())
+        val ownCollected = useRef(emptyMap<String, MemberView>())
         var ownError by useState<String?>(null)
         var reload by useState(0)
         var inspected by useState<InspectedPlayer?>(null)
@@ -97,7 +97,7 @@ object PartyFinderGui {
         var uiScale by useState(UiScale.own(config.uiScale))
         useSboScale(uiScale)
         var themeId by useState(config.theme)
-        val theme = useSboTheme(themeId)
+        val theme = useSboTheme("partyfinder", themeId)
         var recombobulated by useState(config.recombobulated)
         var favoritesOnlyOnce by useState(config.favoritesOnlyOnce)
         // On the body like the theme, so modals, tooltips and toasts follow it
@@ -156,7 +156,7 @@ object PartyFinderGui {
             ownError = null
             OwnStats.getAll(targets, onError = { if (currentKey.current == t.key) ownError = ProblemText.error(it) }) { x, me ->
                 if (currentKey.current == t.key) {
-                    ownCollected.current = ownCollected.current + (x.key to me)
+                    ownCollected.current += x.key to me
                     ownBySub = ownCollected.current
                     if (x == targets.first()) own = me
                 }
@@ -210,7 +210,9 @@ object PartyFinderGui {
                             button(className = "pf-small danger", onClick = { PartyFinderManager.removePartyFromQueue() }) { +"Remove" }
                         }
                     }
-                    button(className = "pf-close", title = "Close", onClick = { GuiLib.close() }) { +"x" }
+                    button(className = "pf-close", title = "Close", onClick = { GuiLib.close() }) {
+                        img(src = "${StatView.ICONS}/close.svg", className = "pf-close-icon")
+                    }
                 }
 
                 div(className = "pf-body") {
@@ -269,7 +271,7 @@ object PartyFinderGui {
                             page == "rules" -> RulesPage(Unit, key = "rules")
                             page == "settings" -> SettingsPage(
                                 SettingsProps(
-                                    target, favorites, ::saveFavorites, { reload++ },
+                                    favorites, ::saveFavorites, { reload++ },
                                     font = font,
                                     onFont = { id ->
                                         font = id

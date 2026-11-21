@@ -16,3 +16,4 @@ internal class EvictingQueue<T>(private val maxSize: Int) {
         queue.clear()
     }
 }
+

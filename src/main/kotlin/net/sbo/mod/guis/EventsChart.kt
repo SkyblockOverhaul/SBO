@@ -8,7 +8,6 @@ import net.sbo.guilib.core.dsl.classNames
 import net.sbo.guilib.core.dsl.div
 import net.sbo.guilib.core.dsl.segmented
 import net.sbo.guilib.core.dsl.span
-import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.data.DataManager
 import java.util.Locale
 import kotlin.math.abs
@@ -18,6 +17,7 @@ import kotlin.math.floor
 import kotlin.math.hypot
 import kotlin.math.log10
 import kotlin.math.pow
+import net.sbo.mod.utils.math.NumberUtil
 
 /** One event in the chart; [profitPerHour] and [chimeraRate] are null when there is nothing to divide by. */
 internal data class ChartPoint(
@@ -109,9 +109,9 @@ private fun metricValue(p: ChartPoint, metric: String): Double? = when (metric) 
 }
 
 private fun format(value: Double, metric: String) = when (metric) {
-    "chimeras" -> Helper.formatNumber(value.toInt())
-    "profitPerHour" -> "${Helper.formatNumber(value)}/h"
-    else -> Helper.formatNumber(value)
+    "chimeras" -> NumberUtil.formatNumber(value.toInt())
+    "profitPerHour" -> "${NumberUtil.formatNumber(value)}/h"
+    else -> NumberUtil.formatNumber(value)
 }
 
 /** Height in percent of the plot, at least a sliver so a small value still shows. */
@@ -150,8 +150,8 @@ private fun NodeBuilder.splitChart(points: List<ChartPoint>, onSelect: (Int) -> 
         points.forEach { p ->
             val total = p.parts.sum()
             val tip = buildString {
-                append("Year ${p.year}: ${Helper.formatNumber(total)}")
-                PARTS.forEachIndexed { n, label -> if (p.parts[n] > 0) append("\n$label: ${Helper.formatNumber(p.parts[n])}") }
+                append("Year ${p.year}: ${NumberUtil.formatNumber(total)}")
+                PARTS.forEachIndexed { n, label -> if (p.parts[n] > 0) append("\n$label: ${NumberUtil.formatNumber(p.parts[n])}") }
             }
             div(className = "ev-chart-col", key = p.year, title = tip, onClick = { onSelect(p.year) }) {
                 div(className = classNames("ev-chart-stack", "current" to p.current), style = "height: ${pct(height(total.toDouble(), max))}") {
@@ -242,8 +242,8 @@ private val ProfitLines = component<LinesProps>("EventsProfitLines") { (points, 
         val w = plot.current?.box?.width ?: 0f
         if (s != null && w > 0f) {
             // Keep the point under the mouse (or the middle) where it is
-            val offset = mouseX ?: (s.box.width / 2f)
-            anchor.current = ((s.scrollLeft + offset) / w) to offset
+            val offset = mouseX ?: s.box.width / 2f
+            anchor.current = (s.scrollLeft + offset) / w to offset
         }
         zoom = z
     }
@@ -292,7 +292,7 @@ private val ProfitLines = component<LinesProps>("EventsProfitLines") { (points, 
         div(className = "ev-lines-area") {
             // The profit axis stays put while the plot scrolls
             div(className = "ev-lines-yaxis") {
-                ticks.forEach { t -> span(className = "ev-lines-tick", style = "top: ${pct(tickY(t))}", key = "tick$t") { +Helper.formatNumber(t) } }
+                ticks.forEach { t -> span(className = "ev-lines-tick", style = "top: ${pct(tickY(t))}", key = "tick$t") { +NumberUtil.formatNumber(t) } }
             }
             div(
                 className = "ev-lines-scroll",
@@ -313,7 +313,7 @@ private val ProfitLines = component<LinesProps>("EventsProfitLines") { (points, 
                             fun y(v: Long) = if (top <= 0.0) h else (h * (1.0 - v / top)).toFloat()
                             shown.forEach { s ->
                                 div(className = classNames("ev-lines-series", s.colorClass), key = s.id) {
-                                    for (i in 0 until points.size - 1) {
+                                    for (i in 0..<points.size - 1) {
                                         val x1 = x(i)
                                         val y1 = y(s.values[i])
                                         val dx = x(i + 1) - x1
@@ -330,7 +330,7 @@ private val ProfitLines = component<LinesProps>("EventsProfitLines") { (points, 
                                         div(
                                             className = classNames("ev-lines-dot", "current" to p.current),
                                             style = "left: ${px(x(i) - 2.5f)}; top: ${px(y(v) - 2.5f)}",
-                                            title = "Year ${p.year}${if (p.current) " (running)" else ""} · ${s.label}: ${Helper.formatNumber(v)}",
+                                            title = "Year ${p.year}${if (p.current) " (running)" else ""} · ${s.label}: ${NumberUtil.formatNumber(v)}",
                                             onClick = { onSelect(p.year) },
                                         )
                                     }

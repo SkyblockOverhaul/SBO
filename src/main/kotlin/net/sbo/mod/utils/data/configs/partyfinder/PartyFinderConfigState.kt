@@ -16,18 +16,23 @@ data class PartyFinderConfigState(
     var font: String = "inter",
     // Own size of the party finder window, null = the global one, see UiScale
     var uiScale: Float? = null,
-    // Own theme id of the party finder, null = the global one; see SboThemes, custom themes are "custom:<file name>"
+    // Own theme id of the party finder, null = the global one, see SboThemes. Custom themes are "custom:<file name>"
     var theme: String? = null,
     // Hypixel colors show items one rarity higher
     var recombobulated: Boolean = false,
     var listFilters: MutableMap<String, PartyListFilter> = mutableMapOf(),
     var autoInvite: Boolean = true,
     var autoRequeue: Boolean = true,
-    // Players who can't ask to join own parties, their parties are hidden; see BlockedPlayers
-    var blockedPlayers: MutableList<BlockedPlayer> = mutableListOf()
+    // Players who can't request to join own parties and whose parties are hidden, see BlockedPlayers
+    var blockedPlayers: MutableList<BlockedPlayer> = mutableListOf(),
+    // Players pinned in the profile viewer, in the order the player sorted them
+    var viewerFavorites: MutableList<FavoritePlayer> = mutableListOf()
 ) {
     fun save() = DataManager.save(DataManager::partyFinderConfigState)
 }
 
-/** [uuid] without dashes, [name] as it was when blocked. */
+/** The uuid without dashes and the name from when the player was blocked. */
 data class BlockedPlayer(val uuid: String = "", val name: String = "")
+
+/** The uuid without dashes and the name from when the player was last opened. */
+data class FavoritePlayer(val uuid: String = "", val name: String = "")

@@ -23,16 +23,18 @@ object Backups {
     data class Backup(val file: File, val createdAt: Long, val size: Long)
 
     // Newest first
-    fun list(): List<Backup> = DataManager.backupDir().listFiles().orEmpty().mapNotNull { file ->
+    fun list(): List<Backup> = DataManager.backupDir().listFiles().asSequence().mapNotNull { file ->
         val stamp = NAME.matchEntire(file.name)?.groupValues?.get(1) ?: return@mapNotNull null
         val createdAt = runCatching {
             LocalDateTime.parse(stamp, STAMP).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
         }.getOrDefault(file.lastModified())
         Backup(file, createdAt, file.length())
-    }.sortedByDescending { it.createdAt }
+    }.sortedByDescending { it.createdAt }.toList()
 
     // Client thread. The current data is backed up first (DataManager.importAll)
     fun load(backup: Backup) {
+        // Backups hold the main data, loading one now would overwrite the alpha copies instead
+        require(!DataManager.alphaActive) { "backups can't be loaded while the separate Alpha Network data is in use" }
         val files = ZipFile(backup.file).use { zip ->
             zip.entries().asSequence()
                 .filter { !it.isDirectory && it.name.endsWith(".json") }

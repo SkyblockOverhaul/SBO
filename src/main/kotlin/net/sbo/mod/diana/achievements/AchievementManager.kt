@@ -1,21 +1,22 @@
 package net.sbo.mod.diana.achievements
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.core.component.DataComponents
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.component.CustomData
+import net.sbo.mod.diana.RareMob
 import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.diana.DianaMobDetect.RareDianaMob
+import net.sbo.mod.guis.ConfirmGui
+import net.sbo.mod.overlays.CrownOfAvarice
+import net.sbo.mod.overlays.CrownOfAvarice.isCoA
 import net.sbo.mod.overlays.DianaLoot.totalProfit
-import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.Helper.removeFormatting
+import net.sbo.mod.settings.categories.Trackers
+import net.sbo.mod.utils.TextUtil.removeFormatting
 import net.sbo.mod.utils.HypixelModApi.isOnHypixel
+import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.configs.diana.DianaTrackerMayorData
 import net.sbo.mod.utils.data.AchievementStats
@@ -26,15 +27,22 @@ import net.sbo.mod.utils.data.DataManager.pastDianaEventsData
 import net.sbo.mod.utils.data.DataManager.sboData
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
-import net.sbo.mod.utils.events.impl.entity.EntitiyHitEvent
+import net.sbo.mod.utils.events.impl.entity.EntityHitEvent
 import net.sbo.mod.utils.events.impl.game.WorldChangeEvent
 import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
 import net.sbo.mod.utils.game.ItemLookup
-import java.lang.Thread.sleep
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.regex.Pattern
 import java.util.regex.Matcher
+import net.sbo.mod.diana.DianaState
+import net.sbo.mod.utils.events.TickScheduler
+import net.sbo.mod.utils.game.InventoryUtils
 
 object AchievementManager {
     val rarityColorDict = mapOf(
@@ -57,34 +65,32 @@ object AchievementManager {
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
 
     fun init() {
-        Register.command("sbolockachievements") { args ->
-            if (args.getOrNull(0) != "CONFIRM") {
-                Chat.chat("§6[SBO] §eYou are about to reset all your achievements. Type §c/sbolockachievements CONFIRM §eto confirm")
-                return@command
+        Register.command("sboresetachievements", "sbolockachievements") {
+            ConfirmGui.confirmReset("Reset all achievements?", "Every achievement you unlocked is locked again. This can't be undone.") {
+                achievementsData.totalAchievements.clear()
+                achievementsData.currentEventAchievements.clear()
+                achievementsData.lastEventYear = -1
+
+                DataManager.save(DataManager::achievementsData)
+                Chat.chat("§6[SBO] §eAchievements reset")
             }
-
-            achievementsData.totalAchievements.clear()
-            achievementsData.currentEventAchievements.clear()
-            achievementsData.lastEventYear = -1
-
-            DataManager.save(DataManager::achievementsData)
-            Chat.chat("§6[SBO] §eAchievements locked")
         }
 
         Register.command("sbobacktrackachievements") {
             backTrackAchievements()
         }
         addAllAchievements()
-        
+
         kingSoul()
+        Register.onTick(20) { trackCOA() }
 
         // Die to a Minos King
         // Register.onChatMessage()
     }
 
     private fun addAchievement(id: Int, name: String, description: String, rarity: String, previousId: Int? = null, hidden: Boolean = false, repeatable: Boolean = true, chatOnly: Boolean = false) {
-        if (achievements.containsKey(id)) {
-            throw RuntimeException("Duplicate achievement ID detected: $id. Achievement with this ID already exists: ${achievements[id]?.name}")
+        require(!achievements.containsKey(id)) {
+            "Duplicate achievement ID detected: $id. Achievement with this ID already exists: ${achievements[id]?.name}"
         }
         val achievement = Achievement(id, name, description, rarity, previousId, hidden, repeatable, chatOnly)
         achievements[id] = achievement
@@ -105,20 +111,29 @@ object AchievementManager {
     private fun processQueue() {
         if (isProcessingQueue.compareAndSet(false, true)) {
             coroutineScope.launch {
-                while (achievementQueue.isNotEmpty()) {
-                    val id = achievementQueue.poll()
-                    val achievement = getAchievement(id)
-                    if (achievement != null && achievement.canBeUnlocked()) {
-                        if (achievement.previousId != null && !getAchievement(achievement.previousId)?.isUnlocked()!!) {
-                            achievementQueue.add(achievement.previousId)
-                            achievementQueue.add(id)
-                        } else {
-                            achievement.unlock()
-                            sleep(1000L)
+                try {
+                    while (achievementQueue.isNotEmpty()) {
+                        val id = achievementQueue.poll()
+                        val achievement = getAchievement(id)
+
+                        if (achievement != null && achievement.canBeUnlocked()) {
+                            if (achievement.previousId != null &&
+                                !getAchievement(achievement.previousId)?.isUnlocked()!!
+                            ) {
+                                achievementQueue.add(achievement.previousId)
+                                achievementQueue.add(id)
+                            } else {
+                                achievement.unlock()
+                                delay(1L.seconds)
+                            }
                         }
                     }
+                } finally {
+                    isProcessingQueue.set(false)
+                    if (achievementQueue.isNotEmpty()) {
+                        processQueue()
+                    }
                 }
-                isProcessingQueue.set(false)
             }
         }
     }
@@ -132,9 +147,9 @@ object AchievementManager {
     }
 
     @SboEvent
-    fun onEntityHit(event: EntitiyHitEvent) {
+    fun onEntityHit(event: EntityHitEvent) {
         if (event.entity !is Player) return
-        val isRareMob = RareDianaMob.entries.any { event.entity.name.string.contains(it.display, ignoreCase = true) } && event.entity.uuid.version() != 4
+        val isRareMob = RareMob.entries.any { event.entity.name.string.contains(it.display, ignoreCase = true) } && event.entity.uuid.version() != 4
         if (!isRareMob) return
         val item = event.player.mainHandItem
         val lookup = ItemLookup(item)
@@ -143,7 +158,7 @@ object AchievementManager {
     }
 
 
-    fun trackAchievementsItem(tracker: DianaTrackerMayorData) {
+    internal fun trackAchievementsItem(tracker: DianaTrackerMayorData) {
         if (!isOnHypixel) return
         val itemsData = tracker.items
         val mobsData = tracker.mobs
@@ -253,7 +268,6 @@ object AchievementManager {
         if (mobsData.MANTICORE >= 1) unlockAchievement(112)
 
         if (totalProfit(dianaTrackerMayorData) >= 1_000_000_000L) unlockAchievement(84)
-        trackCOA()
     }
 
     fun trackSince() {
@@ -301,24 +315,24 @@ object AchievementManager {
 
     @SboEvent
     fun trackBeKills(event: GuiOpenEvent) {
-        Helper.sleep(500) {
+        TickScheduler.sleep(500) {
             val screen = event.screen
             if (screen !is AbstractContainerScreen<*>) return@sleep
             if (!event.screen.title.string.contains("Mythological Creatur", ignoreCase = true)) return@sleep
             val slots = screen.menu.slots
 
-            val bullKills = Helper.getKillsFromLore(slots[10].item)
-            val gaiaKills = Helper.getKillsFromLore(slots[11].item)
-            val harpyKills = Helper.getKillsFromLore(slots[12].item)
-            val kingKills = Helper.getKillsFromLore(slots[13].item)
-            val mantiKills = Helper.getKillsFromLore(slots[14].item)
-            val champKills = Helper.getKillsFromLore(slots[15].item)
-            val hunterKills = Helper.getKillsFromLore(slots[16].item)
-            val inqKills = Helper.getKillsFromLore(slots[19].item)
-            val minoKills = Helper.getKillsFromLore(slots[20].item)
-            val catKills = Helper.getKillsFromLore(slots[21].item)
-            val sphinxKills = Helper.getKillsFromLore(slots[22].item)
-            val nymphKills = Helper.getKillsFromLore(slots[23].item)
+            val bullKills = InventoryUtils.getKillsFromLore(slots[10].item)
+            val gaiaKills = InventoryUtils.getKillsFromLore(slots[11].item)
+            val harpyKills = InventoryUtils.getKillsFromLore(slots[12].item)
+            val kingKills = InventoryUtils.getKillsFromLore(slots[13].item)
+            val mantiKills = InventoryUtils.getKillsFromLore(slots[14].item)
+            val champKills = InventoryUtils.getKillsFromLore(slots[15].item)
+            val hunterKills = InventoryUtils.getKillsFromLore(slots[16].item)
+            val inqKills = InventoryUtils.getKillsFromLore(slots[19].item)
+            val minoKills = InventoryUtils.getKillsFromLore(slots[20].item)
+            val catKills = InventoryUtils.getKillsFromLore(slots[21].item)
+            val sphinxKills = InventoryUtils.getKillsFromLore(slots[22].item)
+            val nymphKills = InventoryUtils.getKillsFromLore(slots[23].item)
 
             trackBestiaryKills(listOf(
                 gaiaKills to 50, inqKills to 45, minoKills to 46,
@@ -341,10 +355,10 @@ object AchievementManager {
         // Every mob gets checked, even after one that isn't maxed yet
         val maxed = killsById.map { (kills, id) ->
             val isMaxed = when (id) {
-                45, 104 -> kills >= 500
-                50, 49, 102, 103, 101, 48 -> kills >= 3000
-                47, 46 -> kills >= 1000
-                105, 106 -> kills >= 100
+                105, 106 -> kills >= 50 // manti & kings
+                45, 46, 47, 104 -> kills >= 500 // inq, minotaur, champ, sphinx
+                50, 103 -> kills >= 750 // gaia, harpy
+                48, 49, 101, 102 -> kills >= 1000 // hunter, lynx, nymph, bull
                 else -> false
             }
             if (isMaxed) unlockAchievement(id)
@@ -355,7 +369,7 @@ object AchievementManager {
 
     @SboEvent
     fun trackCarnivalPerks(event: GuiOpenEvent) {
-        Helper.sleep(200) {
+        TickScheduler.sleep(200) {
             val screen = event.screen
             if (screen !is AbstractContainerScreen<*>) return@sleep
             if (!event.screen.title.string.contains("Mythological Ritual", ignoreCase = true)) return@sleep
@@ -391,9 +405,14 @@ object AchievementManager {
     private val COA_MF_PATTERN_MATCHER: Matcher = Pattern.compile("\\+([0-9]*\\.?[0-9]+) Magic Find ")!!.matcher("")
 
     private fun trackCOA() {
+        if (!World.isInHub() || !DianaState.hasSpade) return
+
         val helmet = mc.player?.inventory?.getItem(39) ?: return
+
         val lookup = ItemLookup(helmet)
-        if ("Crown of Avarice" !in lookup.displayName) return
+        val sbId = lookup.sbId
+
+        if (sbId != "CROWN_OF_AVARICE" && sbId != "CROWN_OF_AVARICE_CELEBRATION") return
 
         unlockAchievement(121)
 
@@ -413,10 +432,19 @@ object AchievementManager {
         }
 
         when (mf) {
-            25.0 -> unlockAchievement(124)
+            25.0 -> {
+                unlockAchievement(124)
+                if (CrownOfAvarice.helmet.isCoA() && CrownOfAvarice.helmet != null &&
+                    lookup.uuid == CrownOfAvarice.primaryCoaUuid && Trackers.coaTracker != Trackers.TrackerMode.OFF)
+                    Chat.chat("§6[SBO] §aYour CoA just reached 1B Coins! If you buy a new CoA, don't forget to do /sbosetprimarycoa on the new one to continue tracking your CoA stats.", true)
+            }
+
             22.5 -> unlockAchievement(123)
             20.0 -> unlockAchievement(122)
         }
+
+        val coaCoins = DataManager.dianaTrackerTotalData.items.COA_COINS
+        if (coaCoins >= 3_000_000_000L) unlockAchievement(132)
     }
 
     private fun extractCOAMagicFind(loreLines: List<String>): String {
@@ -455,7 +483,7 @@ object AchievementManager {
 
     @SboEvent
     fun checkDaxeEnchants(event: WorldChangeEvent) {
-        Helper.sleep(2000) {
+        TickScheduler.sleep(2000) {
             var chimV = false
             var lootingV = false
             var divineGift3 = false
@@ -477,8 +505,8 @@ object AchievementManager {
                 if (enchants.getInt("ultimate_chimera").orElse(0) == 5) chimV = true
                 if (enchants.getInt("looting").orElse(0) == 5) lootingV = true
                 if (enchants.getInt("divine_gift").orElse(0) == 3) divineGift3 = true
-                break
             }
+
             if (chimV) unlockAchievement(52)
             if (lootingV) unlockAchievement(53)
             if (divineGift3) unlockAchievement(54)
@@ -487,13 +515,13 @@ object AchievementManager {
     }
 
     private fun kingSoul() {
-        Register.onChatMessage(Regex("^§aYou added a §2Empyrean King Minos §7Lv1750 §asoul to your §9Summoning Ring§a!$")) { message, matchResult ->
+        Register.onChatMessage(Regex("^§aYou added a §2Empyrean King Minos §7Lv1750 §asoul to your §9Summoning Ring§a!$")) { _, matchResult ->
             if ("King Minos" in matchResult.groupValues[0]) unlockAchievement(118)
         }
     }
 
     private fun addAllAchievements() {
-        // Last added achievement id: 131
+        // Last added achievement id: 132
 
         // inquisitor
         addAchievement(1, "Back-to-Back Chimera", "Get 2 Chimera in a row", "Mythic")
@@ -661,9 +689,10 @@ object AchievementManager {
 
         addAchievement(77, "From the ashes", "Drop a Phoenix pet from a Diana mob", "Impossible", hidden = true)
 
-        addAchievement(121, "Capitalism on top!", "Get COA", "Rare", repeatable = false)
+        addAchievement(121, "Capitalism on top!", "Get a COA", "Rare", repeatable = false)
         addAchievement(122, "Inflation speedrun any%", "Get a 10m coins COA", "Epic", 121, repeatable = false)
         addAchievement(123, "Already? Damn that was fast!", "Get a 100m coins COA", "Legendary", 122, repeatable = false)
         addAchievement(124, "All of that just for 2.5 mf...", "Get a 1b coins COA", "Mythic", 123, repeatable = false)
+        addAchievement(132, "Three billion reasons to touch grass", "Earn 3b coins on COAs", "Celestial", repeatable = false)
     }
 }

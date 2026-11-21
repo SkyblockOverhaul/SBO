@@ -2,9 +2,8 @@ package net.sbo.mod.diana.sphinx
 
 import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.network.chat.Component
-import net.sbo.mod.settings.categories.Diana
-import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.Helper.removeFormatting
+import net.sbo.mod.settings.categories.RareMobs
+import net.sbo.mod.utils.TextUtil.removeFormatting
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.chat.ChatUtils.formattedString
 import net.sbo.mod.utils.chat.ChatUtils.getShowTextHoverEvent
@@ -14,6 +13,7 @@ import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.guis.GuiMouseClickBefore
 import java.util.regex.Pattern
+import net.sbo.mod.utils.events.TickScheduler
 
 object SphinxSolver {
     private var currentSession: SphinxSession? = null
@@ -23,7 +23,7 @@ object SphinxSolver {
     }
 
     fun solve() {
-        if (!Diana.sphinxSolver) return
+        if (!RareMobs.sphinxSolver) return
 
         val index = currentSession?.correctAnswersIndex ?: return
         if (index == -1) return
@@ -41,13 +41,15 @@ object SphinxSolver {
 
     private fun detectQuestion() {
         Register.onChatMessageCancelable(
-            Pattern.compile("^(.*?)$", Pattern.DOTALL)
-        ) { message, matchResult ->
-            if (!Diana.sphinxSolver) return@onChatMessageCancelable true
+            Pattern.compile("^(.*?)$")
+        ) { _, matchResult ->
+            if (!RareMobs.sphinxSolver) return@onChatMessageCancelable true
             val questionText = matchResult.group(1).trim()
+            var clean: String? = null
             for (sphinxQuestion in SphinxQuestions.QUESTIONS) {
-                if (sphinxQuestion.question.equals(questionText.removeFormatting(), ignoreCase = true)) {
-                    Helper.sleep(100) {
+                if (clean == null) clean = questionText.removeFormatting()
+                if (sphinxQuestion.question.equals(clean, ignoreCase = true)) {
+                    TickScheduler.sleep(100) {
                         Chat.chat("§6[SBO] §bClick anywhere on the screen to answer while the chat is open.", true)
                     }
                 }
@@ -58,7 +60,7 @@ object SphinxSolver {
         Register.onChatMessageCancelable(
             Pattern.compile("^§7 {3}([ABC])\\) §f(.*?)$")
         ) { msg, matcher ->
-            if (!Diana.sphinxSolver) return@onChatMessageCancelable true
+            if (!RareMobs.sphinxSolver) return@onChatMessageCancelable true
 
             val letter = matcher.group(1)
             val possibleAnswer = matcher.group(2).trim()

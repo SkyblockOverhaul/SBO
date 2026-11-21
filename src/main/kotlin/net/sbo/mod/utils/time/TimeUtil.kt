@@ -3,7 +3,7 @@ package net.sbo.mod.utils.time
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
-import java.util.concurrent.Executors
+import java.nio.ByteBuffer
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -23,12 +23,6 @@ object TimeUtil {
     private const val NTP_TIMEOUT_MILLIS = 5_000
 
     private const val NTP_EPOCH_OFFSET_SECONDS = 2_208_988_800L
-
-    private val EXECUTOR = Executors.newSingleThreadExecutor { runnable ->
-        Thread(runnable, "SBO Time Synchronization").apply {
-            isDaemon = true
-        }
-    }
 
     private val started = AtomicBoolean(false)
 
@@ -77,8 +71,10 @@ object TimeUtil {
             return
         }
 
-        EXECUTOR.execute {
-            synchronize()
+        Thread(::synchronize, "SBO Time Synchronization").apply {
+            isDaemon = true
+            priority = Thread.NORM_PRIORITY + 1 // one-shot thread, have a little more priority than normal to finish earlier if possible
+            start()
         }
     }
 
@@ -160,17 +156,19 @@ object TimeUtil {
             // T4: client response receive time.
             val localReceiveNanoTime = System.nanoTime()
 
-            if (responsePacket.length < NTP_PACKET_SIZE) {
-                throw IllegalStateException("Invalid NTP response")
+            check(responsePacket.length >= NTP_PACKET_SIZE) {
+                "Invalid NTP response"
             }
+
+            val buffer = ByteBuffer.wrap(packet)
 
             // T2: server request receive time.
             val serverReceiveMillis =
-                readNtpTimestamp(packet, 32)
+                readNtpTimestamp(buffer, 32)
 
             // T3: server response transmit time.
             val serverTransmitMillis =
-                readNtpTimestamp(packet, 40)
+                readNtpTimestamp(buffer, 40)
 
             val localSendMillis =
                 localTimeAtNano(localSendNanoTime)
@@ -184,7 +182,7 @@ object TimeUtil {
              * offset = ((T2 - T1) + (T3 - T4)) / 2
              */
             val offsetMillis = (
-                (serverReceiveMillis - localSendMillis) +
+                serverReceiveMillis - localSendMillis +
                     (serverTransmitMillis - localReceiveMillis)
                 ) / 2L
 
@@ -201,31 +199,19 @@ object TimeUtil {
     }
 
     private fun readNtpTimestamp(
-        packet: ByteArray,
+        buffer: ByteBuffer,
         offset: Int
     ): Long {
-        val seconds = readUnsignedInt(packet, offset)
-        val fraction = readUnsignedInt(packet, offset + 4)
+        val seconds = Integer.toUnsignedLong(buffer.getInt(offset))
+        val fraction = Integer.toUnsignedLong(buffer.getInt(offset + 4))
 
         val unixSeconds =
             seconds - NTP_EPOCH_OFFSET_SECONDS
 
         val millis =
-            (fraction * 1_000L) / 0x1_0000_0000L
+            fraction * 1_000L / 0x1_0000_0000L
 
         return unixSeconds * 1_000L + millis
-    }
-
-    private fun readUnsignedInt(
-        packet: ByteArray,
-        offset: Int
-    ): Long {
-        return (
-            (packet[offset].toLong() and 0xFF) shl 24 or
-                ((packet[offset + 1].toLong() and 0xFF) shl 16) or
-                ((packet[offset + 2].toLong() and 0xFF) shl 8) or
-                (packet[offset + 3].toLong() and 0xFF)
-            )
     }
 
     private fun localTimeAtNano(nanoTime: Long): Long {
@@ -239,4 +225,55 @@ object TimeUtil {
         val localSendNanoTime: Long,
         val localReceiveNanoTime: Long
     )
+
+    fun formatTime(milliseconds: Long, decimalSeconds: Boolean = false): String {
+        if (milliseconds <= 0) {
+            return "0s"
+        }
+
+        val totalSeconds = milliseconds / 1000
+        val totalMinutes = totalSeconds / 60
+        val totalHours = totalMinutes / 60
+        val days = totalHours / 24
+        val hours = totalHours % 24
+        val minutes = totalMinutes % 60
+        val seconds = totalSeconds % 60
+
+        val builder = StringBuilder()
+
+        if (days > 0) {
+            builder.append(days).append('d')
+        }
+        if (hours > 0 || days > 0) {
+            if (builder.isNotEmpty()) builder.append(' ')
+            builder.append(hours).append('h')
+        }
+        if (minutes > 0 || hours > 0 || days > 0) {
+            if (builder.isNotEmpty()) builder.append(' ')
+            builder.append(minutes).append('m')
+        }
+        if (builder.isEmpty()) {
+            if (decimalSeconds) {
+                val tenths = (milliseconds + 50) / 100
+                builder.append(tenths / 10)
+                    .append('.')
+                    .append(tenths % 10)
+                    .append('s')
+            } else {
+                builder.append(seconds).append('s')
+            }
+        }
+
+        return builder.toString()
+    }
+
+    /**
+     * Returns the number of seconds since an epoch timestamp.
+     *
+     * The timestamp must originate from System.currentTimeMillis() or another
+     * Unix epoch source (e.g. Hypixel item NBT timestamp).
+     *
+     * For nanoTime, use {@link #getSecondsPassedSinceNano(Long)}
+     */
+    fun getSecondsPassed(timestamp: Long): Long = (TimeUtil.currentTimeMillis() - timestamp) / 1000
 }

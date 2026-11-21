@@ -10,22 +10,11 @@ import net.minecraft.world.level.ChunkPos
 import net.minecraft.world.level.LightLayer
 import net.minecraft.world.level.chunk.LevelChunk
 import net.minecraft.world.level.chunk.status.ChunkStatus
-import net.minecraft.world.phys.AABB
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.General
 import java.util.concurrent.TimeUnit
 
-fun renderHubIslandOnlyEnabled(): Boolean {
-    return General.chunkCacheRenderHubIslandOnly
-}
-
-fun inArea(chunkX: Int, chunkZ: Int, area: AABB): Boolean {
-    val minX = chunkX * 16.0
-    val minZ = chunkZ * 16.0
-
-    return area.minX - 16.0 < minX + 16.0 && area.maxX + 16.0 >= minX &&
-            area.minZ - 16.0 < minZ + 16.0 && area.maxZ + 16.0 >= minZ
-}
+fun renderHubIslandOnlyEnabled(): Boolean = General.chunkCacheRenderHubIslandOnly
 
 /**
  * Shows fake chunks in one level (one Hub server). Chunks the server unloads are copied into the
@@ -39,9 +28,10 @@ class FakeChunkManager internal constructor(
     /** Lowercase tab list area this manager shows fake chunks for, e.g. "hub". */
     val world: String,
     private val store: MutableMap<Long, ChunkSnapshot>,
-    /** Chunks outside of it are neither stored nor faked, null for no limit. */
-    private val area: AABB?,
+    /** Only store and fake chunks of the Hub island ([HubIsland]). */
+    private val hubIslandOnly: Boolean,
 ) {
+    @JvmField
     val chunkCache: ClientChunkCache = level.chunkSource
 
     private val fakeChunks = Long2ObjectMaps.synchronize(Long2ObjectOpenHashMap<FakeChunk>())
@@ -61,12 +51,12 @@ class FakeChunkManager internal constructor(
 
     init {
         // Left over from a session without the limit.
-        if (area != null) store.keys.removeIf { !inArea(ChunkPos.getX(it), ChunkPos.getZ(it)) }
+        if (hubIslandOnly) store.keys.removeIf { !inArea(ChunkPos.getX(it), ChunkPos.getZ(it)) }
     }
 
     fun getChunk(chunkX: Int, chunkZ: Int): LevelChunk? {
         if (!hasFakeChunks) return null
-        return fakeChunks.get(ChunkPos.pack(chunkX, chunkZ))
+        return fakeChunks[ChunkPos.pack(chunkX, chunkZ)]
     }
 
     val fakeChunkCount: Int get() = fakeChunks.size
@@ -116,7 +106,7 @@ class FakeChunkManager internal constructor(
     }
 
     private fun load(chunkX: Int, chunkZ: Int, chunk: FakeChunk, snapshot: ChunkSnapshot) {
-        fakeChunks.put(ChunkPos.pack(chunkX, chunkZ), chunk)
+        fakeChunks[ChunkPos.pack(chunkX, chunkZ)] = chunk
         hasFakeChunks = true
 
         lightColumns.sbo_enableFakeColumn(SectionPos.getZeroNode(chunkX, chunkZ))
@@ -165,7 +155,7 @@ class FakeChunkManager internal constructor(
         if (HubChunkCache.sodiumLoaded) SodiumCompat.onFakeChunkRemoved(level, chunkX, chunkZ, willBeReplaced)
     }
 
-    /** Copies a real chunk before vanilla unloads it, and fakes it afterwards if it is still in view. */
+    /** Copies a real chunk before vanilla unloads it, and fakes it afterward if it is still in view. */
     fun saveRealChunk(chunkX: Int, chunkZ: Int) {
         if (!inArea(chunkX, chunkZ)) return
         val chunk = chunkCache.getChunk(chunkX, chunkZ, ChunkStatus.FULL, false) ?: return
@@ -178,7 +168,7 @@ class FakeChunkManager internal constructor(
 
     fun substitutePending() {
         if (pendingReplacements.isEmpty) return
-        for (i in 0 until pendingReplacements.size) {
+        for (i in 0..<pendingReplacements.size) {
             val key = pendingReplacements.getLong(i)
             if (fakeChunks.containsKey(key)) continue
             loadFromStore(ChunkPos.getX(key), ChunkPos.getZ(key))
@@ -219,11 +209,7 @@ class FakeChunkManager internal constructor(
         pendingReplacements.clear()
     }
 
-    fun inArea(chunkX: Int, chunkZ: Int): Boolean {
-        if (area == null) return true
-
-        return inArea(chunkX, chunkZ, area)
-    }
+    private fun inArea(chunkX: Int, chunkZ: Int): Boolean = !hubIslandOnly || HubIsland.contains(chunkX, chunkZ)
 
     private fun markLoaded(chunkX: Int, chunkZ: Int, chunk: LevelChunk) {
         //#if MC > 26.1

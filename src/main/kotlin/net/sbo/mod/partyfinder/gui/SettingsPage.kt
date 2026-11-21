@@ -17,8 +17,7 @@ import net.sbo.guilib.core.dsl.switch
 import net.sbo.guilib.core.dsl.tabs
 import net.sbo.guilib.core.dsl.useToast
 import net.sbo.mod.partyfinder.BlockedPlayers
-import net.sbo.mod.partyfinder.OwnStats
-import net.sbo.mod.partyfinder.PartyTarget
+import net.sbo.mod.partyfinder.PartyPlayer
 import net.sbo.mod.partyfinder.ProblemText
 import net.sbo.mod.guis.look.SboThemes
 import net.sbo.mod.guis.look.UiScale
@@ -26,7 +25,6 @@ import net.sbo.mod.settings.categories.Themes
 import net.sbo.mod.utils.data.DataManager
 
 internal data class SettingsProps(
-    val target: PartyTarget?,
     val favorites: List<String>,
     val onFavorites: (List<String>) -> Unit,
     val onStatsReloaded: () -> Unit,
@@ -121,7 +119,7 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
                 p(className = "pf-hint pf-theme-info") { +props.theme.description }
                 settingRow(
                     "Your own themes",
-                    "Put theme files into this folder. The README in it explains every color, example.json is a theme to copy."
+                    "Put theme files into this folder: a .json with colors or a .css file to restyle everything. The README in it explains it all, example.json and example.css are themes to copy. Ctrl + Shift + C shows the CSS classes of what is under the mouse."
                 ) {
                     button(onClick = {
                         SboThemes.openFolder()
@@ -211,20 +209,17 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
                 p(className = "pf-hint") {
                     +"Reload your stats after you got new gear or leveled up. ${ProblemText.OWN_RELOAD_HINT}"
                 }
-                val target = props.target
-                button(disabled = target == null || reloading, onClick = {
-                    if (target != null) {
-                        reloading = true
-                        OwnStats.get(target, force = true, onError = { error ->
-                            reloading = false
-                            toast.error("Could not reload your stats: ${ProblemText.error(error)}")
-                        }) {
-                            reloading = false
-                            toast.success("Your stats are up to date.")
-                            props.onStatsReloaded()
-                        }
+                button(disabled = reloading, onClick = {
+                    reloading = true
+                    PartyPlayer.reloadStats(onError = { error ->
+                        reloading = false
+                        toast.error("Could not reload your stats: ${ProblemText.error(error)}")
+                    }) { stats ->
+                        reloading = false
+                        PartyPlayer.reloadWait(stats)?.let { toast.info(it) } ?: toast.success("Your stats are up to date.")
+                        props.onStatsReloaded()
                     }
-                }) { +(if (reloading) "Reloading..." else "Reload my stats") }
+                }) { +if (reloading) "Reloading..." else "Reload my stats" }
 
                 h3(className = "pf-section") { +"Help" }
                 settingRow("Tour", "Shows the party finder tour from the first time again.") {

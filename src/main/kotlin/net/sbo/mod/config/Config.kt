@@ -31,9 +31,10 @@ open class Category(val id: String) : EntriesBuilder() {
 
     // Missing, unknown or invalid values leave the entry as it is
     open fun load(json: JsonObject) {
-        // Before the entries, so their change listeners already see the right sub state
+        // Before the entries, so their change listeners already see the right substate
         (json.get(DISABLED_SUBS_KEY) as? JsonArray)?.let { array ->
-            val disabled = array.mapNotNull { (it as? JsonPrimitive)?.takeIf { p -> p.isString }?.asString }.toSet()
+            val disabled = array.asSequence().mapNotNull { (it as? JsonPrimitive)?.takeIf { p -> p.isString }?.asString }
+                .toSet()
             subs.forEach { it.setEnabled(it.title !in disabled) }
         }
         for (entry in entries) {
@@ -51,7 +52,15 @@ open class Category(val id: String) : EntriesBuilder() {
         categories.values.forEach { it.linkRequirements() }
     }
 
-    fun resetAll() {
+    /** Every saved value (also of switched off subs) as plain JSON without comments, sub categories nested by id. */
+    fun values(): JsonObject = JsonObject().also { out ->
+        val disabled = subs.filterNot { it.enabled }
+        if (disabled.isNotEmpty()) out.add(DISABLED_SUBS_KEY, JsonArray().apply { disabled.forEach { add(it.title) } })
+        entries.forEach { out.add(it.id, it.toJson()) }
+        categories.forEach { (id, category) -> out.add(id, category.values()) }
+    }
+
+    private fun resetAll() {
         subs.forEach { it.setEnabled(true) }
         entries.forEach { it.reset() }
         categories.values.forEach { it.resetAll() }
@@ -70,7 +79,7 @@ open class Category(val id: String) : EntriesBuilder() {
     companion object {
         internal val logger = LoggerFactory.getLogger("sbo-config")
 
-        private const val DISABLED_SUBS_KEY = "sbo:disabledSubs"
+        internal const val DISABLED_SUBS_KEY = "sbo:disabledSubs"
         private const val DISABLED_SUBS_COMMENT = "Subs switched off in the settings, their on/off settings count as off."
     }
 }
@@ -84,10 +93,15 @@ open class Config(val file: String) : Category(file) {
 
     private val backup: Path get() = path.resolveSibling("${path.fileName}.bak")
 
+    /** Whether the file was there when it was last loaded, false for a new installation. */
+    var existed: Boolean = false
+        private set
+
     fun load(configDir: Path) {
         this.configDir = configDir
         linkRequirements()
-        if (Files.exists(path)) {
+        existed = Files.exists(path)
+        if (existed) {
             val current = read(path)
             val json = current ?: read(backup)
             if (current == null) {

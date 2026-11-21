@@ -11,13 +11,12 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.partyfinder.api.PfError
-import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.MojangAuth
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.SboKey
 import net.sbo.mod.utils.events.Register
+import net.sbo.mod.utils.http.RefreshingHttpClient
 import java.net.URI
-import java.net.http.HttpClient
 import java.net.http.WebSocket
 import java.net.http.WebSocketHandshakeException
 import java.time.Duration
@@ -25,6 +24,7 @@ import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionStage
 import java.util.concurrent.ConcurrentHashMap
+import net.sbo.mod.utils.TextUtil
 
 /** Join requests over `/pf/ws` instead of `/msg`, only connected while the own party is listed or an answer is due. */
 object PartyFinderSocket {
@@ -44,7 +44,9 @@ object PartyFinderSocket {
     }
 
     private val json = Json { ignoreUnknownKeys = true }
-    private val client: HttpClient = HttpClient.newBuilder().connectTimeout(Duration.ofMillis(CONNECT_WAIT_MS)).build()
+    private val client = RefreshingHttpClient(refreshIntervalTicks = null) {
+        connectTimeout(Duration.ofMillis(CONNECT_WAIT_MS))
+    }
     private val lock = Any()
 
     @Volatile private var socket: WebSocket? = null
@@ -140,11 +142,13 @@ object PartyFinderSocket {
     private fun connect() {
         MojangAuth.ensureKey(onFail = { opened(null) }) { key ->
             val uri = URI.create(SBOKotlin.API_URL.replaceFirst("http", "ws") + "/pf/ws")
-            client.newWebSocketBuilder()
-                .connectTimeout(Duration.ofMillis(CONNECT_WAIT_MS))
-                .header("x-sbo-key", key)
-                .header("x-sbo-uuid", Player.accountUuid())
-                .buildAsync(uri, Listener())
+            client.useClient {
+                it.newWebSocketBuilder()
+                    .connectTimeout(Duration.ofMillis(CONNECT_WAIT_MS))
+                    .header("x-sbo-key", key)
+                    .header("x-sbo-uuid", Player.accountUuid())
+                    .buildAsync(uri, Listener())
+            }
                 .whenComplete { ws, error ->
                     if (error != null) {
                         // A refused key (unknown, replaced or of another account): the next try logs in again
@@ -183,7 +187,7 @@ object PartyFinderSocket {
         val type = message["type"]?.jsonPrimitive?.contentOrNull
         if (type == "party_removed") {
             val error = (message["error"] as? JsonObject)?.let { runCatching { json.decodeFromJsonElement<PfError>(it) }.getOrNull() }
-                ?: PfError(PfError.PARTY_NOT_FOUND, "")
+                ?: PfError(PfError.PARTY_NOT_FOUND)
             return SBOKotlin.mc.execute { PartyFinderManager.onPartyRemoved(error) }
         }
         val requestId = message["requestId"]?.jsonPrimitive?.contentOrNull ?: return
@@ -192,8 +196,8 @@ object PartyFinderSocket {
                 val name = message["name"]?.jsonPrimitive?.contentOrNull ?: return
                 val uuid = message["uuid"]?.jsonPrimitive?.contentOrNull ?: return
                 // The name ends up in /p invite
-                if (!Helper.isPlayerName(name)) return answer(requestId, invited = false)
-                val role = message["role"]?.takeIf { it !is JsonNull }?.jsonPrimitive?.contentOrNull
+                if (!TextUtil.isPlayerName(name)) return answer(requestId, invited = false)
+                val role = message["role"]?.takeIf { it !== JsonNull }?.jsonPrimitive?.contentOrNull
                 SBOKotlin.mc.execute { PartyFinderManager.onSocketJoinRequest(requestId, uuid, name, role) }
             }
             "join_result" -> {

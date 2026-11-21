@@ -1,5 +1,6 @@
 package net.sbo.mod.config
 
+import com.mojang.blaze3d.platform.InputConstants
 import net.sbo.guilib.core.dom.component
 import net.sbo.guilib.core.dom.createContext
 import net.sbo.guilib.core.dsl.NodeBuilder
@@ -10,6 +11,7 @@ import net.sbo.guilib.core.dsl.div
 import net.sbo.guilib.core.dsl.h1
 import net.sbo.guilib.core.dsl.h2
 import net.sbo.guilib.core.dsl.header
+import net.sbo.guilib.core.dsl.img
 import net.sbo.guilib.core.dsl.input
 import net.sbo.guilib.core.dsl.multiSelect
 import net.sbo.guilib.core.dsl.numberInput
@@ -18,6 +20,7 @@ import net.sbo.guilib.core.dsl.select
 import net.sbo.guilib.core.dsl.slider
 import net.sbo.guilib.core.dsl.span
 import net.sbo.guilib.core.dsl.switch
+import net.sbo.guilib.core.dsl.textarea
 import net.sbo.guilib.core.dsl.useEscapeBack
 import net.sbo.guilib.fabric.GuiLib
 import net.sbo.guilib.fabric.GuiLibScreen
@@ -35,15 +38,21 @@ import kotlin.math.pow
 object ConfigGui {
     private val STYLES = listOf("sbo:ui/config/config.css", SboLook.STYLE)
 
-    fun open(config: Config, title: String, onBack: (() -> Unit)? = null) {
-        GuiLib.open(app(config, title, onBack), STYLES, title)
+    /**
+     * @param onBack run by the back button, no back button when null
+     * @param whatsNew the What's New page, opened first when it asks for that and there is no [page] or [query]
+     * @param page the category to open on, the home page when null
+     * @param query typed into the search
+     */
+    fun open(config: Config, title: String, onBack: (() -> Unit)? = null, whatsNew: WhatsNew? = null, page: Category? = null, query: String = "") {
+        GuiLib.open(app(config, title, onBack, whatsNew, page, query), STYLES, title)
     }
 
-    fun screen(config: Config, title: String, onBack: (() -> Unit)? = null): GuiLibScreen =
-        GuiLib.screen(app(config, title, onBack), STYLES, title)
+    fun screen(config: Config, title: String, onBack: (() -> Unit)? = null, whatsNew: WhatsNew? = null): GuiLibScreen =
+        GuiLib.screen(app(config, title, onBack, whatsNew), STYLES, title)
 
-    private fun app(config: Config, title: String, onBack: (() -> Unit)?) =
-        component(title) { App(AppProps(config, onBack)) }
+    private fun app(config: Config, title: String, onBack: (() -> Unit)?, whatsNew: WhatsNew?, page: Category? = null, query: String = "") =
+        component(title) { App(AppProps(config, onBack, whatsNew?.takeIf { it.hits.isNotEmpty() }, page, query)) }
 }
 
 private class Ui(
@@ -53,22 +62,34 @@ private class Ui(
     val jump: (ConfigElement) -> Unit,
     val collapsed: Set<String>,
     val toggle: (String) -> Unit,
+    /** Opens [StringsEntry] in the big editor. */
+    val edit: (StringsEntry) -> Unit,
 )
 
 private val UiContext = createContext<Ui?>(null, "ConfigUi")
 
-private data class AppProps(val config: Config, val onBack: (() -> Unit)?)
+/**
+ * @property startPage the category shown first, the home page when null
+ * @property startQuery typed into the search when the screen opens
+ */
+private data class AppProps(val config: Config, val onBack: (() -> Unit)?, val whatsNew: WhatsNew?, val startPage: Category?, val startQuery: String)
 
-private val App = component<AppProps>("ConfigApp") { (config, onBack) ->
+private val App = component<AppProps>("ConfigApp") { (config, onBack, whatsNew, startPage, startQuery) ->
     val hasGeneral = config.elements.isNotEmpty()
-    var page by useState<Category>(if (hasGeneral) config else config.children.firstOrNull() ?: config)
-    var query by useState("")
+    // null is the home page with every category below each other
+    var page by useState(startPage)
+    // What's New is shown instead of the page while this is on
+    var showNew by useState(startPage == null && startQuery.isEmpty() && whatsNew?.openFirst == true)
+    // The count only marks it as not looked at yet
+    var newSeen by useState(whatsNew?.seen == true)
+    var query by useState(startQuery)
     var target by useState<ConfigElement?>(null)
+    var editing by useState<StringsEntry?>(null)
     var collapsed by useState<Set<String>>(DataManager.sboData.collapsedSettings.toSet())
     val revision = useState(0)
     val body = useElementRef()
     useSboScale()
-    useSboTheme()
+    useSboTheme("settings")
 
     fun setCollapsed(keys: Set<String>) {
         collapsed = keys
@@ -77,7 +98,9 @@ private val App = component<AppProps>("ConfigApp") { (config, onBack) ->
     }
 
     fun show(category: Category, element: ConfigElement) {
-        page = category
+        // The home page has it too, so that stays
+        if (page != null) page = category
+        showNew = false
         query = ""
         target = element
         // Jumping from the search into a collapsed sub opens it
@@ -100,6 +123,7 @@ private val App = component<AppProps>("ConfigApp") { (config, onBack) ->
             },
             collapsed = collapsed,
             toggle = { key -> setCollapsed(if (key in collapsed) collapsed - key else collapsed + key) },
+            edit = { editing = it },
         )
     }
     val hits = useMemo(query, revision.value) { search(config, query) }
@@ -108,7 +132,12 @@ private val App = component<AppProps>("ConfigApp") { (config, onBack) ->
     // Typing and dragging only save when the screen closes
     useEffect { onCleanup { config.save() } }
     useEscapeBack(searching) { query = "" }
-    useEffect(page, searching) { body.current?.scrollTop = 0f }
+    useEffect(page, searching, showNew) { body.current?.scrollTop = 0f }
+    useEffect(showNew) {
+        if (!showNew) return@useEffect
+        whatsNew?.onOpened()
+        newSeen = true
+    }
     useEffect(target) {
         val element = target ?: return@useEffect
         // A few frames later the category page is laid out
@@ -145,16 +174,33 @@ private val App = component<AppProps>("ConfigApp") { (config, onBack) ->
             div(className = "cfg-main") {
                 aside(className = "cfg-sidebar") {
                     scroll(className = "cfg-categories guilib-autohide") {
+                        if (whatsNew != null) {
+                            val classes = listOfNotNull("cfg-category", "home", "whats-new", "active".takeIf { showNew && !searching }).joinToString(" ")
+                            button(className = classes, key = "cat:new", onClick = {
+                                showNew = true
+                                query = ""
+                            }) {
+                                span(className = "cfg-category-name") { +"What's New" }
+                                if (!newSeen) span(className = "cfg-count") { +whatsNew.hits.size.toString() }
+                            }
+                        }
+                        categoryLink("home", "All Settings", page == null && !showNew && !searching, hits.size, searching, home = true) {
+                            page = null
+                            showNew = false
+                            query = ""
+                        }
                         if (hasGeneral) {
-                            categoryLink(config, "General", page === config && !searching, hits.count { it.path.size == 1 }, searching) {
+                            categoryLink(config.id, "General", page === config && !showNew && !searching, hits.count { it.path.size == 1 }, searching) {
                                 page = config
+                                showNew = false
                                 query = ""
                             }
                         }
                         config.children.forEach { category ->
                             val count = hits.count { it.path.getOrNull(1) === category }
-                            categoryLink(category, category.name, page === category && !searching, count, searching) {
+                            categoryLink(category.id, category.name, page === category && !showNew && !searching, count, searching) {
                                 page = category
+                                showNew = false
                                 query = ""
                             }
                         }
@@ -164,34 +210,94 @@ private val App = component<AppProps>("ConfigApp") { (config, onBack) ->
                 scroll(className = "cfg-body guilib-autohide", ref = body) {
                     when {
                         searching -> results(query, hits, revision.value)
+                        showNew && whatsNew != null -> whatsNewPage(whatsNew, revision.value, ui)
+                        page == null -> home(config, hasGeneral, revision.value, target, ui) { page = it }
                         page === config -> {
                             h1(className = "cfg-page-title") { +"General" }
                             elements(config, revision.value, target, ui)
                         }
-                        else -> categoryPage(page, revision.value, target, ui)
+                        else -> page?.let { categoryPage(it, revision.value, target, ui) }
                     }
                 }
+            }
+
+            editing?.let { entry ->
+                StringsEditor(EditorProps(entry) {
+                    editing = null
+                    ui.changed()
+                })
             }
         }
     }
 }
 
 private fun NodeBuilder.categoryLink(
-    category: Category,
+    id: String,
     label: String,
     active: Boolean,
     count: Int,
     searching: Boolean,
+    home: Boolean = false,
     onClick: () -> Unit,
 ) {
     val classes = listOfNotNull(
         "cfg-category",
+        "home".takeIf { home },
         "active".takeIf { active },
         "no-hits".takeIf { searching && count == 0 },
     ).joinToString(" ")
-    button(className = classes, key = "cat:${category.id}", onClick = { onClick() }) {
+    button(className = classes, key = "cat:$id", onClick = { onClick() }) {
         span(className = "cfg-category-name") { +label }
         if (searching && count > 0) span(className = "cfg-count") { +count.toString() }
+    }
+}
+
+// The settings added since the last version, with switches for all of them at once
+private fun NodeBuilder.whatsNewPage(whatsNew: WhatsNew, revision: Int, ui: Ui) {
+    h1(className = "cfg-page-title") { +whatsNew.title }
+    if (whatsNew.text.isNotEmpty()) description(whatsNew.text, "cfg-page-description")
+    val toggles = whatsNew.hits.asSequence().mapNotNull { it.element as? ConfigEntry<*> }.filter(::switchable).toList()
+    if (toggles.isNotEmpty()) {
+        div(className = "cfg-new-actions") {
+            button(className = "cfg-button", title = "Turn every new feature below on", onClick = {
+                toggles.forEach { switchTo(it, true) }
+                ui.changed()
+            }) { +"Enable all" }
+            button(className = "cfg-button", title = "Turn every new feature below off", onClick = {
+                toggles.forEach { switchTo(it, false) }
+                ui.changed()
+            }) { +"Disable all" }
+        }
+    }
+    whatsNew.extra?.let { Row(RowProps(it, revision, false), key = "new:extra") }
+    whatsNew.hits.groupBy { (it.element as ConfigEntry<*>).since }.forEach { (since, group) ->
+        div(className = "cfg-result-group", key = "new:$since") {
+            h2(className = "cfg-result-category") { +"New in $since" }
+            group.forEach { hit ->
+                Row(RowProps(hit.element, revision, false, hit), key = "new:${System.identityHashCode(hit.element)}")
+            }
+        }
+    }
+}
+
+// Every category below each other, so all settings can be scrolled through at once; a title opens the category alone
+private fun NodeBuilder.home(config: Config, hasGeneral: Boolean, revision: Int, target: ConfigElement?, ui: Ui, open: (Category) -> Unit) {
+    if (hasGeneral) {
+        div(className = "cfg-home-section", key = "home:${config.id}") {
+            h1(className = "cfg-page-title cfg-home-title", title = "Show only General", onClick = { _ -> open(config) }) { +"General" }
+            elements(config, revision, target, ui)
+        }
+    }
+    config.children.forEach { category ->
+        div(className = "cfg-home-section", key = "home:${category.id}") {
+            h1(className = "cfg-page-title cfg-home-title", title = "Show only ${category.name}", onClick = { _ -> open(category) }) { +category.name }
+            if (category.description.isNotEmpty()) description(category.description, "cfg-page-description")
+            elements(category, revision, target, ui)
+            category.children.forEach { child ->
+                h2(className = "cfg-child-category", key = "child:${child.id}") { +child.name }
+                elements(child, revision, target, ui)
+            }
+        }
     }
 }
 
@@ -249,7 +355,7 @@ private val SubHeader = component<SubHeaderProps>("ConfigSub") { (sub, enabled, 
                         sub.setEnabled(!enabled)
                         ui.changed()
                     },
-                ) { +(if (enabled) "ON" else "OFF") }
+                ) { +if (enabled) "ON" else "OFF" }
             }
         }
         if (sub.description.isNotEmpty()) description(sub.description, "cfg-sub-description")
@@ -275,7 +381,7 @@ private fun NodeBuilder.results(query: String, hits: List<SearchHit>, revision: 
         div(className = "cfg-empty") { +"No settings match \"${query.trim()}\"." }
         return
     }
-    div(className = "cfg-results-info") { +(if (hits.size == 1) "1 setting found" else "${hits.size} settings found") }
+    div(className = "cfg-results-info") { +if (hits.size == 1) "1 setting found" else "${hits.size} settings found" }
     hits.groupBy { it.category }.forEach { (category, group) ->
         div(className = "cfg-result-group", key = "group:${category.id}") {
             h2(className = "cfg-result-category") { +placeName(group.first().path) }
@@ -286,7 +392,7 @@ private fun NodeBuilder.results(query: String, hits: List<SearchHit>, revision: 
     }
 }
 
-private fun placeName(path: List<Category>) = if (path.size == 1) "General" else path.drop(1).joinToString(" › ") { it.name }
+private fun placeName(path: List<Category>) = if (path.size == 1) "General" else path.asSequence().drop(1).joinToString(" › ") { it.name }
 
 private fun NodeBuilder.description(text: String, className: String) {
     div(className = className) {
@@ -318,7 +424,7 @@ private val Row = component<RowProps>("ConfigRow") { (element, _, highlighted, h
                 // The setting is hidden on the page while its sub is off, so that jumps to the sub instead
                 val offSub = hit.sub?.takeIf { !it.enabled }
                 span(className = "cfg-row-place", title = "Show it in its category", onClick = { ui.show(hit.category, offSub ?: element) }) {
-                    +(if (offSub != null) "$place · off ↗" else "$place ↗")
+                    +if (offSub != null) "$place · off ↗" else "$place ↗"
                 }
             }
             val text = rowDescription(element)
@@ -348,14 +454,14 @@ private fun NodeBuilder.needs(entry: ConfigEntry<*>, ui: Ui) {
             val conditions = requirement.conditions.mapNotNull { condition -> condition.entry?.let { condition to it } }
             if (requirement.any && conditions.size > 1) +"one of "
             conditions.forEachIndexed { j, (condition, required) ->
-                if (j > 0) +(if (requirement.any) " or " else ", ")
+                if (j > 0) +if (requirement.any) " or " else ", "
                 val state = when {
                     condition.met -> "ok"
                     // In a met "one of" the others don't need to change
                     requirement.met -> "idle"
                     else -> "missing"
                 }
-                val label = listOf(required.name, condition.state).filter { it.isNotEmpty() }.joinToString(" ")
+                val label = listOf(required.name, condition.state).asSequence().filter { it.isNotEmpty() }.joinToString(" ")
                 span(className = "cfg-needs-link $state", title = "Show ${required.name}", onClick = { ui.jump(required) }) { +label }
             }
         }
@@ -393,6 +499,7 @@ private fun NodeBuilder.control(entry: ConfigEntry<*>, ui: Ui, refresh: () -> Un
             refresh()
         })
         is StringsEntry -> strings(entry, ui, refresh)
+        is KeybindEntry -> KeybindControl(KeybindProps(entry, entry.value, entry.conflicts(), locked, ui.changed))
         is ChoiceEntry -> {
             val options = entry.options()
             select(value = entry.value, className = "cfg-select", onChange = { event ->
@@ -402,20 +509,20 @@ private fun NodeBuilder.control(entry: ConfigEntry<*>, ui: Ui, refresh: () -> Un
                 options.forEach { option(it.id, it.label, title = it.description.ifEmpty { null }) }
             }
         }
-        is EnumEntry<*> -> {
+        is OptionEntry<*> -> {
             select(value = entry.value.name, className = "cfg-select", onChange = { event ->
                 entry.setName(event.value)
                 ui.changed()
             }) {
-                entry.constants.forEach { option(it.name, it.toString()) }
+                entry.constants.forEach { option(it.name, it.optionLabel, title = it.optionDescription.ifEmpty { null }) }
             }
         }
-        is SelectEntry<*> -> {
+        is OptionsEntry<*> -> {
             multiSelect(values = entry.value.map { it.name }, className = "cfg-select", placeholder = "None", onChange = { names ->
                 entry.setNames(names)
                 ui.changed()
             }) {
-                entry.constants.forEach { option(it.name, it.toString()) }
+                entry.constants.forEach { option(it.name, it.optionLabel, title = it.optionDescription.ifEmpty { null }) }
             }
         }
     }
@@ -470,25 +577,129 @@ private fun format(value: Double, step: Double): String {
     return BigDecimal.valueOf(value).setScale(decimals, RoundingMode.HALF_UP).toPlainString()
 }
 
+// One line of the field is one entry of the setting
 private fun NodeBuilder.strings(entry: StringsEntry, ui: Ui, refresh: () -> Unit) {
     div(className = "cfg-strings") {
-        entry.value.forEachIndexed { i, line ->
-            div(className = "cfg-strings-line", key = i) {
-                input(className = "cfg-text", value = line, onInput = {
-                    entry.set(entry.value.copyOf().also { lines -> lines[i] = it.value })
+        textarea(className = "cfg-textarea", value = entry.value.joinToString("\n"), rows = 2, onInput = {
+            entry.set(it.value.split("\n").toTypedArray())
+            refresh()
+        })
+        div(className = "cfg-strings-actions") {
+            button(className = "cfg-strings-action", title = "Edit in a bigger field", onClick = { ui.edit(entry) }) {
+                img("sbo:ui/config/expand.svg", className = "cfg-strings-icon")
+            }
+            entry.template?.let { template ->
+                button(className = "cfg-strings-action", title = "Insert the template", onClick = {
+                    entry.set(template.split("\n").toTypedArray())
                     refresh()
-                })
-                if (entry.value.size > 1) {
-                    button(className = "cfg-strings-remove", title = "Remove this line", onClick = {
-                        entry.set(entry.value.filterIndexed { j, _ -> j != i }.toTypedArray())
-                        ui.changed()
-                    }) { +"✕" }
-                }
+                }) { img("sbo:ui/config/template.svg", className = "cfg-strings-icon") }
+                button(className = "cfg-strings-action", title = "Reset to default", onClick = {
+                    entry.reset()
+                    refresh()
+                }) { img("sbo:ui/config/reset.svg", className = "cfg-strings-icon") }
             }
         }
-        button(className = "cfg-strings-add", onClick = {
-            entry.set(entry.value + "")
-            ui.changed()
-        }) { +"+ Add line" }
+    }
+}
+
+/**
+ * The props change with the key and its conflicts, GuiLib only draws the control again when they do.
+ *
+ * @property entry the key setting the control changes
+ * @property value the key of [entry]
+ * @property conflicts everything else bound to [value], see [KeybindEntry.conflicts]
+ * @property locked true while a requirement of [entry] isn't met, the control is disabled then
+ * @property changed called after [entry] got a new key
+ */
+private data class KeybindProps(
+    val entry: KeybindEntry,
+    val value: String,
+    val conflicts: List<String>,
+    val locked: Boolean,
+    val changed: () -> Unit,
+)
+
+/** The key of a [KeybindEntry]: click it, then press a key or click it again with a mouse button. Escape unbinds. */
+private val KeybindControl = component<KeybindProps>("ConfigKeybind") { (entry, value, conflicts, locked, changed) ->
+    var listening by useState(false)
+    // The click after binding the left button must not start listening again
+    val boundByClick = useRef(false)
+
+    fun bind(key: InputConstants.Key) {
+        listening = false
+        entry.set(key.name)
+        changed()
+    }
+
+    div(className = "cfg-keybind") {
+        // Left of the key, so the keys of every row stay lined up
+        val conflictText = if (conflicts.isEmpty()) null else "Also bound to: ${conflicts.joinToString(", ")}"
+        if (conflictText != null) span(className = "cfg-keybind-conflict", title = conflictText) { +"⚠" }
+        if (value != entry.default) {
+            button(className = "cfg-strings-action", title = "Reset to default", disabled = locked, onClick = {
+                listening = false
+                entry.reset()
+                changed()
+            }) { img("sbo:ui/config/reset.svg", className = "cfg-strings-icon") }
+        }
+        val label = if (listening) "> Press a key <" else KeybindEntry.keyOf(value).displayName.string
+        button(
+            className = listOfNotNull("cfg-button cfg-keybind-button", "listening".takeIf { listening }, "conflict".takeIf { conflictText != null })
+                .joinToString(" "),
+            title = conflictText,
+            disabled = locked,
+            onClick = {
+                if (boundByClick.current) boundByClick.current = false
+                else listening = true
+            },
+            onMouseDown = { e ->
+                if (listening) {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    boundByClick.current = e.button == 0
+                    bind(InputConstants.Type.MOUSE.getOrCreate(minecraftButton(e.button)))
+                }
+            },
+            onKeyDown = { e ->
+                if (listening) {
+                    // Also keeps Escape from going back
+                    e.preventDefault()
+                    e.stopPropagation()
+                    bind(if (e.key == "Escape") InputConstants.UNKNOWN else InputConstants.Type.KEYSYM.getOrCreate(e.keyCode))
+                }
+            },
+            onBlur = { listening = false },
+        ) { +label }
+    }
+}
+
+/** GuiLib's [domButton] (0 left, 1 middle, 2 right, like the DOM) as Minecraft's button number (GLFW, SDL from 26.3). */
+private fun minecraftButton(domButton: Int): Int =
+    //#if MC >= 26.3
+    //$$ domButton + 1
+    //#else
+    when (domButton) {
+        1 -> 2
+        2 -> 1
+        else -> domButton
+    }
+    //#endif
+
+private data class EditorProps(val entry: StringsEntry, val close: () -> Unit)
+
+// Covers the whole window, Escape or Done goes back
+private val StringsEditor = component<EditorProps>("ConfigStringsEditor") { (entry, close) ->
+    val refresh = useForceUpdate()
+    useEscapeBack { close() }
+    div(className = "cfg-editor") {
+        div(className = "cfg-editor-header") {
+            span(className = "cfg-editor-title") { +entry.name }
+            button(className = "cfg-editor-done", onClick = { close() }) { +"Done" }
+        }
+        if (entry.description.isNotEmpty()) description(entry.description, "cfg-row-description")
+        textarea(className = "cfg-editor-text", value = entry.value.joinToString("\n"), rows = 12, autoFocus = true, onInput = {
+            entry.set(it.value.split("\n").toTypedArray())
+            refresh()
+        })
     }
 }

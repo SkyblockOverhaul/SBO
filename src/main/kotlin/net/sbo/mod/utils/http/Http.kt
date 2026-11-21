@@ -7,13 +7,26 @@ import kotlinx.serialization.json.jsonPrimitive
 import net.minecraft.SharedConstants
 import net.sbo.mod.SBOKotlin
 import java.io.IOException
+import java.io.InputStream
+import java.io.PushbackInputStream
+import java.nio.channels.UnresolvedAddressException
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse.BodyHandlers
 import java.time.Duration
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
+import java.util.Collections
+import java.util.IdentityHashMap
+import java.util.zip.GZIPInputStream
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.math.abs
 
 object Http {
     private const val CONNECT_TIMEOUT = 30_000L
@@ -22,9 +35,10 @@ object Http {
     private val USER_AGENT =
         "SBO-Kotlin-Mod/${SBOKotlin.version}+${SharedConstants.getCurrentVersion().name()}"
 
-    private val EXECUTOR: ExecutorService = Executors.newCachedThreadPool() { runnable ->
+    private val EXECUTOR: ExecutorService = Executors.newCachedThreadPool { runnable ->
         Thread(runnable, "SBO Http Request Thread").apply {
             isDaemon = true
+            priority = Thread.MAX_PRIORITY - 1 // the requests are I/O bound anyways; use a close to max priority for less latency, for example the Party Finder UI sends requests and depends on it being completed before showing things to the user, so it's not all background http requests.
         }
     }
 
@@ -33,18 +47,51 @@ object Http {
     // Bodies are read into memory, the biggest one (Hypixel bazaar) is about 4 MB
     private const val MAX_BODY_BYTES = 10 * 1024 * 1024
 
-    private val CLIENT: HttpClient = HttpClient.newBuilder()
-        .executor(EXECUTOR)
-        .connectTimeout(Duration.ofMillis(CONNECT_TIMEOUT))
-        .followRedirects(HttpClient.Redirect.NORMAL)
-        .build()
+    private val CLIENT = RefreshingHttpClient {
+        executor(EXECUTOR)
+        connectTimeout(Duration.ofMillis(CONNECT_TIMEOUT))
+        followRedirects(HttpClient.Redirect.NORMAL)
+    }
 
-    // The JDK keeps own headers on redirects, so requests with an SBO key or session never follow one
-    private val NO_REDIRECT_CLIENT: HttpClient = HttpClient.newBuilder()
-        .executor(EXECUTOR)
-        .connectTimeout(Duration.ofMillis(CONNECT_TIMEOUT))
-        .followRedirects(HttpClient.Redirect.NEVER)
-        .build()
+    // The JDK keeps own headers on redirects, so requests with an SBO key or session never follow one.
+    private val NO_REDIRECT_CLIENT = RefreshingHttpClient {
+        executor(EXECUTOR)
+        connectTimeout(Duration.ofMillis(CONNECT_TIMEOUT))
+        followRedirects(HttpClient.Redirect.NEVER)
+    }
+
+    // Their Date header sets the server time, both run on synced clocks and get called every few minutes anyway
+    private val TIME_HOSTS = setOf("api.hypixel.net", URI.create(SBOKotlin.API_URL).host)
+
+    /** How far the PC clock is behind Hypixel and the SBO backend, from the Date header of their last response. */
+    @Volatile
+    private var clockOffsetMillis = 0L
+
+    private val HTTP3_FALLBACK_SUCCESSES = AtomicInteger()
+
+    @Volatile
+    private var http3Tainted = false
+
+    /** The real time even when the PC clock is wrong, the PC clock until the first response from one of the [TIME_HOSTS]. */
+    fun serverTimeMillis(): Long = System.currentTimeMillis() + clockOffsetMillis
+
+    private fun updateClockOffset(host: String?, date: String?) {
+        if (host !in TIME_HOSTS || date == null) return
+        val server = try {
+            // RFC_1123_DATE_TIME has fixed English names, a formatter from a pattern would follow the locale
+            ZonedDateTime.parse(date, DateTimeFormatter.RFC_1123_DATE_TIME).toInstant().toEpochMilli()
+        } catch (_: Exception) {
+            return
+        }
+        val offset = (server - System.currentTimeMillis()).let {
+            // The header has whole seconds and the request takes a moment, a clock this close is left as it is
+            if (abs(it) < 5_000) 0L else it
+        }
+        if (abs(offset - clockOffsetMillis) > 60_000) {
+            SBOKotlin.logger.warn("PC clock is ${-offset / 1000}s off $host, using the server time for SkyBlock dates")
+        }
+        clockOffsetMillis = offset
+    }
 
     private fun http3WithFallback(): HttpClient.Version {
         return try {
@@ -52,6 +99,19 @@ object Http {
         } catch (ignored: IllegalArgumentException) {
             HttpClient.Version.HTTP_2 // Fallback to baseline of HTTP/2
         }
+    }
+
+    private fun Throwable.rootCause(): Throwable {
+        val seen = Collections.newSetFromMap(IdentityHashMap<Throwable, Boolean>())
+        var root = this
+
+        while (seen.add(root)) {
+            val cause = root.cause ?: return root
+            if (cause in seen) return root
+            root = cause
+        }
+
+        return root
     }
 
     /**
@@ -82,6 +142,31 @@ object Http {
         it.POST(HttpRequest.BodyPublishers.ofString(body, Charsets.UTF_8))
     }
 
+    private fun decompress(
+        body: InputStream,
+        contentEncoding: String?
+    ): InputStream {
+        if (contentEncoding == null) return body
+
+        val peek = PushbackInputStream(body)
+        val first = peek.read()
+        if (first == -1) return peek
+        peek.unread(first)
+
+        var decoded: InputStream = peek
+
+        // Content codings are applied in order, so decode them in reverse order.
+        for (encoding in contentEncoding.split(',').asReversed()) {
+            decoded = when (encoding.trim().lowercase(Locale.ROOT)) {
+                "identity" -> decoded
+                "gzip", "x-gzip" -> GZIPInputStream(decoded)
+                else -> throw IOException("Unsupported content encoding: $encoding")
+            }
+        }
+
+        return decoded
+    }
+
     private fun send(
         urlString: String,
         headers: Map<String, String>,
@@ -92,38 +177,86 @@ object Http {
         try {
             val uri = URI.create(urlString)
             val httpVersion = when {
-                // Without TLS the JDK asks for an h2c upgrade, which a local backend answers with 400
+                // Without TLS the JDK asks for a h2c upgrade, which a local backend answers with 400
                 uri.scheme == "http" -> HttpClient.Version.HTTP_1_1
+                http3Tainted -> HttpClient.Version.HTTP_2
                 else -> HTTP_3_OR_2
             }
 
-            val builder = HttpRequest.newBuilder()
-                .version(httpVersion)
-                .uri(uri)
-                .timeout(Duration.ofMillis(REQUEST_TIMEOUT))
-                .header("User-Agent", USER_AGENT)
+            val client = if (headers.keys.any { it.startsWith("x-sbo-", ignoreCase = true) }) {
+                NO_REDIRECT_CLIENT
+            } else {
+                CLIENT
+            }
 
-            headers.forEach { (name, value) -> builder.header(name, value) }
+            fun request(version: HttpClient.Version): HttpRequest {
+                val builder = HttpRequest.newBuilder()
+                    .version(version)
+                    .uri(uri)
+                    .timeout(Duration.ofMillis(REQUEST_TIMEOUT))
+                    .header("User-Agent", USER_AGENT)
+                    .header("Accept-Encoding", "gzip")
 
-            val client = if (headers.keys.any { it.startsWith("x-sbo-", ignoreCase = true) }) NO_REDIRECT_CLIENT else CLIENT
+                headers.forEach { (name, value) -> builder.header(name, value) }
+                return method(builder).build()
+            }
 
-            client.sendAsync(method(builder).build(), BodyHandlers.ofInputStream())
+            val initialRequest = request(httpVersion)
+            val initialSend = client.useClient {
+                it.sendAsync(initialRequest, BodyHandlers.ofInputStream())
+            }
+
+            val usedHttp2Fallback = AtomicBoolean()
+
+            val send = if (httpVersion.name == "HTTP_3") {
+                // In case of a connection failure with HTTP/3, attempt the same request a single time using HTTP/2.
+                initialSend.exceptionallyCompose { error ->
+                    val rootCause = error.rootCause()
+                    if (rootCause is UnresolvedAddressException) {
+                        SBOKotlin.logger.info("Request to $urlString failed because the address could not be resolved. Skipping HTTP/2 fallback.")
+                        CompletableFuture.failedFuture(error)
+                    } else {
+                        // This fallback is deliberately only one level deep: an HTTP/2 failure is returned as-is.
+                        SBOKotlin.logger.info("Request to $urlString failed when using HTTP/3. Retrying with HTTP/2...")
+                        client.useClient {
+                            it.sendAsync(request(HttpClient.Version.HTTP_2), BodyHandlers.ofInputStream())
+                        }.thenApply { response ->
+                            usedHttp2Fallback.set(true)
+                            response
+                        }
+                    }
+                }
+            } else {
+                initialSend
+            }
+
+            send
                 .thenAccept { response ->
                     try {
                         val code = response.statusCode()
-                        val body = response.body().use { it.readNBytes(MAX_BODY_BYTES + 1) }
+                        updateClockOffset(uri.host, response.headers().firstValue("Date").orElse(null))
+                        val encoding = response.headers().allValues("Content-Encoding").joinToString(",").ifEmpty { null }
+                        // The outer use closes the raw body when decompress() throws before returning a stream
+                        val body = response.body().use { raw ->
+                            decompress(raw, encoding).use { it.readNBytes(MAX_BODY_BYTES + 1) }
+                        }
                         if (body.size > MAX_BODY_BYTES) throw IOException("Response from ${uri.host} is larger than ${MAX_BODY_BYTES / 1024 / 1024} MB")
 
                         val status = statusMessage(code)
                         val responseBody = ResponseBody(body.inputStream())
 
-                        handle.complete(
-                            HttpResponse(
-                                code,
-                                status,
-                                responseBody
-                            )
-                        )
+                        val response = HttpResponse(code, status, responseBody)
+
+                        if (usedHttp2Fallback.get()) {
+                            SBOKotlin.logger.info("Request to $urlString succeeded after HTTP/2 retry.")
+
+                            if (HTTP3_FALLBACK_SUCCESSES.incrementAndGet() == 2) {
+                                http3Tainted = true
+                                SBOKotlin.logger.info("HTTP/3 connections appear to be not successful while HTTP/2 retries are; using HTTP/2 for the rest of this game session.")
+                            }
+                        }
+
+                        handle.complete(response)
                     } catch (e: Exception) {
                         handle.fail(e)
                     }
@@ -142,7 +275,7 @@ object Http {
     /**
      * Small matcher to turn HTTP status code to text, since HTTP/2+ and the new HttpClient API does not provide this.
      *
-     * Not RFC-perfect by any means and will return a generic message for lot of uncommon/rare/joke HTTP codes, let's hope
+     * Not RFC-perfect by any means and will return a generic message for a lot of uncommon/rare/joke HTTP codes, let's hope
      * the backend is not going to return 418 (The "I'm a teapot" HTTP response code)
      */
     private fun statusMessage(code: Int): String {
@@ -164,7 +297,7 @@ object Http {
         }
     }
 
-    fun JsonObject.getBoolean(key: String): Boolean = this[key]?.jsonPrimitive?.booleanOrNull ?: false
+    fun JsonObject.getBoolean(key: String): Boolean = this[key]?.jsonPrimitive?.booleanOrNull == true
 
     fun JsonObject.getString(key: String): String? = this[key]?.jsonPrimitive?.contentOrNull
 

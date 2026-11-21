@@ -2,9 +2,9 @@ package net.sbo.mod.diana.burrows
 
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
 import net.sbo.mod.diana.guesses.ArrowGuessBurrow
-import net.sbo.mod.settings.categories.Diana
+import net.sbo.mod.diana.guesses.SpadeGuessOptimizer
+import net.sbo.mod.settings.categories.Burrows
 import net.sbo.mod.settings.categories.Debug
-import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.DianaEvents
@@ -17,9 +17,10 @@ import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.waypoint.Waypoint
 import net.sbo.mod.utils.waypoint.WaypointManager
 import java.util.*
+import java.util.regex.Pattern
 import java.util.concurrent.TimeUnit
-import java.util.function.BooleanSupplier
 import net.minecraft.core.particles.ParticleTypes as MCParticleTypes
+import net.sbo.mod.diana.DianaState
 
 object BurrowDetector {
     internal val burrows = mutableMapOf<String, Burrow>()
@@ -50,11 +51,11 @@ object BurrowDetector {
     }
 
     private fun markRecentlyRemoved(pos: SboVec) {
-        val key = "${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}"
+        val key = blockKey(pos)
         recentlyRemoved[key] = System.nanoTime()
     }
 
-    fun wasRecentlyRemoved(pos: SboVec): Boolean = wasRecentlyRemoved("${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}")
+    fun wasRecentlyRemoved(pos: SboVec): Boolean = wasRecentlyRemoved(blockKey(pos))
 
     private fun wasRecentlyRemoved(posString: String): Boolean {
         val removedAt = recentlyRemoved[posString] ?: return false
@@ -82,6 +83,8 @@ object BurrowDetector {
             recentlyRemoved.clear()
             ArrowGuessBurrow.allGuesses.clear()
             chainExpirations.clear()
+            ChainTracker.clear()
+            SpadeGuessOptimizer.reset()
             Chat.chat("§6[SBO] §4Burrow Waypoints Cleared!")
         }
 
@@ -114,25 +117,29 @@ object BurrowDetector {
             }
         }
 
-        Register.onChatMessage(Regex("""^§c ☠ §7You .+$""")) { message, matchResult ->
+        Register.onChatMessage(Regex("""^§c ☠ §7You .+$""")) { _, _ ->
             if (!World.isInHub()) return@onChatMessage
             refreshBurrows(deathOriginating = true, expectedTimesDug = 1)
         }
 
-        Register.onChatMessage(Regex("""^§eYou finished the Griffin burrow chain!.*$""")) { message, matchResult ->
+        // A handler, not a listener: listeners never see messages the Diana message hider hides, like this one
+        Register.onChatMessageCancelable(Pattern.compile("""^§eYou finished the Griffin burrow chain!.*$""")) { _, _ ->
             // BurrowDugEvent only triggers when you get the "You dug out a Griffin Burrow!" message.
             // The chain finished message does not trigger it.
             chainFinish()
 
-            // We need to update lastdugOutBurrowPos manually here since BurrowDugEvent does not set it since it is not triggered.
+            // We need to update lastDugOutBurrowPos manually here since BurrowDugEvent does not set it since it is not triggered.
             lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec.ZERO
             refreshBurrows(deathOriginating = false, expectedTimesDug = 2)
 
-            val anyClose = WaypointManager.getAllGuessesAndBurrows().filter { it.distanceToPlayer() < 90 }
-            if (Diana.showTitleWhenChainEnds && anyClose.isEmpty()) requestSpade("chain")
+            val anyClose = WaypointManager.getAllGuessesAndBurrows().any { it.distanceToPlayer() < Burrows.chainEndTitleDistance }
+            // With the optimizer the spade is used here first, the place to use it is only shown if that finds nothing new
+            if (Burrows.showTitleWhenChainEnds && (Burrows.spadeGuessOptimizer || !anyClose)) requestSpade("chain")
+            true
         }
 
-        Register.onChatMessage(Regex(""".*§eYou (?:just )?dug out(?!.*\(\d+/\d+\)$).*""")) { message, matchResult ->
+        // A handler, not a listener: listeners never see messages the Diana message hider hides, like mob spawns
+        Register.onChatMessageCancelable(Pattern.compile("""§eYou (?:just )?dug (?!.*\(\d+/\d+\)$)""")) { message, _ ->
             // BurrowDugEvent only triggers when you get the "You dug out a Griffin Burrow!" message.
             // Mob spawns, feather drops, and Myth the Fish use different chat messages.
 
@@ -143,6 +150,7 @@ object BurrowDetector {
                 expectedTimesDug = 1,
                 burrowType = parseTypeFromChatMsg(message.string)
             )
+            true
         }
 
         Register.onTick(1) {
@@ -153,7 +161,7 @@ object BurrowDetector {
                     pendingUseSpadeTitle = null
                     return@let
                 }
-                Helper.showTitle(it, "", 0, 1, 0)
+                Chat.showTitle(it, "", 0, 1, 0)
             }
         }
     }
@@ -198,8 +206,11 @@ object BurrowDetector {
         return "${block.x.toInt()} ${block.y.toInt()} ${block.z.toInt()}"
     }
 
-    private fun chainFinish() {
+    /** @param death Whether dying failed the chain, you respawn far from it then. */
+    private fun chainFinish(death: Boolean = false) {
         purgeExpiredChains()
+        // A new chain starts somewhere, even where you've already looked
+        if (death) SpadeGuessOptimizer.onDeath() else SpadeGuessOptimizer.reset(chainFinished = true)
 
         if (chainExpirations.isNotEmpty()) {
             chainExpirations.removeFirst()
@@ -230,7 +241,7 @@ object BurrowDetector {
         return "Mob" // assume mob if not a known treasure drop
     }
 
-    private fun canShowUseSpade() = Diana.spadeGuess && Helper.hasSpade && World.isInHub()
+    private fun canShowUseSpade() = Burrows.spadeGuess && DianaState.hasSpade && World.isInHub()
 
     fun requestSpade(reason: String) {
         if (!canShowUseSpade()) return
@@ -242,12 +253,16 @@ object BurrowDetector {
     }
 
     fun removeFromInternalState(pos: SboVec) {
-        val posString = "${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}"
-        burrows.remove(posString)
+        burrows.remove(blockKey(pos))
+        // Dug or gone: a new burrow on this block is a new spawn
+        BurrowMap.forget(pos)
     }
+
+    fun hasKnownBurrowAt(pos: SboVec): Boolean = burrows.containsKey(blockKey(pos))
 
     @SboEvent
     fun onBurrowDug(event: BurrowDugEvent) {
+        ChainTracker.onBurrowDug(event.currentBurrow, event.maxBurrow, DianaEvents.lastBlockClicked)
         when {
             event.currentBurrow == 1 -> chainStart()
 
@@ -256,17 +271,31 @@ object BurrowDetector {
             // last burrow: do nothing
             // chainFinish() is already handled by chat
         }
+        // Until the chain is finished the spade points at its next burrow
+        if (event.currentBurrow != event.maxBurrow) SpadeGuessOptimizer.onChainDig()
 
-        if (!Diana.closeBurrowDetection) return
+        if (!Burrows.closeBurrowDetection) return
         lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec.ZERO
         refreshBurrows(deathOriginating = false, expectedTimesDug = 2)
+    }
+
+    /**
+     * The particles prove the burrow is there, it counts for the burrow map the first time they do. [BurrowMap] counts
+     * a block once until the burrow is dug or gone, so seeing it again after a lobby switch doesn't count it twice.
+     */
+    private fun confirmFromParticles(burrow: Burrow) {
+        if (burrow.fromParticles) return
+        burrow.fromParticles = true
+        val skipped = BurrowMap.record(burrow.pos)
+        if (Debug.debugOnlyMessages) {
+            Chat.chat("SBO(debug): burrow map ${blockKey(burrow.pos)} " + (skipped?.let { "skipped, $it" } ?: "counted"))
+        }
     }
 
     @SboEvent
     fun onParticleReceive(event: ParticleReceiveEvent) {
         val packet = event.packet
-        if (!Diana.closeBurrowDetection) return
-        if (!World.isInHub()) return
+        if (!Burrows.closeBurrowDetection || !World.isInHub()) return
 
         if (packet.particle.type == MCParticleTypes.LARGE_SMOKE && packet.maxSpeed == 0.01f && packet.xDist == 0.0f && packet.yDist == 0.0f && packet.zDist == 0.0f) {
             val pos = SboVec(packet.x, packet.y, packet.z).roundLocationToBlock().down()
@@ -294,17 +323,22 @@ object BurrowDetector {
     private fun burrowDetect(packet: ClientboundLevelParticlesPacket) {
         val particleType = ParticleTypes.getParticleType(packet) ?: return
         val pos = SboVec(packet.x, packet.y, packet.z).roundLocationToBlock().down()
-        val posString = "${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}"
+        val posString = blockKey(pos)
 
         if (wasRecentlyRemoved(posString)) return
 
         val type = when (particleType) {
             "FOOTSTEP" -> {
-                burrows.getOrPut("${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}") { Burrow(pos) }.hasFootstep = true
+                val burrow = burrows.getOrPut(posString) { Burrow(pos) }
+                burrow.hasFootstep = true
+                registerUnknownBurrow(burrow)
                 return
             }
             "ENCHANT" -> {
-                burrows.getOrPut("${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}") { Burrow(pos) }.hasEnchant = true
+                val burrow = burrows.getOrPut(posString) { Burrow(pos) }
+                burrow.hasEnchant = true
+                confirmFromParticles(burrow)
+                registerUnknownBurrow(burrow)
                 return
             }
             "EMPTY" -> "Start"
@@ -316,36 +350,66 @@ object BurrowDetector {
         registerBurrow(pos, type, "particle")
     }
 
+    private fun registerUnknownBurrow(burrow: Burrow) {
+        if (burrow.type != null || burrow.waypoint != null) return
+
+        val existingWaypoint = WaypointManager.getWaypointAt(burrow.pos, "burrow")
+        if (existingWaypoint != null) {
+            burrow.waypoint = existingWaypoint
+            burrow.type = existingWaypoint.text.takeIf { it != "Guess" }
+            return
+        }
+
+        val waypoint = Waypoint("Guess", burrow.pos.x, burrow.pos.y, burrow.pos.z, type = "burrow")
+        burrow.waypoint = waypoint
+        WaypointManager.addWaypoint(waypoint, playSound = false)
+    }
+
     private fun registerBurrow(
         pos: SboVec,
         type: String,
         source: String,
         carriedTimesDug: Int? = null
     ) {
-        if (!Diana.closeBurrowDetection) return
+        if (!Burrows.closeBurrowDetection) return
+
+        val posString = blockKey(pos)
+        val burrow = burrows.getOrPut(posString) {
+            Burrow(pos)
+        }
+        if (source == "particle") confirmFromParticles(burrow)
+
+        if (burrow.type == null || burrow.waypoint?.text == "Guess") {
+            burrow.type = type
+        }
 
         ArrowGuessBurrow.removeArrowGuessFromSubGuess(pos)
         ArrowGuessBurrow.removeFromInternalState(pos)
         WaypointManager.removeWaypointAt(pos, "guess")
 
-        if (WaypointManager.waypointExists("burrow", pos).first) return
-
-        val posString = "${pos.x.toInt()} ${pos.y.toInt()} ${pos.z.toInt()}"
-
-        val burrow = burrows.getOrPut(posString) {
-            Burrow(pos)
-        }
-
-        burrow.type = type
-
         val existingTimesDug =
             carriedTimesDug
-                ?: burrows[posString]?.waypoint?.timesDug
+                ?: burrow.waypoint?.timesDug
                 ?: WaypointManager.getWaypointAt(pos, "burrow")?.timesDug
                 ?: WaypointManager.getWaypointAt(pos, "arrow")?.timesDug
                 ?: WaypointManager.getWaypointAt(pos, "guess")?.timesDug
                 ?: WaypointManager.getWaypointAt(pos, "subGuess")?.timesDug
                 ?: 0
+
+        val existingBurrowWaypoint = WaypointManager.getWaypointAt(pos, "burrow")
+        if (existingBurrowWaypoint != null) {
+            val wasUnknownType = existingBurrowWaypoint.text == "Guess"
+            if (wasUnknownType) {
+                existingBurrowWaypoint.text = type
+                burrow.type = type
+            }
+            existingBurrowWaypoint.timesDug = existingTimesDug
+            burrow.waypoint = existingBurrowWaypoint
+            if (wasUnknownType && source == "particle") {
+                WaypointManager.playBurrowFoundSound()
+            }
+            return
+        }
 
         val waypoint = Waypoint(
             type,
@@ -367,8 +431,18 @@ object BurrowDetector {
         // Try known burrow first, then arrow, then precise
         val dugWaypoint = knownWaypoint ?: WaypointManager.getWaypointAt(pos, "arrow") ?: WaypointManager.getWaypointAt(pos, "guess") ?: WaypointManager.getWaypointAt(pos, "subGuess")
 
+        if (knownWaypoint?.text == "Guess" && burrowType != null) {
+            // Particle-confirmed burrows can still have an unknown type when dug.
+            // Use the chat-derived type before applying Start/Mob cleanup rules.
+            registerBurrow(
+                pos = pos,
+                type = burrowType,
+                source = "chat",
+                carriedTimesDug = knownWaypoint.timesDug
+            )
+        }
+
         if (null != dugWaypoint) {
-            // Will only work if known burrow
             val startBurrow = dugWaypoint.text == "Start"
             val mobBurrow = dugWaypoint.text == "Mob" || burrowType == "Mob"
 
@@ -393,7 +467,7 @@ object BurrowDetector {
 
             if (removalCondition) {
                 if (death) {
-                    chainFinish() // dying finishes (fails) a chain
+                    chainFinish(death = true) // dying finishes (fails) a chain
                     Chat.chat("§6[SBO] §eRemoved Mob burrow waypoint since you died.", true)
                 }
 

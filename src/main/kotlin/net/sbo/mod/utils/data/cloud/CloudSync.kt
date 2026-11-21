@@ -41,7 +41,7 @@ import kotlin.concurrent.thread
 
 object CloudSync {
     private const val SLOT = "sbo"
-    const val COMMAND = "sbocloud"
+    private const val COMMAND = "sbocloud"
     private const val TITLE = "Cloud Sync"
     private const val OPEN_HINT = "Type /$COMMAND to choose."
 
@@ -64,7 +64,12 @@ object CloudSync {
     private val gson = Gson()
 
     // Collecting and hashing all data is too slow for the client thread; one thread keeps the steps in order
-    private val worker = Executors.newSingleThreadExecutor { Thread(it, "SBO Cloud Sync").apply { isDaemon = true } }
+    private val worker = Executors.newSingleThreadExecutor {
+        Thread(it, "SBO Cloud Sync").apply {
+            isDaemon = true
+            priority = Thread.NORM_PRIORITY - 1 // background sync, little lower priority than normal
+        }
+    }
 
     enum class SyncState { NO_SAVE, NOT_USED_HERE, BOTH_CHANGED, CLOUD_NEWER, PC_CHANGED, SAME, ERROR }
 
@@ -134,7 +139,7 @@ object CloudSync {
     private fun changed() = listeners.forEach { it() }
 
     var autoSync: Boolean
-        get() = state().autoSync ?: legacyAutoSync ?: false
+        get() = state().autoSync ?: legacyAutoSync == true
         set(value) {
             state().autoSync = value
             DataManager.sboData.save()
@@ -153,7 +158,7 @@ object CloudSync {
     fun init() {
         Register.onTick(20 * 60 * AUTO_UPLOAD_MINUTES) { _ ->
             if (SBOKotlin.mc.level == null || !autoActive()) return@onTick
-            if ((uploadInFlight?.count ?: 0L) > 0L) return@onTick
+            if (uploadInFlight?.count ?: 0L > 0L) return@onTick
             SBOKotlin.logger.info("[CloudSync] periodic auto upload")
             upload(auto = true)
         }
@@ -191,8 +196,11 @@ object CloudSync {
     }
 
     // Shows the question in the window, outside of it a toast points there
-    private fun ask(text: String, vararg actions: Action) {
-        question = Question(text, actions.toList())
+    private fun ask(text: String, vararg actions: Action) =
+        ask(text, actions.asList())
+
+    private fun ask(text: String, actions: List<Action>) {
+        question = Question(text, actions)
         if (toaster == null) notify("warning", "$text $OPEN_HINT")
         changed()
     }
@@ -270,12 +278,12 @@ object CloudSync {
         cloudInfo?.takeIf { System.currentTimeMillis() - it.at < STATUS_MAX_AGE_MS }?.let { return block(it.slot) }
         SboApi.cloudStatus()
             .toJson<CloudStatusResponse>(ignoreUnknownKeys = true) { response ->
-                if (!response.success) return@toJson SBOKotlin.logger.warn("[CloudSync] status failed: ${response.error}")
+                if (!response.success) return@toJson SBOKotlin.logger.warn("[CloudSync] status response is not successfull: ${response.error}")
                 val slot = response.slots.find { it.slot == SLOT }
                 remember(slot)
                 block(slot)
             }
-            .error { SBOKotlin.logger.warn("[CloudSync] status failed: ${it.message}") }
+            .error { SBOKotlin.logger.warn("[CloudSync] status request failed: ${it.message}") }
     }
 
     // Fresh install: offers the cloud save right after /sbokey, if there is one this PC never used
@@ -370,9 +378,11 @@ object CloudSync {
         SBOKotlin.logger.info("[CloudSync] game close upload: ${if (finished) "done" else "timed out"}")
     }
 
+    @Suppress("StringShouldBeRawString")
     private fun canonical(files: Map<String, String>): String =
         files.toSortedMap().entries.joinToString("") { (name, content) -> "$name\n${content.length}\n$content\n" }
 
+    @Suppress("StringShouldBeRawString")
     private fun signedBytes(uuid: String, counter: Long, files: Map<String, String>): ByteArray =
         "sbo-cloud-v1\n$uuid\n$SLOT\n$counter\n${canonical(files)}".toByteArray(Charsets.UTF_8)
 
@@ -416,7 +426,7 @@ object CloudSync {
     }
 
     // Milliseconds until the refresh button may ask the server again
-    fun refreshWaitMs(): Long = maxOf(0L, (lastStatusRequest + REFRESH_COOLDOWN_MS) - System.currentTimeMillis())
+    fun refreshWaitMs(): Long = maxOf(0L, lastStatusRequest + REFRESH_COOLDOWN_MS - System.currentTimeMillis())
 
     @Volatile private var lastStatusRequest = 0L
 
@@ -470,6 +480,8 @@ object CloudSync {
         }
     }
 
+    private const val ALPHA_PAUSED = "Cloud sync is paused while the separate Alpha Network data is in use."
+
     fun upload(force: Boolean = false) {
         upload(force, auto = false)
     }
@@ -477,6 +489,12 @@ object CloudSync {
     // Done when the upload finished, failed or had nothing to send
     private fun upload(force: Boolean = false, auto: Boolean): CountDownLatch {
         val done = CountDownLatch(1)
+        // The separate alpha data must never reach the cloud save
+        if (DataManager.alphaActive) {
+            if (!auto) notify("error", ALPHA_PAUSED)
+            done.countDown()
+            return done
+        }
         uploadInFlight = done
         if (!auto) {
             busy = "Uploading..."
@@ -550,6 +568,11 @@ object CloudSync {
     }
 
     private fun download(allowOlder: Boolean = false, allowUnsigned: Boolean = false, auto: Boolean) {
+        // Loading it now would replace the alpha copies, not the main data
+        if (DataManager.alphaActive) {
+            if (!auto) notify("error", ALPHA_PAUSED)
+            return
+        }
         if (!auto) {
             busy = "Loading your cloud save..."
             changed()
@@ -569,7 +592,7 @@ object CloudSync {
                     is Check.Problem -> {
                         if (auto) autoPaused = true
                         if (check.needsSignKey) downloadWaitingForSignKey = true
-                        ask(check.question.text, *check.question.actions.toTypedArray())
+                        ask(check.question.text, check.question.actions)
                         finish()
                     }
                     is Check.Ok -> SBOKotlin.mc.schedule {

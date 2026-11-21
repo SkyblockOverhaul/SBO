@@ -2,7 +2,12 @@ name: build
 on: [pull_request, push]
 
 jobs:
+  # One job per MC version, each on its own runner, so the jars are ready sooner
   build:
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ['26.1.2-fabric', '26.2-fabric', '26.3-fabric']
     permissions:
       contents: read
     runs-on: ubuntu-26.04
@@ -15,16 +20,160 @@ jobs:
           java-version: '27'
           distribution: 'oracle'
       - name: setup gradle
-        uses: gradle/actions/setup-gradle@v6.4.0
+        uses: gradle/actions/setup-gradle@v6
         with:
           cache-read-only: ${{ github.event_name == 'pull_request' }}
           build-scan-publish: true
           build-scan-terms-of-use-url: 'https://gradle.com/terms-of-service'
           build-scan-terms-of-use-agree: 'yes'
       - name: build
-        run: ./gradlew build --scan
+        run: |
+          # A version tag (0.7.2-beta.1, 0.7.2, with or without a v) builds as that version, so the jars and the mod itself carry it
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            ./gradlew ":${{ matrix.version }}:build" --scan -PenableErrorprone=true "-Pmod.version=${GITHUB_REF_NAME#v}"
+          else
+            ./gradlew ":${{ matrix.version }}:build" --scan -PenableErrorprone=true
+          fi
+      # Only the one jar is in build/versions, so it is uploaded as-is instead of zipped.
+      # The artifact is named after the jar (SBO-<version>+<mc>-fabric.jar).
       - name: capture build artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: Artifacts
-          path: build/versions/
+          path: build/versions/*.jar
+          archive: false
+          if-no-files-found: error
+
+  # Detekt is slow (Kotlin analysis API), so it runs on its own and nothing waits for it.
+  # Findings are reported but don't fail the build.
+  detekt:
+    permissions:
+      contents: read
+    runs-on: ubuntu-26.04
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v7
+      - name: setup jdk
+        uses: actions/setup-java@v6
+        with:
+          java-version: '27'
+          distribution: 'oracle'
+      - name: setup gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+      - name: detekt
+        run: ./gradlew detektMain detektTest -PenableDetekt=true
+
+  # Pushing a version tag publishes the build. A beta tag (0.7.2-beta.1) becomes a beta version on Modrinth,
+  # a release tag (0.7.2) a featured release version on Modrinth and a GitHub release with the jars,
+  # but only when the tagged commit is on main.
+  # The changelog is the tag message (git tag -a), or the commit titles since the previous tag for a tag
+  # without one (for a release since the previous release, so its betas are in it too).
+  # Needs the MODRINTH_TOKEN repository secret (a Modrinth PAT with "Create versions").
+  release:
+    needs: build
+    # Forks have no MODRINTH_TOKEN, there the job would only fail
+    if: github.repository == 'SkyblockOverhaul/SBO' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    runs-on: ubuntu-26.04
+    env:
+      PROJECT_ID: 9lBqVbQF
+      MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: download build artifacts
+        uses: actions/download-artifact@v8
+        with:
+          pattern: SBO-*.jar
+          merge-multiple: true
+          path: jars
+      - name: release only from main
+        if: ${{ !contains(github.ref_name, '-beta') }}
+        run: |
+          # A tag has no branch, so the tagged commit has to be on main; betas can come from any branch
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::$GITHUB_REF_NAME is a release tag on a commit that isn't on main. Releases are only made from main, use a -beta tag for other branches."
+            exit 1
+          fi
+      - name: changelog
+        run: |
+          # checkout can leave the tag lightweight, this brings back the annotated one with its message
+          git fetch --force origin "refs/tags/$GITHUB_REF_NAME:refs/tags/$GITHUB_REF_NAME"
+          if [ "$(git cat-file -t "$GITHUB_REF_NAME")" = "tag" ]; then
+            git tag -l --format='%(contents)' "$GITHUB_REF_NAME" > changelog.md
+          else
+            if [[ "$GITHUB_REF_NAME" == *-beta* ]]; then
+              # Everything since the previous tag, beta or release
+              previous=$(git describe --tags --abbrev=0 "$GITHUB_SHA^" 2>/dev/null || true)
+            else
+              previous=$(git describe --tags --abbrev=0 --exclude='*-beta*' "$GITHUB_SHA^" 2>/dev/null || true)
+            fi
+            git log --no-merges --format='- %s' ${previous:+"$previous..$GITHUB_SHA"} | head -n 50 > changelog.md
+          fi
+      - name: upload to modrinth
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          changelog=$(cat changelog.md)
+          if [[ "$version" == *-beta* ]]; then
+            type="beta"
+            featured=false
+          else
+            type="release"
+            featured=true
+          fi
+
+          for jar in jars/*.jar; do
+            mc=$(sed -E 's/.*\+(.*)-fabric\.jar/\1/' <<< "$(basename "$jar")")
+            # Same split as the releases: the 26.1.2 jar runs on all of 26.1.x
+            if [[ "$mc" == 26.1.* ]]; then
+              label="26.1.X"
+              game_versions='["26.1","26.1.1","26.1.2"]'
+            else
+              label="$mc"
+              game_versions="[\"$mc\"]"
+            fi
+
+            data=$(jq -n \
+              --arg project "$PROJECT_ID" \
+              --arg name "Skyblock Overhaul (SBO) $version" \
+              --arg number "$version-$label" \
+              --arg changelog "$changelog" \
+              --arg type "$type" \
+              --argjson featured "$featured" \
+              --argjson game_versions "$game_versions" \
+              '{
+                project_id: $project,
+                name: $name,
+                version_number: $number,
+                changelog: $changelog,
+                version_type: $type,
+                game_versions: $game_versions,
+                loaders: ["fabric"],
+                featured: $featured,
+                dependencies: [
+                  {project_id: "P7dR8mSH", dependency_type: "required"},
+                  {project_id: "Ha28R6CL", dependency_type: "required"}
+                ],
+                file_parts: ["file"]
+              }')
+
+            echo "Uploading $(basename "$jar") as $version-$label ($type)"
+            curl -fsS -X POST https://api.modrinth.com/v2/version \
+              -H "Authorization: $MODRINTH_TOKEN" \
+              -H "User-Agent: SkyblockOverhaul/SBO (github actions)" \
+              --form-string "data=$data" \
+              -F "file=@$jar" > /dev/null
+          done
+      - name: github release
+        if: ${{ !contains(github.ref_name, '-beta') }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" jars/*.jar \
+            --title "Skyblock Overhaul (SBO) ${GITHUB_REF_NAME#v}" \
+            --notes-file changelog.md \
+            --verify-tag \
+            --latest

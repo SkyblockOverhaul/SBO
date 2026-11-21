@@ -5,11 +5,10 @@ import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.data.configs.overlay.OverlayValues
-import net.sbo.mod.utils.data.DataManager.overlayData
+import net.sbo.mod.utils.collection.fastForEach
 import net.sbo.mod.utils.game.World
 import java.awt.Color
+import java.util.Locale
 
 fun isCraftingScreenOpen(): Boolean = CRAFTING_PLAYER_INVENTORY_FILTER(mc.screen)
 
@@ -21,46 +20,22 @@ val CRAFTING_PLAYER_INVENTORY_FILTER = fun(screen: Screen?): Boolean = screen is
  * Represents an overlay that can display text lines on the screen.
  * Overlays can be customized with position, scale, and render conditions.
  * They can also be clicked to trigger actions on the text lines.
- * @property name The name of the overlay.
- * @property x The x-coordinate of the overlay.
- * @property y The y-coordinate of the overlay.
- * @property scale The scale of the overlay, default is 1.0f.
- * @property allowedScreens The list of screens where the overlay is allowed to render.
+ * @param name The name of the overlay.
+ * @param x The x-coordinate of the overlay.
+ * @param y The y-coordinate of the overlay.
+ * @param scale The scale of the overlay, default is 1.0f.
+ * @param allowedScreens The list of screens where the overlay is allowed to render.
+ * @property exampleView The list of lines that will be rendered when the overlay renders in the overlay move/edit screen.
  */
 class Overlay(
-    var name: String,
-    var x: Float,
-    var y: Float,
-    var scale: Float = 1.0f,
-    val allowedScreens: List<(screen: Screen?) -> Boolean> = listOf(CHAT_SCREEN_FILTER),
+    name: String,
+    x: Float,
+    y: Float,
+    scale: Float = 1.0f,
+    allowedScreens: List<(screen: Screen?) -> Boolean> = listOf(CHAT_SCREEN_FILTER),
     val exampleView: List<OverlayTextLine> = emptyList()
-) {
+) : HudElement(name, x, y, scale, allowedScreens) {
     private var lines = mutableListOf<OverlayTextLine>()
-
-    private var condition: () -> Boolean = { true }
-    private var cachedCondition = true
-
-    private var extraCondition: () -> Boolean = { true }
-    private var cachedExtraCondition = true
-
-    var selected: Boolean = false
-
-    fun init() {
-        loadPosition()
-        OverlayManager.overlays.add(this)
-    }
-
-    // Reads the stored position, or stores the current one if missing
-    fun loadPosition() {
-        val data = overlayData.overlays[name]
-        if (data != null) {
-            x = data.x
-            y = data.y
-            scale = data.scale
-        } else {
-            overlayData.overlays[name] = OverlayValues(x, y, scale)
-        }
-    }
 
     fun setCondition(condition: () -> Boolean): Overlay {
         this.condition = condition
@@ -72,21 +47,20 @@ class Overlay(
         return this
     }
 
-    fun updateConditions() {
-        cachedCondition = condition()
 
-        // When on the editing screen, show overlays even if extra condition is not met. Some overlays can e.g. only render whilst in The Hub, but the user needs to be able to edit it's position outside of The Hub as well. The main condition() checks for Config toggle (we don't show these on overlay edit screen), while extraCondition() checks for these dynamic toggles like being in The Hub.
-        cachedExtraCondition = extraCondition() || inEditingScreen()
-
-        lines.forEach { it.updateCondition() }
+    override fun updateConditions() {
+        super.updateConditions()
+        lines.fastForEach { it.updateCondition() }
     }
 
     fun addLine(line: OverlayTextLine) {
+        line.updateCondition()
         lines.add(line)
     }
 
     fun setLines(newLines: List<OverlayTextLine>) {
         lines = newLines.toMutableList()
+        lines.forEach { it.updateCondition() }
     }
 
     fun removeLine(line: OverlayTextLine) {
@@ -98,7 +72,7 @@ class Overlay(
     }
 
     fun clearLines() {
-        lines = mutableListOf()
+        lines.clear()
     }
 
     private fun getLines(): List<OverlayTextLine> {
@@ -108,45 +82,42 @@ class Overlay(
         return lines
     }
 
-    fun overlayClicked(mouseX: Double, mouseY: Double) {
+    override fun overlayClicked(mouseX: Double, mouseY: Double) {
         if (!World.isInSkyblock()) return
         if (!allowedScreens.any { it(mc.screen) }) return
-        val textRenderer = mc.font
         if (!isOverOverlay(mouseX, mouseY)) return
 
-        var currentY = y / scale
-        var currentX = x / scale
+        var currentY = renderY / scale
+        var currentX = renderX / scale
 
-        for (line in getLines()) {
-            if (!line.checkCondition()) continue
-            line.lineClicked(mouseX, mouseY, currentX * scale, currentY * scale, textRenderer, scale)
+        getLines().fastForEach { line ->
+            if (!line.checkCondition()) return@fastForEach
+            line.lineClicked(mouseX, mouseY, currentX * scale, currentY * scale, scale)
 
             if (line.linebreak) {
-                currentY += textRenderer.lineHeight + 1
-                currentX = x / scale
+                currentY += line.height
+                currentX = renderX / scale
             } else {
-                currentX += textRenderer.width(line.text) / scale
+                currentX += line.width
             }
         }
     }
 
-    private fun getTotalHeight(): Int {
-        val textRenderer = mc.font
+    override fun contentHeight(): Int {
         var totalHeight = 0
-        for (line in getLines()) {
+        getLines().fastForEach { line ->
             if (line.linebreak && line.checkCondition()) {
-                totalHeight += textRenderer.lineHeight + 1
+                totalHeight += line.height
             }
         }
         return totalHeight
     }
 
-    private fun getTotalWidth(): Int {
-        val textRenderer = mc.font
+    override fun contentWidth(): Int {
         var maxWidth = 0
         var currentWidth = 0
-        for (line in getLines()) {
-            currentWidth += textRenderer.width(line.text)
+        getLines().fastForEach { line ->
+            currentWidth += line.width
             if (line.linebreak) {
                 if (currentWidth > maxWidth) {
                     maxWidth = currentWidth
@@ -161,25 +132,13 @@ class Overlay(
         return maxWidth
     }
 
-    private fun inEditingScreen(): Boolean = mc.screen is OverlayEditScreen
-
-    fun checkCondition(): Boolean = cachedCondition && cachedExtraCondition
-
-    fun isOverOverlay(mouseX: Double, mouseY: Double, width: Int = getTotalWidth(), height: Int = getTotalHeight()): Boolean {
-        if (!checkCondition()) return false
-        val totalWidth = width * scale
-        val totalHeight = height * scale
-
-        return mouseX >= x && mouseX <= x + totalWidth && mouseY >= y && mouseY <= y + totalHeight
-    }
-
     private class LineRenderState(
         val line: OverlayTextLine,
         val x: Int,
         val y: Int
     )
 
-    fun render(drawContext: GuiGraphicsExtractor, mouseX: Double, mouseY: Double) {
+    override fun render(drawContext: GuiGraphicsExtractor, mouseX: Double, mouseY: Double) {
         if (!checkCondition()) {
             return
         }
@@ -189,51 +148,29 @@ class Overlay(
         drawContext.pose().pushMatrix()
         drawContext.pose().scale(scale, scale)
 
-        var currentY = y / scale
-        var currentX = x / scale
+        val totalWidth = contentWidth()
+        val totalHeight = contentHeight()
+        updateRenderPosition(totalWidth, totalHeight)
 
-        var totalWidth = -1
-        var totalHeight = -1
+        var currentY = renderY / scale
+        var currentX = renderX / scale
 
         if (selected) {
-            val width = getTotalWidth().also { totalWidth = it }
-            val height = getTotalHeight().also { totalHeight = it }
-
-            drawDebugBox(drawContext, currentX.toInt(), currentY.toInt(), width, height)
-            drawContext.text(textRenderer, "X: ${x.toInt()} Y: ${y.toInt()} Scale: ${String.format("%.1f", scale)}", currentX.toInt(), (currentY - textRenderer.lineHeight - 1).toInt(), Color(255, 255, 255, 200).rgb, true)
+            drawDebugBox(drawContext, currentX.toInt(), currentY.toInt(), totalWidth, totalHeight)
+            drawContext.text(textRenderer, "X: ${renderX.toInt()} Y: ${renderY.toInt()} Scale: ${String.format(Locale.ROOT, "%.1f", scale)}", currentX.toInt(), (currentY - textRenderer.lineHeight - 1).toInt(), Color(255, 255, 255, 200).rgb, true)
         }
 
-        if (inEditingScreen()) {
-            val width = if (totalWidth == -1) {
-                getTotalWidth().also { totalWidth = it }
-            } else {
-                totalWidth
-            }
-            val height = if (totalHeight == -1) {
-                getTotalHeight().also { totalHeight = it }
-            } else {
-                totalHeight
-            }
-
-            if (isOverOverlay(mouseX, mouseY, width, height)) {
-                drawContext.fill(currentX.toInt(), currentY.toInt(), (currentX + width).toInt(), (currentY + height).toInt(), Color(0, 0, 0, 100).rgb)
-            }
+        if (inEditingScreen() && isOverOverlay(mouseX, mouseY, totalWidth, totalHeight)) {
+            drawContext.fill(currentX.toInt(), currentY.toInt(), (currentX + totalWidth).toInt(), (currentY + totalHeight).toInt(), Color(0, 0, 0, 100).rgb)
         }
 
-        val lines = getLines()
         val lineStates = mutableListOf<LineRenderState>()
 
-        for (line in lines) {
-            if (!line.checkCondition()) continue
+        getLines().fastForEach { line ->
+            if (!line.checkCondition()) return@fastForEach
 
             val lineX = if (line.centered) {
-                val width = if (totalWidth == -1) {
-                    getTotalWidth().also { totalWidth = it }
-                } else {
-                    totalWidth
-                }
-
-                currentX.toInt() + (width - line.width) / 2
+                currentX.toInt() + (totalWidth - line.width) / 2
             } else {
                 currentX.toInt()
             }
@@ -243,8 +180,8 @@ class Overlay(
             line.draw(drawContext, lineX, lineY, textRenderer)
 
             if (line.linebreak) {
-                currentY += textRenderer.lineHeight + 1
-                currentX = x / scale
+                currentY += line.height
+                currentX = renderX / scale
             } else {
                 currentX += line.width
             }

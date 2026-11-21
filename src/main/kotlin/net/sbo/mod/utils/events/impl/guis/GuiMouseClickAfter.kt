@@ -15,3 +15,4 @@ class GuiMouseClickAfter (
     val mouseY: Double,
     val button: Int
 )
+

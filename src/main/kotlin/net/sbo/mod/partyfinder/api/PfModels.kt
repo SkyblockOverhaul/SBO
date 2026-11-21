@@ -28,6 +28,7 @@ data class PfError(
         const val RATE_LIMITED = "RATE_LIMITED"
         const val REPORT_NOT_ALLOWED = "REPORT_NOT_ALLOWED"
         const val INTERNAL_ERROR = "INTERNAL_ERROR"
+        const val MOD_OUTDATED = "MOD_OUTDATED"
         const val KEY_NOT_YOURS = MojangAuth.KEY_NOT_YOURS
         const val MOJANG_BUSY = MojangAuth.MOJANG_BUSY
     }
@@ -125,6 +126,8 @@ data class CategoryDef(
     val maxSize: Int = 6,
     val reqs: List<ReqDef> = emptyList(),
     val display: List<String> = emptyList(),
+    // Stats only the profile viewer shows
+    val viewer: List<String> = emptyList(),
     val options: List<PartyOption> = emptyList(),
     val roles: List<RoleDef> = emptyList(),
     /** Most players per role, e.g. 1 for one player per Safari biome; null means no limit. */
@@ -138,6 +141,7 @@ data class SubcategoryDef(
     val label: String = id,
     val reqs: List<ReqDef> = emptyList(),
     val display: List<String> = emptyList(),
+    val viewer: List<String> = emptyList(),
     val options: List<PartyOption> = emptyList(),
     /** Replaces the roles of the category when set. */
     val roles: List<RoleDef>? = null,
@@ -259,6 +263,101 @@ data class CheckBody(
 @Serializable
 data class CheckScope(val subType: String, val options: Map<String, String>? = null)
 
+// POST /pf/player/stats and /pv/players/stats: every category of a player in one answer
+
+/** Send either uuid or name. A uuid only works with a valid SBO key. */
+@Serializable
+data class OwnStatsBody(val uuid: String? = null, val name: String? = null, val refresh: Boolean? = null, val items: Boolean? = null)
+
+/** Send either uuids or names, at most 5 players. */
+@Serializable
+data class ViewerStatsBody(
+    val uuids: List<String>? = null,
+    val names: List<String>? = null,
+    val refresh: Boolean? = null,
+    // Only works when requesting data for one player
+    val items: Boolean? = null
+)
+
+@Serializable
+data class ViewerStatsData(val players: List<PlayerStats> = emptyList(), val failed: List<StatsFailure> = emptyList())
+
+@Serializable
+data class StatsFailure(val uuid: String = "", val error: PfError = PfError())
+
+@Serializable
+data class PlayerStats(
+    val uuid: String,
+    val name: String = "",
+    val profileName: String = "",
+    val dataAt: Long = 0,
+    // seconds
+    val refreshIn: Int = 0,
+    val skillAverage: Double? = null,
+    val general: GeneralStats? = null,
+    val networth: Networth? = null,
+    // base64 gzipped JSON like Hypixel API
+    val items: String? = null,
+    // category, subcategory ("" without), stat id; with the default party options
+    val stats: Map<String, Map<String, Map<String, JsonElement>>> = emptyMap(),
+    // category > subcategory > option > option value > stat: stats that change with an option, e.g. the slayer tier
+    val byOption: Map<String, Map<String, Map<String, Map<String, Map<String, JsonElement>>>>> = emptyMap(),
+    val reported: Map<String, ReportedStat> = emptyMap(),
+    val tracking: TrackingData? = null,
+    val stale: Boolean = false
+) {
+    /** The stats of one party target with its fields, like the member check returns them. */
+    fun member(partyType: String, subType: String, options: Map<String, String> = emptyMap()): MemberView? {
+        val base = stats[partyType]?.get(subType) ?: return null
+        val changes = byOption[partyType]?.get(subType).orEmpty()
+        val picked = options.entries.fold(base) { acc, (field, value) -> acc + changes[field]?.get(value).orEmpty() }
+        return MemberView(uuid, name, stats = picked, reported = reported)
+    }
+}
+
+/** Calculated with SkyHelper Networth. */
+@Serializable
+data class Networth(val total: Double = 0.0, val unsoulbound: Double = 0.0, val parts: Map<String, Double> = emptyMap())
+
+@Serializable
+data class LevelAndXp(val level: Int = 0, val xp: Double = 0.0)
+
+/** What the profile viewer shows. Coins are null when the API is off. */
+@Serializable
+data class GeneralStats(
+    val sbLevel: Int = 0,
+    val magicalPower: Int? = null,
+    val skillAverage: Double? = null,
+    // by skill in lowercase, null while the skills API is off
+    val skills: Map<String, LevelAndXp>? = null,
+    val catacombsLevel: Int = 0,
+    val slayers: Map<String, LevelAndXp> = emptyMap(),
+    val purse: Double? = null,
+    val bank: Double? = null,
+    val personalBank: Double? = null,
+    val bestiaryMilestone: Int = 0,
+    val hotmLevel: Int = 0
+)
+
+@Serializable
+data class TrackingData(
+    val tracking: Double = 0.0,
+    val max: Double = 0.0,
+    val sources: List<TrackingSource> = emptyList(),
+    val unverifiedUpTo: Double? = null
+)
+
+@Serializable
+data class TrackingSource(
+    val id: String,
+    val label: String = id,
+    val info: String = "",
+    val value: Double = 0.0,
+    val max: Double = 0.0,
+    val level: Int? = null,
+    val maxLevel: Int? = null
+)
+
 @Serializable
 data class StatsReportBody(val bph: BphReport)
 
@@ -286,11 +385,17 @@ enum class ReportReason(val id: String, val label: String) {
     }
 }
 
+/** Running totals of the Diana mayor tracker. */
 @Serializable
 data class BphReport(
-    val value: Double,
-    /** current or lastEvent */
-    val scope: String,
-    val hours: Double,
-    val burrows: Long
+    val burrows: Long,
+    val playtimeMs: Long,
+    val mayorYear: Int,
+    /** Goes up with every reset and restore of the tracker. */
+    val resetCount: Int,
+    /** Another mod hooks into the Diana tracker. */
+    val modified: Boolean,
+    /** The tracker file was changed outside of SBO. */
+    val edited: Boolean,
+    val mods: List<String> = emptyList()
 )

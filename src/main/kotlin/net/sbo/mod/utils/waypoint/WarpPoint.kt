@@ -1,5 +1,6 @@
 package net.sbo.mod.utils.waypoint
 
+import net.sbo.mod.config.Option
 import net.sbo.mod.utils.math.SboVec
 
 /**
@@ -7,6 +8,9 @@ import net.sbo.mod.utils.math.SboVec
  * @property pos The position of the warp point in the game world.
  * @property unlocked Indicates if the warp is unlocked.
  * @property setting An optional name for an associated setting.
+ * @property warpType The [AdditionalHubWarps] enum type of this [WarpPoint], null for hub.
+ * @property preferWarpAgainstCompetitive The competing warp for this warp, where this warp wins over it.
+ * @property extraBlocks The extra blocks to compensate for any negative time loss from exiting through this warp.
  */
 data class WarpPoint(
     val pos: SboVec,
@@ -31,14 +35,14 @@ val additionalHubWarps: Map<String, WarpPoint> = mapOf(
     "museum" to WarpPoint(SboVec(29.50, 72.00, 1.50), true, "museumWarp", AdditionalHubWarps.MUSEUM)
 )
 
-enum class AdditionalHubWarps {
-    CASTLE,
-    WIZARD,
-    CRYPT,
-    STONKS,
-    DA,
-    TAYLOR,
-    MUSEUM;
+enum class AdditionalHubWarps(override val label: String) : Option {
+    CASTLE("Castle"),
+    WIZARD("Wizard"),
+    CRYPT("Crypt"),
+    STONKS("Stonks"),
+    DA("Dark Auction"),
+    TAYLOR("Taylor"),
+    MUSEUM("Museum");
 
     val lowercaseName: String = name.lowercase()
 }

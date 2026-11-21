@@ -9,3 +9,4 @@ import net.minecraft.world.entity.Entity
  * @param world The world from which the entity is being unloaded.
  */
 class EntityUnloadEvent(val entity: Entity, val world: ClientLevel)
+

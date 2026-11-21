@@ -1,40 +1,50 @@
 package net.sbo.mod.overlays
 
 import net.minecraft.ChatFormatting.*
+import net.minecraft.world.item.ItemStack
+import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.config.nextOption
+import net.sbo.mod.diana.tracker.Tracker
+import net.sbo.mod.guis.ConfirmGui
 import net.sbo.mod.overlays.OverlayUtils.LootItemData
-import net.sbo.mod.settings.categories.Diana
-import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.Helper.calcPercentOneReflectively
-import net.sbo.mod.utils.Helper.removeFormatting
+import net.sbo.mod.settings.categories.Trackers
+import net.sbo.mod.diana.DianaRates.calcPercentOneReflectively
+import net.sbo.mod.utils.TextUtil.removeFormatting
 import net.sbo.mod.utils.SboTimerManager
+import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.configs.diana.DianaTracker
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.guis.GuiCloseEvent
 import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
-import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.overlay.*
 import net.sbo.mod.utils.render.RenderUtils2D
 import net.sbo.mod.utils.data.configs.diana.DianaItemsData
+import net.sbo.mod.utils.events.impl.game.ItemDropEvent
+import net.sbo.mod.utils.events.impl.game.PlayerInteractEvent
+import net.sbo.mod.utils.events.impl.game.StartAttackingEvent
+import net.sbo.mod.utils.game.ItemLookup
+import net.sbo.mod.utils.game.World
 import java.util.concurrent.TimeUnit
+import net.sbo.mod.diana.DianaRates
+import net.sbo.mod.diana.DianaState
+import net.sbo.mod.utils.TextUtil
+import net.sbo.mod.utils.game.ItemPrices
+import net.sbo.mod.utils.math.NumberUtil
+import net.sbo.mod.utils.time.TimeUtil
 
-object DianaLoot : DirtyFlushableOverlay() {
+object DianaLoot : DianaOverlay<DianaLoot.View>("Diana Loot", Trackers.TrackerLook.LOOT, { Trackers.lootTracker != Trackers.TrackerMode.OFF }) {
     private var isSellTypeHovered = false
     private val timerLine: OverlayTextLine = OverlayTextLine("")
-    override val overlay = Overlay("Diana Loot", 10f, 10f,
-        allowedScreens = listOf(CHAT_SCREEN_FILTER, CRAFTING_PLAYER_INVENTORY_FILTER)
-    )
-        .setCondition { Diana.lootTracker != Diana.Tracker.OFF }
-        .setExtraCondition { Helper.hasSpade && World.isInHub() }
 
     private val changeView: OverlayTextLine = OverlayUtils.createClickableTextLine(
         text = "${YELLOW}Change View",
         hoverText = "$YELLOW${UNDERLINE}Change View",
         defaultText = "${YELLOW}Change View",
         onClick = {
-            Diana.lootTracker = Diana.lootTracker.next()
+            Trackers.lootTracker = Trackers.lootTracker.nextOption()
             updateLines()
         },
         lineBreak = false
@@ -45,7 +55,7 @@ object DianaLoot : DirtyFlushableOverlay() {
     private val changeSellType: OverlayTextLine = OverlayUtils.createClickableTextLine(
         text = "",
         onClick = {
-            Diana.bazaarSettingDiana = Diana.bazaarSettingDiana.next()
+            Trackers.bazaarSettingDiana = Trackers.bazaarSettingDiana.nextOption()
             updateLines()
         },
         onMouseEnter = {
@@ -58,6 +68,18 @@ object DianaLoot : DirtyFlushableOverlay() {
         }
     )
 
+    private val changeSort: OverlayTextLine = OverlayTextLine("")
+        .onClick {
+            Trackers.lootSort = Trackers.lootSort.nextOption()
+            updateLines()
+        }
+        .onMouseEnter {
+            changeSort.text = "$YELLOW${UNDERLINE}Sort: ${Trackers.lootSort.label}"
+        }
+        .onMouseLeave {
+            changeSort.text = "${YELLOW}Sort: ${Trackers.lootSort.label}"
+        }
+
     private val resetSession = OverlayUtils.createClickableTextLine(
         text = "${RED}Reset Session",
         hoverText = "$RED${UNDERLINE}Reset Session",
@@ -67,8 +89,17 @@ object DianaLoot : DirtyFlushableOverlay() {
         }
     )
 
+    /** Resets the session tracker after the player confirmed it, from the Reset badge and /sboresetsession. */
+    fun askResetSession() {
+        ConfirmGui.confirmReset("Reset the session tracker?", "The loot, mobs and time of this session start from zero.") {
+            resetSession()
+            Chat.chat("§6[SBO] §aDiana session tracker has been reset.")
+        }
+    }
+
     fun resetSession() {
         SboTimerManager.timerSession.reset()
+        SboTimerManager.timerCoaSession.reset()
         DataManager.dianaTrackerSessionData.reset()
         DataManager.save(DataManager::dianaTrackerSessionData)
         updateLines()
@@ -76,21 +107,22 @@ object DianaLoot : DirtyFlushableOverlay() {
     }
 
     private val LOOT_ITEMS = listOf(
-        LootItemData("MYTHOLOGICAL_DYE", "Mythological Dye", RED),
+        LootItemData("MYTHOLOGICAL_DYE", "Mythological Dye", RED, short = "Dye"),
         LootItemData("MYTH_THE_FISH", "Myth the Fish", RED),
-        LootItemData("SHIMMERING_WOOL", "Shimmering Wool", RED, combined = true, dropMobId = "KING_MINOS", dropMobLsId = "KING_MINOS_LS"),
+        LootItemData("SHIMMERING_WOOL", "Shimmering Wool", RED, combined = true, dropMobId = "KING_MINOS", dropMobLsId = "KING_MINOS_LS", short = "Wool"),
         LootItemData("MANTI_CORE", "Manti-core", RED, combined = true, dropMobId = "MANTICORE", dropMobLsId = "MANTICORE_LS"),
         LootItemData("KING_MINOS_SHARD", "King Minos Shard", RED, isRarerDrop = true),
         LootItemData("FATEFUL_STINGER", "Fateful Stinger", LIGHT_PURPLE, combined = true, dropMobId = "MANTICORE", dropMobLsId = "MANTICORE_LS"),
-        LootItemData("CHIMERA", "Chimera", LIGHT_PURPLE, combined = true, dropMobId = "MINOS_INQUISITOR", dropMobLsId = "MINOS_INQUISITOR_LS"),
+        LootItemData("CHIMERA", "Chimera", LIGHT_PURPLE, combined = true, dropMobId = "MINOS_INQUISITOR", dropMobLsId = "MINOS_INQUISITOR_LS", short = "Chim"),
         LootItemData("BRAIN_FOOD", "Brain Food", DARK_PURPLE, combined = true, dropMobId = "SPHINX", dropMobLsId = "SPHINX_LS"),
-        LootItemData("MINOS_RELIC", "Minos Relic", DARK_PURPLE, isRarerDrop = true, dropMobId = "MINOS_CHAMPION"),
+        LootItemData("LOOTING_7", "Looting 7", LIGHT_PURPLE, combined = true, dropMobId = "SPHINX", dropMobLsId = "SPHINX_LS", short = "Loot 7"),
+        LootItemData("MINOS_RELIC", "Minos Relic", DARK_PURPLE, isRarerDrop = true, dropMobId = "MINOS_CHAMPION", short = "Relic"),
         LootItemData("SPHINX_SHARD", "Sphinx Shard", DARK_PURPLE, isRarerDrop = true),
-        LootItemData("BRAIDED_GRIFFIN_FEATHER", "Braided Griffin Feather", DARK_PURPLE, isRarerDrop = true),
+        LootItemData("BRAIDED_GRIFFIN_FEATHER", "Braided Griffin Feather", DARK_PURPLE, isRarerDrop = true, short = "Braided"),
         LootItemData("DAEDALUS_STICK", "Daedalus Stick", GOLD, isRarerDrop = true, dropMobId = "MINOTAUR"),
         LootItemData("MINOTAUR_SHARD", "Minotaur Shard", GOLD, isRarerDrop = true),
         LootItemData("CROWN_OF_GREED", "Crown of Greed", GOLD, isRarerDrop = true),
-        LootItemData("GRIFFIN_FEATHER", "Griffin Feather", GOLD),
+        LootItemData("GRIFFIN_FEATHER", "Griffin Feather", GOLD, short = "Feather"),
         LootItemData("MYTHOS_FRAGMENT", "Mytho Fragment", GOLD),
         LootItemData("WASHED_UP_SOUVENIR", "Washed-up Souvenir", GOLD, isRarerDrop = true),
         LootItemData("CRETAN_URN", "Cretan Urn", DARK_GREEN),
@@ -102,13 +134,15 @@ object DianaLoot : DirtyFlushableOverlay() {
         LootItemData("HILT_OF_REVELATIONS", "Hilt of Revelations", BLUE),
         LootItemData("ANCIENT_CLAW", "Ancient Claw", BLUE),
         LootItemData("ENCHANTED_ANCIENT_CLAW", "Enchanted Ancient Claw", BLUE),
-        LootItemData("ENCHANTED_GOLD", "Enchanted Gold", BLUE)
+        LootItemData("ENCHANTED_GOLD", "Enchanted Gold", BLUE),
+        LootItemData("FAKE_SHURIKEN", "Shuriken", RED, negativeValue = true),
     )
 
     fun init() {
-        overlay.init()
+        initOverlays()
         updateTimerText()
         updateLines()
+        shurikenTracker()
 
         Register.onTick(1) { updateTimerText() }
         Register.onTick(20) {
@@ -119,7 +153,8 @@ object DianaLoot : DirtyFlushableOverlay() {
     @SboEvent
     fun onGuiClose(event: GuiCloseEvent) {
         if (CRAFTING_PLAYER_INVENTORY_FILTER(event.screen)) {
-            overlay.removeLines(listOf(changeView, delimiter, changeSellType, resetSession))
+            overlay.removeLines(listOf(changeView, delimiter, changeSellType, changeSort, resetSession))
+            updateLines()
         }
     }
 
@@ -130,28 +165,80 @@ object DianaLoot : DirtyFlushableOverlay() {
         }
     }
 
-    private fun hideLine(name: String) {
-        if (!isCraftingScreenOpen()) return
-        val hideList = DataManager.sboData.hideTrackerLines
-        if (name in hideList) hideList.remove(name) else hideList.add(name)
-        updateLines()
+    // A shuriken counts once it leaves the inventory shortly after a click with one in hand; drops and
+    // moving stacks in a screen only resync the count
+    private const val SHURIKEN_USE_WINDOW_MS = 1500L
+    private var shurikenClickAt = 0L
+    private var shurikenDropAt = 0L
+    // -1 while no click is being watched
+    private var shurikenCount = -1
+
+    private fun shurikenTracker() {
+        Register.onTick(1) {
+            if (shurikenCount < 0) return@onTick
+            val now = System.currentTimeMillis()
+            if (now - shurikenClickAt > SHURIKEN_USE_WINDOW_MS || !isDiana()) {
+                shurikenCount = -1
+                return@onTick
+            }
+            val count = countShurikens()
+            val used = shurikenCount - count
+            val moved = mc.screen != null || now - shurikenDropAt <= SHURIKEN_USE_WINDOW_MS
+            if (used > 0 && !moved) Tracker.trackItem("FAKE_SHURIKEN", used, enforceCooldown = false)
+            shurikenCount = count
+        }
     }
+
+    @SboEvent
+    fun shurikenUse(event: PlayerInteractEvent) {
+        // useItemOn falls through to useItem when the block does nothing, so only watch useItem
+        if (event.action != "useItem") return
+        if (isDiana() && event.player.mainHandItem.isShuriken()) onShurikenClick()
+    }
+
+    @SboEvent
+    fun shurikenAttack(event: StartAttackingEvent) {
+        if (isDiana() && event.getMainHandItem().isShuriken()) onShurikenClick()
+    }
+
+    @SboEvent
+    fun shurikenDrop(event: ItemDropEvent) {
+        shurikenDropAt = System.currentTimeMillis()
+    }
+
+    private fun onShurikenClick() {
+        // Counted before the server takes the shuriken away
+        if (shurikenCount < 0) shurikenCount = countShurikens()
+        shurikenClickAt = System.currentTimeMillis()
+    }
+
+    private fun countShurikens(): Int {
+        val player = mc.player ?: return 0
+        return player.inventory.nonEquipmentItems.sumOf { if (it.isShuriken()) it.count else 0 }
+    }
+
+    private fun isDiana() = World.isInHub() && DianaState.hasSpade && DataManager.dianaTrackerMayorData.items.TOTAL_BURROWS > 0
+
+    private fun ItemStack.isShuriken(): Boolean = !isEmpty && ItemLookup(this).sbId == "FAKE_SHURIKEN"
+
+    /** Red minus in front of the price of used up items like shurikens. */
+    private fun lossPrefix(data: LootItemData, amount: Int) = if (data.negativeValue && amount > 0) "$RED-" else ""
 
     private fun createLootLine(data: LootItemData, tracker: DianaTracker): OverlayTextLine {
         val itemName = data.id
         val amount = tracker.getAmountOf(itemName)
-        val color = if (Diana.ironmanOverrides && data.id == "WASHED_UP_SOUVENIR") DARK_GREEN else data.color
-        val formattedName = "$color${data.name}: $AQUA${Helper.formatNumber(amount, withCommas = true)}"
-        val price = Helper.getItemPriceFormatted(itemName.replace("_LS", ""), amount)
+        val color = if (Trackers.npcOnlyPrices && data.id == "WASHED_UP_SOUVENIR") DARK_GREEN else data.color
+        val formattedName = "$color${data.name}: $AQUA${NumberUtil.formatNumber(amount, withCommas = true)}"
+        val price = lossPrefix(data, amount) + ItemPrices.getItemPriceFormatted(itemName.replace("_LS", ""), amount)
         val percent = data.dropMobId?.let { dropId ->
             calcPercentOneReflectively(tracker.items, tracker.mobs, itemName, dropId)
         }
-        val percentText = percent?.let { " $GRAY($AQUA$it%$GRAY)" } ?: ""
-        val hidePrice = Diana.ironmanOverrides && Helper.getItemPrice(itemName.replace("_LS", ""), amount) == 0L
+        val percentText = percent?.let { " $GRAY($AQUA$it%$GRAY)" }.orEmpty()
+        val hidePrice = Trackers.npcOnlyPrices && ItemPrices.getItemPrice(itemName.replace("_LS", ""), amount) == 0L
         val formattedText = "${if (hidePrice) "$DARK_GRAY  -  " else "$GOLD$price"} $GRAY| $formattedName$percentText"
-        val line = OverlayTextLine(formattedText).onClick { hideLine(itemName) }
+        val line = OverlayTextLine(formattedText).onClick { toggleHidden(itemName) }
             .setCondition {
-                val meetsZeroValueCondition = amount > 0 || !Diana.hideUnobtainedItems
+                val meetsZeroValueCondition = amount > 0 || !Trackers.hideUnobtainedItems
                 val meetsManualHideCondition = !(!isCraftingScreenOpen() && itemName in DataManager.sboData.hideTrackerLines)
                 meetsZeroValueCondition && meetsManualHideCondition
             }
@@ -167,29 +254,29 @@ object DianaLoot : DirtyFlushableOverlay() {
         val amountBase = tracker.getAmountOf(itemNameBase)
         val amountLs = tracker.getAmountOf(itemNameLs)
         val totalAmount = amountBase + amountLs
-        val hidePrices = Diana.ironmanOverrides && Helper.getItemPrice(itemNameBase, totalAmount) == 0L
-        val priceLs = if (hidePrices) "$DARK_GRAY  -  " else "$GOLD${Helper.getItemPriceFormatted(itemNameLs.replace("_LS", ""), amountLs)}"
-        val priceCombined = if (hidePrices) "$DARK_GRAY  -  " else "$GOLD${Helper.getItemPriceFormatted(itemNameBase, totalAmount)}"
+        val hidePrices = Trackers.npcOnlyPrices && ItemPrices.getItemPrice(itemNameBase, totalAmount) == 0L
+        val priceLs = if (hidePrices) "$DARK_GRAY  -  " else "$GOLD${ItemPrices.getItemPriceFormatted(itemNameLs.replace("_LS", ""), amountLs)}"
+        val priceCombined = if (hidePrices) "$DARK_GRAY  -  " else "$GOLD${ItemPrices.getItemPriceFormatted(itemNameBase, totalAmount)}"
         val percent = data.dropMobId?.let { dropId ->
             calcPercentOneReflectively(tracker.items, tracker.mobs, itemNameBase, dropId)
         }
-        val percentText = percent?.let { " $GRAY($AQUA$it%$GRAY)" } ?: ""
+        val percentText = percent?.let { " $GRAY($AQUA$it%$GRAY)" }.orEmpty()
         val percentLs = data.dropMobLsId?.let { dropLsId ->
             calcPercentOneReflectively(tracker.items, tracker.mobs, itemNameLs, dropLsId)
         }
-        val percentLsText = percentLs?.let { " $GRAY($AQUA$it%$GRAY)" } ?: ""
-        val color = if (Diana.ironmanOverrides && data.id == "WASHED_UP_SOUVENIR") DARK_GREEN else data.color
-        val baseText = "$priceCombined $GRAY| $color${data.name}: $AQUA${Helper.formatNumber(amountBase,
+        val percentLsText = percentLs?.let { " $GRAY($AQUA$it%$GRAY)" }.orEmpty()
+        val color = if (Trackers.npcOnlyPrices && data.id == "WASHED_UP_SOUVENIR") DARK_GREEN else data.color
+        val baseText = "$priceCombined $GRAY| $color${data.name}: $AQUA${NumberUtil.formatNumber(amountBase,
             withCommas = true
         )}$percentText"
-        val lsText = "$priceLs $GRAY| $color${data.name} $GRAY[${AQUA}LS$GRAY]: $AQUA${Helper.formatNumber(amountLs,
+        val lsText = "$priceLs $GRAY| $color${data.name} $GRAY[${AQUA}LS$GRAY]: $AQUA${NumberUtil.formatNumber(amountLs,
             withCommas = true
         )}$percentLsText"
-        val combinedText = "$baseText $GRAY[${AQUA}LS$GRAY:$AQUA${Helper.formatNumber(amountLs, withCommas = true)}$GRAY]"
+        val combinedText = "$baseText $GRAY[${AQUA}LS$GRAY:$AQUA${NumberUtil.formatNumber(amountLs, withCommas = true)}$GRAY]"
 
-        val line = OverlayTextLine(combinedText).onClick { hideLine(itemNameBase) }
+        val line = OverlayTextLine(combinedText).onClick { toggleHidden(itemNameBase) }
             .setCondition {
-                val meetsZeroValueCondition = totalAmount > 0 || !Diana.hideUnobtainedItems
+                val meetsZeroValueCondition = totalAmount > 0 || !Trackers.hideUnobtainedItems
                 val meetsManualHideCondition = !(!isCraftingScreenOpen() && itemNameBase in DataManager.sboData.hideTrackerLines)
                 meetsZeroValueCondition && meetsManualHideCondition
             }
@@ -200,7 +287,7 @@ object DianaLoot : DirtyFlushableOverlay() {
 
                 RenderUtils2D.drawHoveringString(
                     drawContext,
-                    "$YELLOW${Helper.toTitleCase(itemNameBase.replace("_", " ").lowercase())} LS Details:\n" +
+                    "$YELLOW${TextUtil.toTitleCase(itemNameBase.replace("_", " ").lowercase())} LS Details:\n" +
                             lsText,
                     mouseX, mouseY, textRenderer
                 )
@@ -211,8 +298,239 @@ object DianaLoot : DirtyFlushableOverlay() {
         return line
     }
 
+    /** One loot line: the item, its lootshare line ([ls]) or both in one ([combined]). */
+    private data class LootLine(val data: LootItemData, val ls: Boolean = false, val combined: Boolean = false) {
+        val id get() = if (ls) "${data.id}_LS" else data.id
+    }
+
+    /** The loot lines in the order picked in "Loot Sort", ties keep the default order. */
+    private fun lootLines(tracker: DianaTracker): List<LootLine> {
+        val lines = LOOT_ITEMS.flatMap { data ->
+            when {
+                !data.combined -> listOf(LootLine(data))
+                Trackers.combineLootLines -> listOf(LootLine(data, combined = true))
+                else -> listOf(LootLine(data), LootLine(data, ls = true))
+            }
+        }
+        return when (Trackers.lootSort) {
+            Trackers.LootSort.DEFAULT -> lines
+            Trackers.LootSort.PRICE_DESC -> lines.sortedByDescending { worth(it, tracker) }
+            Trackers.LootSort.PRICE_ASC -> lines.sortedBy { worth(it, tracker) }
+            Trackers.LootSort.AMOUNT_DESC -> lines.sortedByDescending { amount(it, tracker) }
+            Trackers.LootSort.AMOUNT_ASC -> lines.sortedBy { amount(it, tracker) }
+            // The lootshare line stays below its item
+            Trackers.LootSort.CUSTOM -> {
+                val order = customOrder(ORDER, ITEM_IDS)
+                lines.sortedBy { order.indexOf(it.data.id) }
+            }
+        }
+    }
+
+    private fun amount(line: LootLine, tracker: DianaTracker): Int =
+        tracker.getAmountOf(line.id) + if (line.combined) tracker.getAmountOf("${line.data.id}_LS") else 0
+
+    // Used up items count as a loss, like in the profit
+    private fun worth(line: LootLine, tracker: DianaTracker): Long =
+        ItemPrices.getItemPrice(line.data.id, amount(line, tracker)).let { if (line.data.negativeValue) -it else it }
+
+    // The custom order is by item, its lootshare line moves with it
+    private const val ORDER = "loot"
+    private val ITEM_IDS = LOOT_ITEMS.map { it.id }
+
+    private fun itemOf(row: Row): String? = row.id?.removeSuffix("_LS")
+
+    data class View(
+        val mode: String,
+        val sellType: String,
+        val sort: String,
+        val session: Boolean,
+        val rows: List<Row>,
+        val stats: List<Row>,
+        val inventory: Boolean,
+        // Arrows on the lines, with the Custom sort in the inventory
+        val reorder: Boolean
+    )
+
+    override fun view(): View {
+        val type = Trackers.lootTracker
+        val inventory = isCraftingScreenOpen()
+        val sellType = TextUtil.toTitleCase(Trackers.bazaarSettingDiana.name)
+        val sort = Trackers.lootSort.label
+        val reorder = inventory && Trackers.lootSort == Trackers.LootSort.CUSTOM
+        val tracker = getDianaTracker(type) ?: return View("", sellType, sort, false, emptyList(), emptyList(), inventory, reorder)
+        val rows = lootLines(tracker).mapNotNull { lootRow(it.data, tracker, inventory, it.ls, it.combined) }
+        return View(TextUtil.toTitleCase("$type"), sellType, sort, type == Trackers.TrackerMode.SESSION, rows, statRows(tracker, type), inventory, reorder)
+    }
+
+    // One loot line of the new look, null while it is hidden; [ls] for the lootshare line, [combined] for both in one
+    private fun lootRow(data: LootItemData, tracker: DianaTracker, inventory: Boolean, ls: Boolean = false, combined: Boolean = false): Row? {
+        val id = if (ls) "${data.id}_LS" else data.id
+        val amount = tracker.getAmountOf(id)
+        val lsAmount = if (combined) tracker.getAmountOf("${data.id}_LS") else 0
+        if (amount + lsAmount <= 0 && Trackers.hideUnobtainedItems) return null
+        // Hidden lines only show (crossed out) in the inventory, to unhide them
+        val hidden = id in DataManager.sboData.hideTrackerLines
+        if (hidden && !inventory) return null
+        val dropMob = if (ls) data.dropMobLsId else data.dropMobId
+        val percent = dropMob?.let { "${calcPercentOneReflectively(tracker.items, tracker.mobs, id, it)}%" }
+        val lsText = if (combined) "LS ${NumberUtil.formatNumber(lsAmount, withCommas = true)}" else null
+        val hidePrice = Trackers.npcOnlyPrices && ItemPrices.getItemPrice(data.id, amount + lsAmount) == 0L
+        return Row(
+            id = id,
+            name = if (ls) "${data.name} LS" else data.name,
+            color = if (Trackers.npcOnlyPrices && data.id == "WASHED_UP_SOUVENIR") DARK_GREEN else data.color,
+            value = NumberUtil.formatNumber(amount, withCommas = true),
+            extra = listOfNotNull(percent, lsText).joinToString("  ").ifEmpty { null },
+            price = if (hidePrice) "-" else lossPrefix(data, amount + lsAmount) + ItemPrices.getItemPriceFormatted(data.id, amount + lsAmount),
+            hidden = hidden
+        )
+    }
+
+    private fun statRows(tracker: DianaTracker, type: Trackers.TrackerMode): List<Row> {
+        val timer = timer(type)
+        val totalProfit = totalProfit(tracker)
+        val burrowsPerHr = DianaRates.getBurrowsPerHr(tracker, timer)
+        val profitPerHr = profitPerHour(tracker, totalProfit)
+        val rows = mutableListOf(
+            Row(null, "Burrows", null, NumberUtil.formatNumber(tracker.items.TOTAL_BURROWS, withCommas = true), if (burrowsPerHr.isNaN()) null else "$burrowsPerHr/h"),
+            Row("coins", "Coins", null, NumberUtil.formatNumber(tracker.items.COINS), if (Trackers.excludeCoinsFromProfit) "Excluded" else null, valueClass = "coins"),
+            Row("profit", "Profit", null, NumberUtil.formatNumber(totalProfit), if (profitPerHr > 0.0) "${NumberUtil.formatNumber(profitPerHr)}/h" else null, valueClass = "profit"),
+            Row(null, "Playtime", null, TimeUtil.formatTime(tracker.items.TIME), if (timer.isRunning()) null else "Paused")
+        )
+        if (type == Trackers.TrackerMode.TOTAL) rows += Row(null, "Events", null, DataManager.pastDianaEventsData.events.size.toString())
+        return rows
+    }
+
+    override fun NodeBuilder.content(view: View) {
+        tracker("loot") {
+            head("Diana Loot") {
+                if (view.inventory) {
+                    badge(view.sellType, "sell", clickable = true)
+                    badge(view.sort, "sort", clickable = true)
+                    if (view.session) badge("Reset", "reset", clickable = true, extraClass = "danger")
+                }
+                badge(view.mode, "mode", view.inventory)
+            }
+            rows(view.rows, view.reorder, ::itemOf)
+            separator()
+            view.stats.forEach { row(it) }
+            if (view.reorder) hint("Click an item to hide it, the arrows to move it")
+            else if (view.inventory) hint("Click an item to hide it, the badges to change them")
+        }
+    }
+
+    override fun compactLines(): List<CompactLine>? {
+        if (!Trackers.isCompact(Trackers.CompactTracker.LOOT)) return null
+        val type = Trackers.lootTracker
+        val tracker = getDianaTracker(type) ?: return emptyList()
+        val hidden = DataManager.sboData.hideTrackerLines
+        // Only the main loot, the lootshare drops added after a +
+        val items = lootLines(tracker).asSequence().filter { !it.ls }.map { it.data }.filter { it.short != null && it.id !in hidden }.toList()
+        val entries = items.mapNotNull { data ->
+            val amount = tracker.getAmountOf(data.id)
+            val lsAmount = if (data.combined) tracker.getAmountOf("${data.id}_LS") else 0
+            if (amount + lsAmount <= 0 && Trackers.hideUnobtainedItems) return@mapNotNull null
+            val ls = if (lsAmount > 0) "+${NumberUtil.formatNumber(lsAmount, withCommas = true)}" else ""
+            Entry(data.short, data.color, NumberUtil.formatNumber(amount, withCommas = true) + ls)
+        }
+        val timer = timer(type)
+        val totalProfit = totalProfit(tracker)
+        val profitPerHr = profitPerHour(tracker, totalProfit)
+        val burrowsPerHr = DianaRates.getBurrowsPerHr(tracker, timer)
+        val head = CompactLine("Loot", listOfNotNull(
+            Entry(null, null, TextUtil.toTitleCase("$type")),
+            Entry(null, null, TimeUtil.formatTime(tracker.items.TIME)),
+            if (timer.isRunning()) null else Entry(null, null, "Paused")
+        ))
+        val profit = CompactLine(null, listOfNotNull(
+            Entry("Profit", GOLD, NumberUtil.formatNumber(totalProfit)),
+            if (profitPerHr > 0.0) Entry(null, null, "${NumberUtil.formatNumber(profitPerHr)}/h") else null
+        ))
+        val burrows = CompactLine(null, listOfNotNull(
+            Entry("Burrows", null, NumberUtil.formatNumber(tracker.items.TOTAL_BURROWS, withCommas = true)),
+            if (burrowsPerHr.isNaN()) null else Entry(null, null, "$burrowsPerHr/h")
+        ))
+        return listOf(head) + packed(entries) + profit + burrows
+    }
+
+    override fun elementClicked(id: String) {
+        if (moveClicked(id, ORDER, ITEM_IDS) { view().rows.asSequence().mapNotNull(::itemOf).distinct().toList() }) return
+        when (id) {
+            "mode" -> {
+                Trackers.lootTracker = Trackers.lootTracker.nextOption()
+                updateLines()
+            }
+            "sell" -> {
+                Trackers.bazaarSettingDiana = Trackers.bazaarSettingDiana.nextOption()
+                updateLines()
+            }
+            "sort" -> {
+                Trackers.lootSort = Trackers.lootSort.nextOption()
+                updateLines()
+            }
+            "reset" -> askResetSession()
+            // Coins and profit only have a tooltip
+            else -> rowId(id)?.takeIf { it != "coins" && it != "profit" }?.let(::toggleHidden)
+        }
+    }
+
+    override fun tooltip(id: String): String? {
+        val tracker = getDianaTracker(Trackers.lootTracker) ?: return null
+        return when (val row = rowId(id)) {
+            "coins" -> coinBreakdown(tracker)
+            "profit" -> {
+                val totalProfit = totalProfit(tracker)
+                profitBreakdown(NumberUtil.formatNumber(profitPerHour(tracker, totalProfit)), profitPerBurrow(tracker, totalProfit), CrownOfAvarice.getProfitPerHour())
+            }
+            null -> null
+            // The lootshare count of a combined line
+            else -> LOOT_ITEMS.find { it.id == row && it.combined && Trackers.combineLootLines }?.let { lsDetails(it, tracker) }
+        }
+    }
+
+    private fun timer(type: Trackers.TrackerMode) = when (type) {
+        Trackers.TrackerMode.TOTAL -> SboTimerManager.timerTotal
+        Trackers.TrackerMode.SESSION -> SboTimerManager.timerSession
+        else -> SboTimerManager.timerMayor
+    }
+
+    // Item profit per hour played plus the CoA profit per hour
+    private fun profitPerHour(tracker: DianaTracker, totalProfit: Long): Double {
+        val playTimeHrs = tracker.items.TIME.toDouble() / TimeUnit.HOURS.toMillis(1)
+        return (if (playTimeHrs > 0) totalProfit / playTimeHrs else 0.0) + CrownOfAvarice.getProfitPerHour()
+    }
+
+    private fun profitPerBurrow(tracker: DianaTracker, totalProfit: Long): Any {
+        val totalBurrows = tracker.items.TOTAL_BURROWS
+        return if (totalBurrows > 0) NumberUtil.formatNumber(totalProfit / totalBurrows) else 0.0
+    }
+
+    private fun coinBreakdown(tracker: DianaTracker): String =
+        """
+        $YELLOW${BOLD}Coin Break Down:
+        ${GOLD}Treasure: $AQUA${NumberUtil.formatNumber(tracker.items.COINS - tracker.items.FISH_COINS - tracker.items.SCAVENGER_COINS)}
+        ${GOLD}Four-Eyed Fish: $AQUA${NumberUtil.formatNumber(tracker.items.FISH_COINS)}
+        ${GOLD}Scavenger: $AQUA${NumberUtil.formatNumber(tracker.items.SCAVENGER_COINS)}
+        """.trimIndent()
+
+    private fun profitBreakdown(profitPerHr: Any, profitPerBurrow: Any, coaProfitPerHr: Number): String =
+        "$GOLD$profitPerHr coins/hr\n" +
+            "$GOLD$profitPerBurrow coins/burrow\n" +
+            "$GOLD${NumberUtil.formatNumber(coaProfitPerHr)} coa coins/hr"
+
+    private fun lsDetails(data: LootItemData, tracker: DianaTracker): String {
+        val itemNameLs = "${data.id}_LS"
+        val amountLs = tracker.getAmountOf(itemNameLs)
+        val hidePrices = Trackers.npcOnlyPrices && ItemPrices.getItemPrice(data.id, tracker.getAmountOf(data.id) + amountLs) == 0L
+        val priceLs = if (hidePrices) "$DARK_GRAY  -  " else "$GOLD${ItemPrices.getItemPriceFormatted(data.id, amountLs)}"
+        val percentLs = data.dropMobLsId?.let { " $GRAY($AQUA${calcPercentOneReflectively(tracker.items, tracker.mobs, itemNameLs, it)}%$GRAY)" }.orEmpty()
+        val color = if (Trackers.npcOnlyPrices && data.id == "WASHED_UP_SOUVENIR") DARK_GREEN else data.color
+        return "$YELLOW${TextUtil.toTitleCase(data.id.replace("_", " ").lowercase())} LS Details:\n" +
+            "$priceLs $GRAY| $color${data.name} $GRAY[${AQUA}LS$GRAY]: $AQUA${NumberUtil.formatNumber(amountLs, withCommas = true)}$percentLs"
+    }
+
     override fun generateLines(): List<OverlayTextLine> {
-        val type = Diana.lootTracker
+        val type = Trackers.lootTracker
         val tracker = getDianaTracker(type) ?: run {
             return@generateLines emptyList()
         }
@@ -221,63 +539,58 @@ object DianaLoot : DirtyFlushableOverlay() {
         val lines = mutableListOf<OverlayTextLine>()
 
         updateControlLines(lines, isCraftingOpen)
-        lines.add(OverlayTextLine("$YELLOW${BOLD}Diana Loot $GRAY($YELLOW${Helper.toTitleCase("$type")}$GRAY)"))
+        lines.add(OverlayTextLine("$YELLOW${BOLD}Diana Loot $GRAY($YELLOW${TextUtil.toTitleCase("$type")}$GRAY)"))
         lines.addAll(generateLootLines(tracker))
         lines.addAll(generateStatisticsLines(tracker, type))
 
         return lines
     }
 
-    private fun getDianaTracker(type: Diana.Tracker): DianaTracker? {
+    private fun getDianaTracker(type: Trackers.TrackerMode): DianaTracker? {
         return when (type) {
-            Diana.Tracker.TOTAL -> DataManager.dianaTrackerTotalData
-            Diana.Tracker.EVENT -> DataManager.dianaTrackerMayorData
-            Diana.Tracker.SESSION -> DataManager.dianaTrackerSessionData
-            Diana.Tracker.OFF -> null
+            Trackers.TrackerMode.TOTAL -> DataManager.dianaTrackerTotalData
+            Trackers.TrackerMode.EVENT -> DataManager.dianaTrackerMayorData
+            Trackers.TrackerMode.SESSION -> DataManager.dianaTrackerSessionData
+            Trackers.TrackerMode.OFF -> null
         }
     }
 
     private fun updateControlLines(lines: MutableList<OverlayTextLine>, isCraftingOpen: Boolean) {
         val screenOpen = isCraftingOpen || isCraftingScreenOpen()
         val sellTypeText = if (isSellTypeHovered) {
-            "$YELLOW$UNDERLINE${Helper.toTitleCase(Diana.bazaarSettingDiana.toString())}"
+            "$YELLOW$UNDERLINE${TextUtil.toTitleCase(Trackers.bazaarSettingDiana.name)}"
         } else {
-            "$YELLOW${Helper.toTitleCase(Diana.bazaarSettingDiana.toString())}"
+            "$YELLOW${TextUtil.toTitleCase(Trackers.bazaarSettingDiana.name)}"
         }
         changeSellType.text = sellTypeText
+        changeSort.text = "${YELLOW}Sort: ${Trackers.lootSort.label}"
 
         if (screenOpen) {
-            lines.addAll(listOf(changeView, delimiter, changeSellType))
-            if (Diana.lootTracker == Diana.Tracker.SESSION) lines.add(resetSession)
+            lines.addAll(listOf(changeView, delimiter, changeSellType, changeSort))
+            if (Trackers.lootTracker == Trackers.TrackerMode.SESSION) lines.add(resetSession)
         }
     }
 
     private fun generateLootLines(tracker: DianaTracker): List<OverlayTextLine> {
-        val lines = mutableListOf<OverlayTextLine>()
-        for (data in LOOT_ITEMS) {
-            if (Diana.combineLootLines && data.combined) {
-                lines.add(createCombinedLootLine(data, tracker))
-            } else if (data.combined) {
-                lines.add(createLootLine(data, tracker))
-                val lsData = data.copy(
-                    id = "${data.id}_LS",
-                    name = "${data.name} $GRAY[${AQUA}LS$GRAY]",
+        return lootLines(tracker).map { line ->
+            when {
+                line.combined -> createCombinedLootLine(line.data, tracker)
+                line.ls -> createLootLine(line.data.copy(
+                    id = line.id,
+                    name = "${line.data.name} $GRAY[${AQUA}LS$GRAY]",
                     combined = false,
                     isRarerDrop = true
-                )
-                lines.add(createLootLine(lsData, tracker))
-            } else {
-                lines.add(createLootLine(data, tracker))
+                ), tracker)
+                else -> createLootLine(line.data, tracker)
             }
         }
-        return lines
     }
 
-    private fun generateStatisticsLines(tracker: DianaTracker, type: Diana.Tracker): List<OverlayTextLine> {
+    private fun generateStatisticsLines(tracker: DianaTracker, type: Trackers.TrackerMode): List<OverlayTextLine> {
         val timer = when (type) {
-            Diana.Tracker.TOTAL -> SboTimerManager.timerTotal
-            Diana.Tracker.EVENT -> SboTimerManager.timerMayor
-            Diana.Tracker.SESSION -> SboTimerManager.timerSession
+            Trackers.TrackerMode.TOTAL -> SboTimerManager.timerTotal
+            Trackers.TrackerMode.EVENT -> SboTimerManager.timerMayor
+            Trackers.TrackerMode.SESSION -> SboTimerManager.timerSession
             else -> SboTimerManager.timerMayor
         }
         val totalBurrows = tracker.items.TOTAL_BURROWS
@@ -285,56 +598,58 @@ object DianaLoot : DirtyFlushableOverlay() {
         val playTimeHrs = tracker.items.TIME.toDouble() / TimeUnit.HOURS.toMillis(1)
         val totalEvents = DataManager.pastDianaEventsData.events.size
 
-        val burrowsPerHr = Helper.getBurrowsPerHr(tracker, timer)
+        val burrowsPerHr = DianaRates.getBurrowsPerHr(tracker, timer)
         val bphText = if (burrowsPerHr.isNaN()) "" else " $GRAY[$AQUA$burrowsPerHr$GRAY/${AQUA}hr$GRAY]"
+        val editedText = if (tracker.edited) " $GRAY(edited)" else ""
 
-        val profitPerHr = if (playTimeHrs > 0) Helper.formatNumber(totalProfitValue / playTimeHrs) else 0.0
-        val profitPerBurrow = if (totalBurrows > 0) Helper.formatNumber(totalProfitValue / totalBurrows) else 0.0
+        val coaProfitPerHr = CrownOfAvarice.getProfitPerHour()
+        val profitPerHr = NumberUtil.formatNumber((if (playTimeHrs > 0) totalProfitValue / playTimeHrs else 0.0) + coaProfitPerHr)
+        val profitPerBurrow = if (totalBurrows > 0) NumberUtil.formatNumber(totalProfitValue / totalBurrows) else 0.0
 
         val stats = mutableListOf(
-            OverlayTextLine("${GRAY}Total Burrows: $AQUA${Helper.formatNumber(totalBurrows, withCommas = true)}$bphText"),
+            OverlayTextLine("${GRAY}Total Burrows: $AQUA${NumberUtil.formatNumber(totalBurrows, withCommas = true)}$bphText$editedText"),
             createCoinLine(tracker),
-            createProfitLine(totalProfitValue, profitPerHr, profitPerBurrow)
+            createProfitLine(totalProfitValue, profitPerHr, profitPerBurrow, coaProfitPerHr)
         )
 
         stats.add(timerLine)
-        if (type == Diana.Tracker.TOTAL) stats.add(OverlayTextLine("${YELLOW}Total Events: $AQUA$totalEvents"))
+        if (type == Trackers.TrackerMode.TOTAL) stats.add(OverlayTextLine("${YELLOW}Total Events: $AQUA$totalEvents"))
 
         return stats
     }
 
     private fun createCoinLine(tracker: DianaTracker): OverlayTextLine {
-        return OverlayTextLine("${GOLD}Total Coins: $AQUA${Helper.formatNumber(tracker.items.COINS)}" + if (Diana.excludeCoinsFromProfit) " $GRAY[${RED}EXCLUDED$GRAY]" else "")
+        return OverlayTextLine("${GOLD}Total Coins: $AQUA${NumberUtil.formatNumber(tracker.items.COINS)}" + if (Trackers.excludeCoinsFromProfit) " $GRAY[${RED}EXCLUDED$GRAY]" else "")
             .onHover { drawContext, textRenderer ->
                 val scaleFactor = mc.window.guiScale
                 val mouseX = mc.mouseHandler.xpos() / scaleFactor
                 val mouseY = mc.mouseHandler.ypos() / scaleFactor
-                RenderUtils2D.drawHoveringString(drawContext,
-                    "$YELLOW${BOLD}Coin Break Down:\n" +
-                            "${GOLD}Treasure: $AQUA${Helper.formatNumber(tracker.items.COINS - tracker.items.FISH_COINS - tracker.items.SCAVENGER_COINS)}\n" +
-                            "${GOLD}Four-Eyed Fish: $AQUA${Helper.formatNumber(tracker.items.FISH_COINS)}\n" +
-                            "${GOLD}Scavenger: $AQUA${Helper.formatNumber(tracker.items.SCAVENGER_COINS)}",
-                    mouseX, mouseY, textRenderer)
+                RenderUtils2D.drawHoveringString(
+                    drawContext,
+                    coinBreakdown(tracker),
+                    mouseX, mouseY, textRenderer
+                )
             }
     }
 
-    private fun createProfitLine(totalProfitValue: Long, profitPerHr: Any, profitPerBurrow: Any): OverlayTextLine {
+    private fun createProfitLine(totalProfitValue: Long, profitPerHr: Any, profitPerBurrow: Any, coaProfitPerHr: Number): OverlayTextLine {
         val pphText = if (profitPerHr == "NaN" || profitPerHr == "0.0") "" else "$GRAY[$AQUA$profitPerHr$GRAY/${AQUA}hr$GRAY]"
-        return OverlayTextLine("${YELLOW}Total Profit: $AQUA${Helper.formatNumber(totalProfitValue)} $pphText")
+        return OverlayTextLine("${YELLOW}Total Profit: $AQUA${NumberUtil.formatNumber(totalProfitValue)} $pphText")
             .onHover { drawContext, textRenderer ->
                 val scaleFactor = mc.window.guiScale
                 val mouseX = mc.mouseHandler.xpos() / scaleFactor
                 val mouseY = mc.mouseHandler.ypos() / scaleFactor
                 RenderUtils2D.drawHoveringString(drawContext,
                     "$GOLD$profitPerHr coins/hr\n" +
-                            "$GOLD$profitPerBurrow coins/burrow",
+                            "$GOLD$profitPerBurrow coins/burrow\n" +
+                            "$GOLD${NumberUtil.formatNumber(coaProfitPerHr)} coa coins/hr",
                     mouseX, mouseY, textRenderer)
             }
     }
 
     fun totalProfit(tracker: DianaTracker): Long {
         val totalProfit = profitByItem(tracker).values.sum()
-        return if (Diana.excludeCoinsFromProfit) totalProfit else totalProfit + tracker.items.COINS
+        return if (Trackers.excludeCoinsFromProfit) totalProfit else totalProfit + tracker.items.COINS
     }
 
     private val excludedProfitFields = setOf(
@@ -342,15 +657,23 @@ object DianaLoot : DirtyFlushableOverlay() {
         "TOTAL_BURROWS",
         "COINS",
         "SCAVENGER_COINS",
-        "FISH_COINS"
+        "FISH_COINS",
+        "COA_COINS",
+        "CURRENT_COA_START_COINS",
+        "COA_TIME"
     )
 
+    /** Used up items (shurikens), their worth counts against the profit. */
+    private val lossFields = LOOT_ITEMS.asSequence().filter { it.negativeValue }.map { it.id }.toSet()
+
     private val profitFields = DianaItemsData::class.java.declaredFields
+        .asSequence()
         .filterNot { it.name in excludedProfitFields }
         .map { field ->
             field.isAccessible = true
             field to field.name.replace("_LS", "")
         }
+        .toList()
 
     /** Coins worth of every dropped item with a price (field name without "_LS", lootshare drops added in), coins not included. */
     fun profitByItem(tracker: DianaTracker): Map<String, Long> {
@@ -360,38 +683,39 @@ object DianaLoot : DirtyFlushableOverlay() {
             val itemValue = field.getInt(tracker.items)
             if (itemValue <= 0) continue
 
-            val itemPrice = Helper.getItemPrice(itemName)
+            val itemPrice = ItemPrices.getItemPrice(itemName)
             if (itemPrice <= 0) continue
 
-            profit[itemName] = (profit[itemName] ?: 0L) + itemPrice * itemValue
+            val sign = if (field.name in lossFields) -1 else 1
+            profit[itemName] = (profit[itemName] ?: 0L) + sign * itemPrice * itemValue
         }
 
         return profit
     }
 
     private fun updateTimerText() {
-        val type = Diana.lootTracker
+        val type = Trackers.lootTracker
         val tracker = when (type) {
-            Diana.Tracker.TOTAL -> DataManager.dianaTrackerTotalData
-            Diana.Tracker.EVENT -> DataManager.dianaTrackerMayorData
-            Diana.Tracker.SESSION -> DataManager.dianaTrackerSessionData
-            Diana.Tracker.OFF -> {
+            Trackers.TrackerMode.TOTAL -> DataManager.dianaTrackerTotalData
+            Trackers.TrackerMode.EVENT -> DataManager.dianaTrackerMayorData
+            Trackers.TrackerMode.SESSION -> DataManager.dianaTrackerSessionData
+            Trackers.TrackerMode.OFF -> {
                 timerLine.text = ""
                 return
             }
         }
 
         val timer = when (type) {
-            Diana.Tracker.TOTAL -> SboTimerManager.timerTotal
-            Diana.Tracker.EVENT -> SboTimerManager.timerMayor
-            Diana.Tracker.SESSION -> SboTimerManager.timerSession
-            Diana.Tracker.OFF -> {
+            Trackers.TrackerMode.TOTAL -> SboTimerManager.timerTotal
+            Trackers.TrackerMode.EVENT -> SboTimerManager.timerMayor
+            Trackers.TrackerMode.SESSION -> SboTimerManager.timerSession
+            Trackers.TrackerMode.OFF -> {
                 timerLine.text = ""
                 return
             }
         }
 
-        val formattedTime = Helper.formatTime(tracker.items.TIME)
+        val formattedTime = TimeUtil.formatTime(tracker.items.TIME)
         val text = if (timer.isRunning()) {
             "${YELLOW}Playtime: $AQUA$formattedTime"
         } else {

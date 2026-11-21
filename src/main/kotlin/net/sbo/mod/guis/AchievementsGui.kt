@@ -59,7 +59,7 @@ object AchievementsGui {
         var query by useState("")
         val grouped = view.sort == "grouped"
         useSboScale(UiScale.own(view.uiScale))
-        useSboTheme()
+        useSboTheme("achievements")
 
         fun update(next: AchievementsView) {
             view = next
@@ -71,6 +71,7 @@ object AchievementsGui {
         val unlocked = ofType.count { it.unlocked }
         val percent = if (ofType.isEmpty()) 0.0 else unlocked * 100.0 / ofType.size
         val shown = ofType
+            .asSequence()
             .filter { e ->
                 when (view.status) {
                     "locked" -> !e.unlocked
@@ -89,6 +90,7 @@ object AchievementsGui {
                 if (view.sort == "rarity") compareBy({ RARITIES.indexOf(it.achievement.rarity) }, { it.achievement.id })
                 else compareBy { it.achievement.id }
             )
+            .toList()
 
         div(className = "ach-window") {
             header(className = "ach-header") {
@@ -123,7 +125,8 @@ object AchievementsGui {
             }
             chips(
                 values = RARITIES.filter { it !in view.hiddenRarities },
-                onChange = { shownRarities -> update(view.copy(hiddenRarities = RARITIES.filter { it !in shownRarities }.toMutableList())) },
+                onChange = { shownRarities -> update(view.copy(hiddenRarities = RARITIES.asSequence().filter { it !in shownRarities }
+                    .toMutableList())) },
                 className = "ach-rarities"
             ) {
                 RARITIES.forEach { option(it, it, className = rarityClass(it)) }

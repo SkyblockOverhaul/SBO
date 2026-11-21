@@ -2,26 +2,33 @@ package net.sbo.mod.general
 
 import net.minecraft.network.chat.HoverEvent
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.diana.DianaTracker
-import net.sbo.mod.settings.categories.QOL
-import net.sbo.mod.utils.Helper
+import net.sbo.mod.diana.tracker.Tracker
+import net.sbo.mod.settings.categories.General
 import net.sbo.mod.utils.data.Item
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.InventorySlotUpdateEvent
+import net.sbo.mod.utils.events.impl.game.TickEvent
+import net.sbo.mod.utils.events.impl.game.WorldChangeEvent
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.overlay.*
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
+import net.sbo.mod.diana.DianaState
+import net.sbo.mod.utils.game.InventoryUtils
+import net.sbo.mod.utils.game.ScoreBoard
 
 object Pickuplog {
+    private val OVERLAY_LINE_LIFETIME_NANOS = TimeUnit.SECONDS.toNanos(6)
+
     data class OverlayLineData(var amount: Int, val name: String, var modified: Long)
 
     private var oldPurse: Long = 0L
     private var newPurse: Long = 0L
+    private var inventoryDirty = false
 
-    private var oldInventory = mapOf<String, Item>()
-    private var newInventory = mapOf<String, Item>()
+    private var oldInventory = emptyMap<String, Item>()
+    private var newInventory = emptyMap<String, Item>()
 
     private val regex = Regex("""\+([\d,]+) ([^(]+)""")
 
@@ -35,11 +42,20 @@ object Pickuplog {
 
     fun init() {
         overlay.init()
-        overlay.setCondition { QOL.pickuplogOverlay }
+        overlay.setLabel("Pickup Log", "PL")
+        overlay.setCondition { General.pickuplogOverlay }
 
-        Register.onChatMessageCancelable(Pattern.compile("(.*?) item(.*?) (.*?)", Pattern.DOTALL)) { message, matchResult ->
+        Register.onTick(1) {
+            if (!inventoryDirty) return@onTick
+            inventoryDirty = false
+            updateInventorySnapshot()
+        }
+
+        Register.onChatMessageCancelable(
+            Pattern.compile("""^.*Sacks.*\s+(?:§.)?\+\d+ items\..*\(Last \d+s\.\)(?:§.)*$""")
+        ) { message, _ ->
             var cancel = true
-            if (World.isInSkyblock() && "Sacks" in matchResult.group(1)) {
+            if (World.isInSkyblock()) {
                 message.siblings.forEach { part ->
                     if (" item" in part.string) {
                         val hover = part.style.hoverEvent
@@ -48,10 +64,10 @@ object Pickuplog {
                             regex.findAll(plain).forEach { match ->
                                 val amount = match.groupValues[1].replace(",", "")
                                 val item = match.groupValues[2].trim()
-                                DianaTracker.trackWithSacksMessage(item, amount.toInt())
+                                Tracker.trackWithSacksMessage(item, amount.toInt())
                             }
                         }
-                        cancel = !QOL.hideSacksMSG
+                        cancel = General.HiddenMessage.SACKS !in General.hideMessages
                     }
                 }
             }
@@ -61,9 +77,20 @@ object Pickuplog {
 
     @SboEvent
     fun onInventorySlotUpdate(event: InventorySlotUpdateEvent) {
-        if (mc.player == null || !World.isInSkyblock() || World.isNone()) return
-        newInventory = Helper.readPlayerInv()
-        newPurse = Helper.getPurse()
+        inventoryDirty = true
+    }
+
+    // Hilt of Revelations & Crown of Greed (Before MF Rework), Enchanted Ancient Claw & Ancient Claw and Enchanted Gold (When not having relevant sacks) needs it, so still track if has a diana spade and is in the hub, even if the pickup log feature itself is disabled.
+    private fun shouldTrackInventoryChanges(): Boolean = General.pickuplogOverlay || DianaState.hasSpade && World.isInHub()
+
+    private fun updateInventorySnapshot() {
+        if (mc.player == null || !World.isInSkyblock() || World.isNone() || !shouldTrackInventoryChanges()) {
+            oldInventory = emptyMap()
+            return
+        }
+
+        newInventory = InventoryUtils.readPlayerInv()
+        newPurse = ScoreBoard.getPurse()
         if (oldInventory.isEmpty()) {
             oldInventory = newInventory
             oldPurse = newPurse
@@ -75,10 +102,27 @@ object Pickuplog {
         updateOverlay()
     }
 
+    @SboEvent
+    fun onWorldChange(event: WorldChangeEvent) {
+        itemsShowAdded.clear()
+        itemsShowRemoved.clear()
+        oldInventory = emptyMap()
+        newInventory = emptyMap()
+        oldPurse = 0L
+        newPurse = 0L
+        inventoryDirty = false
+        overlay.setLines(emptyList())
+    }
+
+    @SboEvent
+    fun onTick(event: TickEvent) {
+        updateOverlay()
+    }
+
     private fun compareInventory() {
         val purseChange = newPurse - oldPurse
         if (purseChange != 0L) {
-            DianaTracker.trackScavengerCoins(purseChange)
+            Tracker.trackScavengerCoins(purseChange)
         }
 
         val newItems = mutableListOf<Item>()
@@ -104,16 +148,16 @@ object Pickuplog {
         for (item in newItems) {
             refreshOverlay(item.itemId, item.name, item.count)
             if (item.itemUUID != "") {
-                DianaTracker.trackWithPickuplog(item)
+                Tracker.trackWithPickuplog(item)
             } else {
-                DianaTracker.trackWithPickuplogStackable(item, item.count)
+                Tracker.trackWithPickuplogStackable(item, item.count)
             }
         }
 
         for ((item, countChange) in changedItemCounts) {
             refreshOverlay(item.itemId, item.name, countChange)
             if (countChange > 0) {
-                DianaTracker.trackWithPickuplogStackable(item, countChange)
+                Tracker.trackWithPickuplogStackable(item, countChange)
             }
         }
 
@@ -153,7 +197,7 @@ object Pickuplog {
         val newAddedList = mutableListOf<MutableMap<String, OverlayLineData>>()
         itemsShowAdded.forEach { map ->
             val (_, data) = map.entries.first()
-            if (currentTime - data.modified <= TimeUnit.MILLISECONDS.toNanos(6000)) {
+            if (currentTime - data.modified <= OVERLAY_LINE_LIFETIME_NANOS) {
                 newAddedList.add(map)
                 lines.add(OverlayTextLine("§a+ ${data.amount}x §r${data.name}"))
             }
@@ -164,7 +208,7 @@ object Pickuplog {
         val newRemovedList = mutableListOf<MutableMap<String, OverlayLineData>>()
         itemsShowRemoved.forEach { map ->
             val (_, data) = map.entries.first()
-            if (currentTime - data.modified <= TimeUnit.MILLISECONDS.toNanos(6000)) {
+            if (currentTime - data.modified <= OVERLAY_LINE_LIFETIME_NANOS) {
                 newRemovedList.add(map)
                 lines.add(OverlayTextLine("§c- ${-data.amount}x §r${data.name}"))
             }

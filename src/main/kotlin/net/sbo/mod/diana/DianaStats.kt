@@ -1,8 +1,7 @@
 package net.sbo.mod.diana
 
 import net.sbo.mod.overlays.DianaLoot
-import net.sbo.mod.settings.categories.Diana
-import net.sbo.mod.utils.Helper
+import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.utils.SboTimerManager
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.configs.diana.DianaTracker
@@ -11,17 +10,44 @@ import net.sbo.mod.utils.events.Register
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
+import net.sbo.mod.utils.math.NumberUtil
+import net.sbo.mod.utils.time.TimeUtil
 
-object DianaStats {
+// TODO Once majority of people are on 0.7.2 or above, change the party message to send with [SBO] prefix in front.
+internal object DianaStats {
     private val STATS_PATTERN: Pattern = Pattern.compile(
-        "§9Party §8> (.*?)§f: Playtime: (.*?) - Profit: (.*?) - (.*?) - Burrows: (.*?) \\((.*?)\\) - Mobs: (.*?) \\((.*?)\\) - Inquisitors: (.*?) \\((.*?)\\) - LS Inqs: (.*?) - Chimeras: (.*?) \\((.*?)\\) - LS: (.*?) \\((.*?)\\) - Sticks: (.*?) \\((.*?)\\) - Relics: (.*?) \\((.*?)\\)(.*?)",
+        """
+        §9Party §8> (.*?)§f: (?:\[SBO\] )?Playtime: (.*?) - Profit: (.*?) - (.*?) - Burrows: (.*?) \((.*?)\) - Mobs: (.*?) \((.*?)\) - Inquisitors: (.*?) \((.*?)\) - LS Inqs: (.*?) - Chimeras: (.*?) \((.*?)\) - LS: (.*?) \((.*?)\) - Sticks: (.*?) \((.*?)\) - Relics: (.*?) \((.*?)\)(.*?)
+        """.trimIndent(),
         Pattern.DOTALL
     )
 
-    fun registerReplaceStatsMessage() {
+    private val STATS_PATTERN_TWO: Pattern = Pattern.compile(
+        """§9Party §8> (.*?)§f: (?:\[SBO\] )?""" +
+            """Pt:([^-]+)-""" +                       // 2 playtime
+            """Pr:(.+?)/(.+?)/h-""" +                 // 3 profit, 4 profit/h
+            """B:(.+?)/(.+?)-""" +                    // 5 burrows, 6 burrows/h
+            """M:(\d+)/(.+?)-""" +                    // 7 mobs, 8 mobs/h
+            """(?:I:(\d+)/(.+?)-)?""" +               // 9 inqs, 10 inq %
+            """(?:LSI:(\d+)-)?""" +                   // 11 LS inqs
+            """(?:S:(\d+)/(.+?)-)?""" +               // 12 sphinx, 13 %
+            """(?:K:(\d+)/(.+?)-)?""" +               // 14 kings, 15 %
+            """(?:M:(\d+)/(.+?)-)?""" +               // 16 mantis, 17 %
+            """(?:C(\d+)/(.+?)-)?""" +                // 18 chimeras, 19 %
+            """(?:LS: (\d+)/\((.+?)\)-)?""" +         // 20 LS chimeras, 21 %
+            """(?:S(\d+)/(.+?)-)?""" +                // 22 sticks, 23 %
+            """(?:R(\d+)/(.+?)-)?""" +                // 24 relics, 25 %
+            """(?:C(\d+)/(.+?)-)?""" +                // 26 cores, 27 %
+            """(?:W(\d+)/(.+?)-)?""" +                // 28 wools, 29 %
+            """(?:D(\d+)/(.+?))?-?$""",               // 30 dyes, 31 %
+        Pattern.DOTALL
+    )
+
+    internal fun registerReplaceStatsMessage() {
+        // Keep old pattern for compatibility with older versions
         Register.onChatMessageCancelable(
             STATS_PATTERN
-        ) { message, matcher ->
+        ) { _, matcher ->
             val statsMessage = ArrayList<String>()
             statsMessage.add("§9Party §8> ${matcher.group(1)}§f:")
             statsMessage.add("§ePlaytime: §b${matcher.group(2)}")
@@ -32,6 +58,42 @@ object DianaStats {
             statsMessage.add("§6Sticks: §b${matcher.group(16)} §7(${matcher.group(17)})")
             statsMessage.add("§5Relics: §b${matcher.group(18)} §7(${matcher.group(19)})")
             statsMessage.add("§6Profit: §b${matcher.group(3)} §7(${matcher.group(4)})")
+            Chat.chat(statsMessage.joinToString("\n"))
+            false
+        }
+
+        Register.onChatMessageCancelable(STATS_PATTERN_TWO) { _, matcher ->
+            // Appends a line only if the optional count group matched
+            fun ArrayList<String>.optional(countGroup: Int, build: (count: String, pct: String) -> String) {
+                val count = matcher.group(countGroup) ?: return
+                add(build(count, matcher.group(countGroup + 1)))
+            }
+
+            val statsMessage = ArrayList<String>().apply {
+                add("§9Party §8> ${matcher.group(1)}§f:")
+                add("§ePlaytime: §b${matcher.group(2)}")
+                add("§aBurrows: §b${matcher.group(5)} §7(${matcher.group(6)}/h)")
+                add("§aMobs: §b${matcher.group(7)} §7(${matcher.group(8)}/h)")
+
+                // Inquisitors (+ LS inqs on the same line, like the old format)
+                val lsInqs = matcher.group(11)
+                optional(9) { c, p -> "§dInquisitors: §b$c §7($p)" + lsInqs?.let { " §6LS: §b$it" }.orEmpty() }
+                if (matcher.group(9) == null && lsInqs != null) add("§dLS Inqs: §b$lsInqs")
+
+                optional(12) { c, p -> "§dSphinx: §b$c §7($p)" }
+                optional(14) { c, p -> "§6Kings: §b$c §7($p)" }
+                optional(16) { c, p -> "§aMantis: §b$c §7($p)" }
+                optional(18) { c, p -> "§dChimeras: §b$c §7($p)" }
+                optional(20) { c, p -> "§dLS Chimeras: §b$c §7($p)" }
+                optional(22) { c, p -> "§6Sticks: §b$c §7($p)" }
+                optional(24) { c, p -> "§5Relics: §b$c §7($p)" }
+                optional(26) { c, p -> "§bCores: §b$c §7($p)" }
+                optional(28) { c, p -> "§fWools: §b$c §7($p)" }
+                optional(30) { c, p -> "§dDyes: §b$c §7($p)" }
+
+                add("§6Profit: §b${matcher.group(3)} §7(${matcher.group(4)}/h)")
+            }
+
             Chat.chat(statsMessage.joinToString("\n"))
             false
         }
@@ -53,27 +115,33 @@ object DianaStats {
         val playtime = tracker.items.TIME
         val playTimeHrs = playtime.toDouble() / TimeUnit.HOURS.toMillis(1)
 
-        val burrowsPerHour = Helper.getBurrowsPerHr(tracker, timer)
+        val burrowsPerHour = DianaRates.getBurrowsPerHr(tracker, timer)
         val mobsPerHour = if (playTimeHrs > 0) tracker.mobs.TOTAL_MOBS.toDouble() / playTimeHrs else 0.0
 
         val totalValue = DianaLoot.totalProfit(tracker)
         val profit = listOf(
-            Helper.formatNumber(totalValue),
-            Diana.bazaarSettingDiana.toString(),
-            Helper.formatNumber(totalValue / playTimeHrs)
+            NumberUtil.formatNumber(totalValue),
+            Trackers.bazaarSettingDiana.name,
+            NumberUtil.formatNumber(totalValue / playTimeHrs)
         )
         return PlayerStats(
-            playtime = Helper.formatTime(playtime),
+            playtime = TimeUtil.formatTime(playtime),
             profit = profit,
-            burrows = Helper.formatNumber(tracker.items.TOTAL_BURROWS),
+            burrows = NumberUtil.formatNumber(tracker.items.TOTAL_BURROWS),
             burrowsPerHour = "%.2f".format(Locale.US, burrowsPerHour),
-            totalMobs = Helper.formatNumber(tracker.mobs.TOTAL_MOBS),
+            totalMobs = tracker.mobs.TOTAL_MOBS,
             mobsPerHour = "%.2f".format(Locale.US, mobsPerHour),
             inquisitors = tracker.mobs.MINOS_INQUISITOR,
-            inqPercentage = "${Helper.calcPercentOne(tracker.mobs.MINOS_INQUISITOR, tracker.mobs.TOTAL_MOBS)}%",
-            lsInqs = Helper.formatNumber(tracker.mobs.MINOS_INQUISITOR_LS, withCommas = true),
+            inqPercentage = "${DianaRates.calcPercentOne(tracker.mobs.MINOS_INQUISITOR, tracker.mobs.TOTAL_MOBS)}%",
+            lsInqs = tracker.mobs.MINOS_INQUISITOR_LS,
+            sphinx = tracker.mobs.SPHINX,
+            sphinxPercentage = "${DianaRates.calcPercentOne(tracker.mobs.SPHINX, tracker.mobs.TOTAL_MOBS)}%",
+            mantis = tracker.mobs.MANTICORE,
+            mantisPercentage = "${DianaRates.calcPercentOne(tracker.mobs.MANTICORE, tracker.mobs.TOTAL_MOBS)}%",
+            kings = tracker.mobs.KING_MINOS,
+            kingPercentage = "${DianaRates.calcPercentOne(tracker.mobs.KING_MINOS, tracker.mobs.TOTAL_MOBS)}%",
             chimeraDrops = tracker.items.CHIMERA,
-            chimeraDropRate = "${Helper.calcPercentOne(
+            chimeraDropRate = "${DianaRates.calcPercentOne(
                 tracker.items.CHIMERA,
                 tracker.mobs.MINOS_INQUISITOR
             )}%",
@@ -85,52 +153,88 @@ object DianaStats {
                 )
             }%",
             sticksDropped = tracker.items.DAEDALUS_STICK,
-            stickDropRate = "${Helper.calcPercentOne(
+            stickDropRate = "${DianaRates.calcPercentOne(
                 tracker.items.DAEDALUS_STICK,
                 tracker.mobs.MINOTAUR
             )}%",
             relicsDropped = tracker.items.MINOS_RELIC,
-            relicDropRate = "${Helper.calcPercentOne(
+            relicDropRate = "${DianaRates.calcPercentOne(
                 tracker.items.MINOS_RELIC,
                 tracker.mobs.MINOS_CHAMPION
+            )}%",
+            coresDropped = tracker.items.MANTI_CORE,
+            coreDropRate = "${DianaRates.calcPercentOne(
+                tracker.items.MANTI_CORE,
+                tracker.mobs.MANTICORE
+            )}%",
+            woolsDropped = tracker.items.SHIMMERING_WOOL,
+            woolDropRate = "${DianaRates.calcPercentOne(
+                tracker.items.SHIMMERING_WOOL,
+                tracker.mobs.KING_MINOS
+            )}%",
+            dyesDropped = tracker.items.MYTHOLOGICAL_DYE,
+            dyeDropRate = "${DianaRates.calcPercentOne(
+                tracker.items.MYTHOLOGICAL_DYE,
+                tracker.mobs.TOTAL_MOBS
             )}%"
         )
     }
 
-    fun sendPlayerStats(total: Boolean? = false) {
+    internal fun sendPlayerStats(total: Boolean? = false) {
         val stats = getPlayerStats(total)
         val statsMessage = buildString {
-            append("Playtime: ${stats.playtime} - ")
-            append("Profit: ${stats.profit[0]} - ${stats.profit[2]}/h - ")
-            append("Burrows: ${stats.burrows} (${stats.burrowsPerHour}/h) - ")
-            append("Mobs: ${stats.totalMobs} (${stats.mobsPerHour}/h) - ")
-            append("Inquisitors: ${stats.inquisitors} (${stats.inqPercentage}) - ")
-            append("LS Inqs: ${stats.lsInqs} - ")
-            append("Chimeras: ${stats.chimeraDrops} (${stats.chimeraDropRate}) - LS: ${stats.chimeraLSDrops} (${stats.chimeraLSDropRate}) - ")
-            append("Sticks: ${stats.sticksDropped} (${stats.stickDropRate}) - ")
-            append("Relics: ${stats.relicsDropped} (${stats.relicDropRate})")
+            append("Pt:${stats.playtime}-") // Playtime
+            append("Pr:${stats.profit[0]}/${stats.profit[2]}/h-") // Profit & Profit/h
+            append("B:${stats.burrows}/${stats.burrowsPerHour}-") // Burrows & Burrows/h
+            append("M:${stats.totalMobs}/${stats.mobsPerHour}-") // Mobs & Mobs/h
+
+            // Only shows interesting stats to avoid cluttering the chat with 0s especially for players without the mythic griffin
+            if (stats.inquisitors > 0) append("I:${stats.inquisitors}/${stats.inqPercentage}-") // Inquisitors & Inquisitor %
+            if (stats.lsInqs > 0) append("LSI:${stats.lsInqs}-") // LS Inquisitors
+            if (stats.sphinx > 0) append("S:${stats.sphinx}/${stats.sphinxPercentage}-") // Sphinx & Sphinx %
+            if (stats.kings > 0) append("K:${stats.kings}/${stats.kingPercentage}-") // Kings & King %
+            if (stats.mantis > 0) append("M:${stats.mantis}/${stats.mantisPercentage}-") // Mantis & Mantis %
+            if (stats.chimeraDrops > 0) append("C${stats.chimeraDrops}/${stats.chimeraDropRate}-") // Chimeras & Chimera %
+            if (stats.chimeraLSDrops > 0) append("LS: ${stats.chimeraLSDrops}/(${stats.chimeraLSDropRate})-") // LS Chimeras & LS Chimera %
+            if (stats.sticksDropped > 0) append("S${stats.sticksDropped}/${stats.stickDropRate}-") // Sticks & Stick %
+            if (stats.relicsDropped > 0) append("R${stats.relicsDropped}/${stats.relicDropRate}-") // Relics & Relic %
+            if (stats.coresDropped > 0) append("C${stats.coresDropped}/${stats.coreDropRate}-") // Cores & Core %
+            if (stats.woolsDropped > 0) append("W${stats.woolsDropped}/${stats.woolDropRate}-") // Wools & Wool %
+            if (stats.dyesDropped > 0) append("D${stats.dyesDropped}/${stats.dyeDropRate}") // Dyes & Dye %
         }
 
         Chat.pc(statsMessage)
     }
 
-    data class PlayerStats(
-        val playtime: String,
-        val profit: List<String>,
-        val burrows: String,
-        val burrowsPerHour: String,
-        val totalMobs: String,
-        val mobsPerHour: String,
-        val inquisitors: Int,
-        val inqPercentage: String,
-        val lsInqs: String,
-        val chimeraDrops: Int,
-        val chimeraDropRate: String,
-        val chimeraLSDrops: Int,
-        val chimeraLSDropRate: String,
-        val sticksDropped: Int,
-        val stickDropRate: String,
-        val relicsDropped: Int,
-        val relicDropRate: String
+    internal data class PlayerStats(
+        internal val playtime: String,
+        internal val profit: List<String>,
+        internal val burrows: String,
+        internal val burrowsPerHour: String,
+        internal val totalMobs: Int,
+        internal val mobsPerHour: String,
+        internal val inquisitors: Int,
+        internal val inqPercentage: String,
+        internal val sphinx: Int,
+        internal val sphinxPercentage: String,
+        internal val mantis: Int,
+        internal val mantisPercentage: String,
+        internal val kings: Int,
+        internal val kingPercentage: String,
+        internal val lsInqs: Int,
+        internal val chimeraDrops: Int,
+        internal val chimeraDropRate: String,
+        internal val chimeraLSDrops: Int,
+        internal val chimeraLSDropRate: String,
+        internal val sticksDropped: Int,
+        internal val stickDropRate: String,
+        internal val relicsDropped: Int,
+        internal val relicDropRate: String,
+        internal val coresDropped: Int,
+        internal val coreDropRate: String,
+        internal val woolsDropped: Int,
+        internal val woolDropRate: String,
+        internal val dyesDropped: Int,
+        internal val dyeDropRate: String
     )
 }

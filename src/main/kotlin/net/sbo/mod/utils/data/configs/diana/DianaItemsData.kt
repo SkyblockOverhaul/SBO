@@ -17,6 +17,8 @@ data class DianaItemsData(
     @SerializedName("ChimeraLs") var CHIMERA_LS: Int = 0,
     @SerializedName("Brain Food") var BRAIN_FOOD: Int = 0,
     @SerializedName("Brain Food LS") var BRAIN_FOOD_LS: Int = 0,
+    @SerializedName("Looting 7") var LOOTING_7: Int = 0,
+    @SerializedName("Looting 7 LS") var LOOTING_7_LS: Int = 0,
     @SerializedName("Fateful Stinger") var FATEFUL_STINGER: Int = 0,
     @SerializedName("Fateful Stinger Ls") var FATEFUL_STINGER_LS: Int = 0,
     @SerializedName("Braided Griffin Feather") var BRAIDED_GRIFFIN_FEATHER: Int = 0,
@@ -41,4 +43,13 @@ data class DianaItemsData(
     @SerializedName("HARPY_SHARD") var HARPY_SHARD: Int = 0,
     @SerializedName("MYTHOLOGICAL_DYE") var MYTHOLOGICAL_DYE: Int = 0,
     @SerializedName("MYTH_THE_FISH") var MYTH_THE_FISH: Int = 0,
-)
+    @SerializedName("CoA Coins") var COA_COINS: Long = 0,
+    @SerializedName("COA Start Coins") var CURRENT_COA_START_COINS: Long = -1,
+    @SerializedName("CoA Time") var COA_TIME: Long = -1,
+    @SerializedName("Shuriken") var FAKE_SHURIKEN: Int = 0,
+) {
+    /** The CoA tracker's playtime, the Diana playtime for data from before it had its own (COA_TIME -1). */
+    var coaTime: Long
+        get() = if (COA_TIME < 0) TIME else COA_TIME
+        set(value) { COA_TIME = value }
+}

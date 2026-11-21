@@ -5,7 +5,7 @@ import net.minecraft.world.scores.PlayerScoreEntry
 import net.minecraft.world.scores.PlayerTeam
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.utils.events.Register
-import net.sbo.mod.utils.Helper.removeFormatting
+import net.sbo.mod.utils.TextUtil.removeFormatting
 import java.lang.String.CASE_INSENSITIVE_ORDER
 
 object ScoreBoard {
@@ -37,7 +37,7 @@ object ScoreBoard {
         linesDirty = true
     }
 
-    fun markTitleDirty() {
+    private fun markTitleDirty() {
         titleDirty = true
     }
 
@@ -52,9 +52,7 @@ object ScoreBoard {
      * Each entry is stripped of any formatting codes.
      * @return A list of formatted strings representing the scoreboard entries.
      */
-    fun getLines(): List<String> {
-        return lastLines
-    }
+    fun getLines(): List<String> = lastLines
 
     private fun fetchLines(): List<String> {
         val scoreboard = SBOKotlin.mc.level?.scoreboard ?: return emptyList()
@@ -75,14 +73,25 @@ object ScoreBoard {
             .asReversed()
     }
 
-    fun getTitle(): String {
-        return lastTitle
-    }
+    fun getTitle(): String = lastTitle
 
     private fun fetchTitle(): String {
         val scoreboard = SBOKotlin.mc.level?.scoreboard ?: return "Unknown Scoreboard"
         val objective = scoreboard.getDisplayObjective(DisplaySlot.SIDEBAR) ?: return "No Objective"
 
         return objective.displayName.string
+    }
+
+    fun getPurse(): Long {
+        val lines = ScoreBoard.getLines()
+        if (lines.isEmpty()) return 0L
+        val purseLine = lines.find { it.contains("Purse: ") }
+        return if (purseLine != null) {
+            val purseValue = purseLine.substringAfter("Purse: ")
+            val numericValue = purseValue.split(" ")[0]
+            numericValue.replace(",", "").toLongOrNull() ?: 0L
+        } else {
+            0L
+        }
     }
 }

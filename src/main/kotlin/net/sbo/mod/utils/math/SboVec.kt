@@ -14,7 +14,7 @@ import kotlin.math.sqrt
  * A 3D vector class for mathematical operations and Minecraft world interactions.
  * The credits to this class go fully to the SkyHanni Mod: https://github.com/hannibal002/SkyHanni/blob/beta/src/main/java/at/hannibal2/skyhanni/utils/LorenzVec.kt
  */
-data class SboVec(val x: Double, val y: Double, val z: Double) {
+data class SboVec(@JvmField val x: Double, @JvmField val y: Double, @JvmField val z: Double) : Comparable<SboVec> {
     fun distanceTo(other: SboVec): Double {
         val dx = other.x - x
         val dy = other.y - y
@@ -65,7 +65,7 @@ data class SboVec(val x: Double, val y: Double, val z: Double) {
 
     fun normalize() = length().let { SboVec(x / it, y / it, z / it) }
 
-    fun lengthSquared(): Double = x * x + y * y + z * z
+    private fun lengthSquared(): Double = x * x + y * y + z * z
 
     fun isNormalized(tolerance: Double = 0.01) = (lengthSquared() - 1.0).absoluteValue < tolerance
 
@@ -84,7 +84,7 @@ data class SboVec(val x: Double, val y: Double, val z: Double) {
         return dx * dx + dy * dy + dz * dz
     }
 
-    fun isInLoadedChunk(): Boolean = SBOKotlin.mc.level?.isLoaded(toBlockPos()) ?: false
+    fun isInLoadedChunk(): Boolean = SBOKotlin.mc.level?.isLoaded(toBlockPos()) == true
 
     fun toBlockPos(): BlockPos = BlockPos(floor(x).toInt(), floor(y).toInt(), floor(z).toInt())
 
@@ -107,6 +107,26 @@ data class SboVec(val x: Double, val y: Double, val z: Double) {
             cachedHashCode = result
         }
         return result
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is SboVec) return false
+
+        if (x != other.x) return false
+        if (y != other.y) return false
+
+        // Don't compare cachedHashCode - equals() should return true even if hashCode was not called to compute the cached hash in one of the objects. The x, y and z must still be equal for it to return true.
+
+        return z == other.z
+    }
+
+    override fun compareTo(other: SboVec): Int {
+        val xComparison = x.compareTo(other.x)
+        if (xComparison != 0) return xComparison
+
+        val yComparison = y.compareTo(other.y)
+        return if (yComparison != 0) yComparison else z.compareTo(other.z)
     }
 
     companion object {
