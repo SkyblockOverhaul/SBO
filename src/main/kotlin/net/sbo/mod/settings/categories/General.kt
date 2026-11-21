@@ -99,6 +99,7 @@ object General : Category("General") {
         this.range = 2..4
         this.slider = true
         this.name = literal("Fast AOTV Delay")
+        this.since = "0.7.3"
         depends(::fastAotv)
         this.description = literal("Ticks between uses while holding right click (20 ticks = 1 second): 2 is 10 uses a second, about spam clicking, 4 is Minecraft's default.")
     }
@@ -151,6 +152,7 @@ object General : Category("General") {
 
     var chunkCacheWorkEverywhere by boolean(false) {
         this.name = literal("Chunk Cache Work Everywhere")
+        this.since = "0.7.2-beta.1"
         depends(::hubChunkCache)
         this.description = literal("Caches chunks in every SkyBlock area without listing each area above. Chunk Cache Areas is ineffective while this is enabled, since the cache works everywhere.")
     }

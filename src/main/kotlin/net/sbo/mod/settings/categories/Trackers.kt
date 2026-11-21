@@ -125,6 +125,7 @@ object Trackers : Category("Trackers") {
     var coaTracker by ObservableEntry(
         option(TrackerMode.EVENT) {
             this.name = literal("CoA Tracker")
+            this.since = "0.7.2-beta.1"
             this.description = literal(
                 "Shows a tracker for the Crown of Avarice. \n" +
                     "/sboguis to move the overlay.\n"
