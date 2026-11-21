@@ -133,9 +133,9 @@ object BurrowDetector {
             lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec.ZERO
             refreshBurrows(deathOriginating = false, expectedTimesDug = 2)
 
-            val anyClose = WaypointManager.getAllGuessesAndBurrows().filter { it.distanceToPlayer() < 90 }
+            val anyClose = WaypointManager.getAllGuessesAndBurrows().any { it.distanceToPlayer() < Burrows.chainEndTitleDistance }
             // With the optimizer the spade is used here first, the place to use it is only shown if that finds nothing new
-            if (Burrows.showTitleWhenChainEnds && (Burrows.spadeGuessOptimizer || anyClose.isEmpty())) requestSpade("chain")
+            if (Burrows.showTitleWhenChainEnds && (Burrows.spadeGuessOptimizer || !anyClose)) requestSpade("chain")
             true
         }
 

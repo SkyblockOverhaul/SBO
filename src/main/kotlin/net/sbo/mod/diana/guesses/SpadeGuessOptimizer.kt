@@ -219,8 +219,11 @@ object SpadeGuessOptimizer {
         throwGuessTime = System.nanoTime()
     }
 
+    /** Whether places to use the spade are shown: always with the optimizer, without it only while Look For Max Chains is looking. */
+    private fun isActive() = Burrows.spadeGuessOptimizer || Burrows.lookForMaxChains && startup
+
     private fun tick() {
-        if (!Burrows.spadeGuessOptimizer) {
+        if (!isActive()) {
             picked.clear()
             lastPickKey = null
             throwFrom = null
@@ -346,6 +349,7 @@ object SpadeGuessOptimizer {
         val burrowsChanged = burrows != lastKnownBurrows
         lastKnownBurrows = burrows
         if (startup && (!Burrows.lookForMaxChains || burrows.size >= STARTUP_CHAINS)) startup = false
+        if (!isActive()) return
         val center = chainEnd
         if (!pointsAtNearest || !startup && (center == null || waitingForSpade)) {
             spadeUsed = false
@@ -397,7 +401,7 @@ object SpadeGuessOptimizer {
      * till its guess settled. Only in the Hub with a spade while Diana is on, like the place itself.
      */
     fun hidesBurrows(): Boolean =
-        (shown != null || hiddenForUse) && Burrows.spadeGuessOptimizer && World.isInHub() && Helper.hasSpade && Mayor.dianaActive
+        (shown != null || hiddenForUse) && isActive() && World.isInHub() && Helper.hasSpade && Mayor.dianaActive
 
     /** Whether [waypoint] is a place the optimizer picked near a finished chain, those are close enough to never warp to. */
     fun isNearChainEnd(waypoint: Waypoint): Boolean = !startup && waypoint in waypoints

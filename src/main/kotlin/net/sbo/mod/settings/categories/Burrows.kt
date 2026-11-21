@@ -57,7 +57,17 @@ object Burrows : Category("Burrows") {
 
     var showTitleWhenChainEnds by boolean(true) {
         this.name = literal("Show Title When Chain Ends")
-        this.description = literal("Shows a title to use spade when the burrow chain is complete and there's no more guesses or burrows at least 90 blocks nearby, which will usually point to a new Start burrow to hold up your concurrent chains. Recommended to keep it enabled.")
+        this.description = literal("Shows a title to use spade when the burrow chain is complete and there's no guess or burrow within Chain End Title Distance, which will usually point to a new Start burrow to hold up your concurrent chains. Recommended to keep it enabled.")
+    }
+
+    var chainEndTitleDistance by int(90) {
+        this.range = 0..150
+        this.slider = true
+        this.name = literal("Chain End Title Distance")
+        this.since = "0.7.2-beta.3"
+        depends(::showTitleWhenChainEnds)
+        dependsOff(::spadeGuessOptimizer)
+        this.description = literal("The Use Spade title only shows if no guess or burrow is within this many blocks of you when a chain ends. Lower shows it more often, 0 always shows it.")
     }
 
     var showTitleWhenFailure by boolean(false) {
@@ -125,10 +135,9 @@ object Burrows : Category("Burrows") {
         this.description = literal("How many blocks away from the chain's last burrow you're willing to go for a place to use your spade.")
     }
 
-    var lookForMaxChains by boolean(true) {
+    var lookForMaxChains by boolean(false) {
         this.name = literal("Look For Max Chains")
         this.since = "0.7.2-beta.3"
-        depends(::spadeGuessOptimizer)
         this.description = literal("After starting your game or /sboclearburrows, shows places across the hub to use your spade until you discover 7 chains. The guess line and warp key go to them during the process until 3 spade guesses in a row fail to discover a new chain, which then the feature stops and redirects you to your guess burrows.")
     }
 
@@ -137,7 +146,7 @@ object Burrows : Category("Burrows") {
     ) {
         this.name = literal("Spade Guess Optimizer Color")
         this.since = "0.7.2-beta.3"
-        depends(::spadeGuessOptimizer)
+        dependsAny(::spadeGuessOptimizer, ::lookForMaxChains)
         this.description = literal("Color of the place to stand and use your spade to find a new chain.")
         this.allowAlpha = false
     }
