@@ -28,7 +28,7 @@ import net.sbo.guilib.core.dsl.tooltip
 import net.sbo.guilib.core.dsl.useClipboard
 import net.sbo.guilib.core.dsl.useToast
 import net.sbo.guilib.core.event.KeyboardEvent
-import net.sbo.mod.general.SboBadges
+import net.sbo.mod.customizer.SboCustomizer
 import net.sbo.mod.partyfinder.BlockedPlayers
 import net.sbo.mod.partyfinder.OwnStats
 import net.sbo.mod.partyfinder.PartyCategories
@@ -47,12 +47,12 @@ import net.sbo.mod.partyfinder.api.ReportReason
 import net.sbo.mod.partyfinder.api.Problem
 import net.sbo.mod.partyfinder.api.ReqDef
 import net.sbo.mod.partyfinder.gui.PartyFinderGui.message
-import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.HypixelModApi
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.configs.partyfinder.PartyListFilter
 import java.util.UUID
+import net.sbo.mod.utils.TextUtil
 
 internal data class PartiesProps(
     val target: PartyTarget,
@@ -589,18 +589,18 @@ private fun NodeBuilder.filterRow(label: String, hint: String?, key: Any? = null
 
 // Only moderators and above have a tag, supporters don't
 internal fun NodeBuilder.teamTag(uuid: String, name: String? = null) {
-    val rank = SboBadges.teamRank(uuid) ?: return
+    val rank = SboCustomizer.teamRank(uuid) ?: return
     val text = if (name == null) rank.tag!! else "${rank.tag}: $name"
-    val color = SboBadges.badgeColor(uuid) ?: rank.color
+    val color = SboCustomizer.customizerColor(uuid) ?: rank.color
     tooltip("Works on SBO, ask them anything about the mod.", className = "pf-tip", key = "team-$uuid") {
         span(className = "pf-tag team", style = "color: $color; border-color: $color") { +text }
     }
 }
 
-private const val SUPPORTER_LOGO = "sbo:textures/font/badge.png"
+private const val SUPPORTER_LOGO = "sbo:textures/font/customizer.png"
 
 internal fun NodeBuilder.supporterLogo(uuid: String) {
-    if (!SboBadges.isSupporter(uuid)) return
+    if (!SboCustomizer.isSupporter(uuid)) return
     tooltip("This player supports SBO on Patreon or Ko-fi.", className = "pf-tip", key = "supporter-$uuid") {
         img(src = SUPPORTER_LOGO, className = "pf-supporter")
     }
@@ -786,7 +786,7 @@ private fun NodeBuilder.memberRow(
         else if (me && member.uuid == party.id && target.roles.isNotEmpty()) item("Change my role…") { onChangeRole(member) }
         else if (me && member.uuid != party.id && party.roles.wanted.isNotEmpty()) item("Change my role…") { onChangeRole(member) }
         // The name ends up in /p commands
-        if (manage && Helper.isPlayerName(name)) {
+        if (manage && TextUtil.isPlayerName(name)) {
             separator()
             item("Make party leader") { partyCommand("p transfer $name", "Making $name the party leader...") }
             // Promoting a moderator would make them the leader, so promote only known plain members

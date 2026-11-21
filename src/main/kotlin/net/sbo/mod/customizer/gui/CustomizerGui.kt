@@ -1,4 +1,4 @@
-package net.sbo.mod.guis.customizer
+package net.sbo.mod.customizer.gui
 
 import net.sbo.guilib.core.dom.component
 import net.sbo.guilib.core.dsl.NodeBuilder
@@ -14,19 +14,19 @@ import net.sbo.guilib.core.dsl.useEscapeBack
 import net.sbo.guilib.core.dsl.useToast
 import net.sbo.guilib.fabric.GuiLib
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.general.SboBadges
+import net.sbo.mod.customizer.SboCustomizer
 import net.sbo.mod.guis.look.SboLook
 import net.sbo.mod.guis.look.useFitScale
 import net.sbo.mod.guis.look.useSboScale
 import net.sbo.mod.guis.look.useSboTheme
-import net.sbo.mod.utils.data.BadgePart
-import net.sbo.mod.utils.data.BadgeSettings
-import net.sbo.mod.utils.data.OwnBadgeResponse
-import net.sbo.mod.utils.data.PartColor
+import net.sbo.mod.customizer.CustomizerPart
+import net.sbo.mod.customizer.CustomizerSettings
+import net.sbo.mod.customizer.OwnCustomizerResponse
+import net.sbo.mod.customizer.PartColor
 import net.sbo.mod.utils.http.SboApi
 
 /**
- * SBO Customizer (/sbocustomizer): your badge, the look of your name and your player size.
+ * SBO Customizer (/sbocustomizer): your customizer, the look of your name and your player size.
  * Left the real player model with the name tag, tab line and chat line as others see them, built by the same code
  * as in game; right everything of one part in one place.
  */
@@ -37,9 +37,9 @@ object CustomizerGui {
 }
 
 private val STYLES = listOf("sbo:ui/customizer/customizer.css", SboLook.STYLE)
-internal const val LOGO = "sbo:textures/font/badge.png"
+internal const val LOGO = "sbo:textures/font/customizer.png"
 
-// Sections of the editor: the parts, then your player and how other supporters look to you
+/** Sections of the editor after the parts: your player, then how other supporters look to you ([SUPPORTERS]). */
 private const val PLAYER = "player"
 private const val SUPPORTERS = "supporters"
 /** Not a part of its own: tag, level, rank and name while they share one look. */
@@ -48,51 +48,51 @@ internal const val LINE = "line"
 private sealed interface Load {
     data object Loading : Load
     data class Failed(val message: String, val notEligible: Boolean) : Load
-    data class Ready(val badge: OwnBadgeResponse) : Load
+    data class Ready(val customizer: OwnCustomizerResponse) : Load
 }
 
 private val App = component("Customizer") {
     val toast = useToast()
     var load by useState<Load>(Load.Loading)
-    var draft by useState<BadgeSettings?>(null)
+    var draft by useState<CustomizerSettings?>(null)
     var saving by useState(false)
-    var section by useState(BadgePart.NAME)
-    // The part the symbols row in Player changes
-    var symbolPart by useState(BadgePart.NAME)
+    var section by useState(CustomizerPart.NAME)
+    /** The part the symbols row in Player changes. */
+    var symbolPart by useState(CustomizerPart.NAME)
     var leaving by useState(false)
-    // Here and not in Supporters, so the stage shows the text sizes while the sliders move
-    var textSizes by useState(TextSizes(SboBadges.lineSize(), SboBadges.nameSize()))
-    // Counts the changes on Supporters, so the sample supporter draws again with them
+    /** Here and not in Supporters, so the stage shows the text sizes while the sliders move. */
+    var textSizes by useState(TextSizes(SboCustomizer.lineSize(), SboCustomizer.nameSize()))
+    /** Counts the changes on Supporters, so the sample supporter draws again with them. */
     var supportersChanges by useState(0)
     useSboScale()
     useSboTheme("customizer")
 
-    fun loaded(response: OwnBadgeResponse) {
+    fun loaded(response: OwnCustomizerResponse) {
         if (response.success && response.settings != null) {
-            SboBadges.rememberAccess(true)
+            SboCustomizer.rememberAccess(true)
             load = Load.Ready(response)
             draft = response.settings
         } else {
-            if (response.code == "NOT_ELIGIBLE") SboBadges.rememberAccess(false)
-            load = Load.Failed(response.error ?: "Could not load your badge.", response.code == "NOT_ELIGIBLE")
+            if (response.code == "NOT_ELIGIBLE") SboCustomizer.rememberAccess(false)
+            load = Load.Failed(response.error ?: "Could not load your customizer.", response.code == "NOT_ELIGIBLE")
         }
     }
 
     useEffect {
-        SboApi.ownBadge()
-            .toJson<OwnBadgeResponse>(ignoreUnknownKeys = true) { mc.execute { loaded(it) } }
+        SboApi.ownCustomizer()
+            .toJson<OwnCustomizerResponse>(ignoreUnknownKeys = true) { mc.execute { loaded(it) } }
             .error { mc.execute { load = Load.Failed("Could not reach the SBO server: ${it.message}", false) } }
     }
 
-    fun save(settings: BadgeSettings, close: Boolean = false) {
+    fun save(settings: CustomizerSettings, close: Boolean = false) {
         saving = true
-        SboApi.saveBadge(settings)
-            .toJson<OwnBadgeResponse>(ignoreUnknownKeys = true) { response ->
+        SboApi.saveCustomizer(settings)
+            .toJson<OwnCustomizerResponse>(ignoreUnknownKeys = true) { response ->
                 mc.execute {
                     saving = false
                     if (response.success) {
                         loaded(response)
-                        SboBadges.fetch()
+                        SboCustomizer.fetch()
                         if (close) GuiLib.close()
                         toast.success("Others see your new look within a few minutes.", title = "Saved")
                     } else {
@@ -109,8 +109,8 @@ private val App = component("Customizer") {
     }
 
     val ready = load as? Load.Ready
-    val settings = ready?.let { draft ?: it.badge.settings }
-    val unsaved = ready != null && settings != null && settings != ready.badge.settings
+    val settings = ready?.let { draft ?: it.customizer.settings }
+    val unsaved = ready != null && settings != null && settings != ready.customizer.settings
     fun close() = if (unsaved) leaving = true else GuiLib.close()
     useEscapeBack(unsaved && !saving) { leaving = true }
     val fit = useFitScale()
@@ -119,12 +119,12 @@ private val App = component("Customizer") {
         header(className = "cz-header") {
             img(LOGO, className = "cz-logo")
             span(className = "cz-title") { +"SBO Customizer" }
-            ready?.badge?.rankInfo?.let { rank ->
-                span(className = "cz-rank", style = "background: ${background(PartColor(rank.color, rank.to), BadgePart.TAG)}") { +rank.label }
+            ready?.customizer?.rankInfo?.let { rank ->
+                span(className = "cz-rank", style = "background: ${background(PartColor(rank.color, rank.to), CustomizerPart.TAG)}") { +rank.label }
             }
             div(className = "cz-spacer")
             if (ready != null && settings != null) {
-                button(disabled = saving || !unsaved, title = "Back to what is saved", onClick = { draft = ready.badge.settings }) { +"Undo" }
+                button(disabled = saving || !unsaved, title = "Back to what is saved", onClick = { draft = ready.customizer.settings }) { +"Undo" }
                 button(className = "cz-primary", disabled = saving || !unsaved, onClick = { save(settings) }) {
                     +if (saving) "Saving..." else "Save"
                 }
@@ -136,7 +136,7 @@ private val App = component("Customizer") {
             if (load is Load.Failed || ready != null && section == SUPPORTERS) {
                 SupportersStage(SupportersStageProps(textSizes, supportersChanges))
             } else {
-                Stage(StageProps(ready?.badge, settings, textSizes))
+                Stage(StageProps(ready?.customizer, settings, textSizes))
             }
             div(className = "cz-editor") {
                 when (val state = load) {
@@ -149,13 +149,13 @@ private val App = component("Customizer") {
                         Supporters(supportersProps)
                     }
                     is Load.Ready -> if (settings != null) {
-                        val badge = state.badge
-                        nav(badge, section) { section = it }
+                        val customizer = state.customizer
+                        nav(customizer, section) { section = it }
                         scroll(className = "cz-panel guilib-autohide", key = "panel:$section") {
                             when (section) {
-                                PLAYER -> playerPanel(badge, settings, symbolPart, { symbolPart = it }) { draft = it }
+                                PLAYER -> playerPanel(customizer, settings, symbolPart, { symbolPart = it }) { draft = it }
                                 SUPPORTERS -> Supporters(supportersProps)
-                                else -> partPanel(badge, settings, section) { draft = it }
+                                else -> partPanel(customizer, settings, section) { draft = it }
                             }
                         }
                     }
@@ -181,19 +181,19 @@ private val App = component("Customizer") {
     }
 }
 
-private fun NodeBuilder.nav(badge: OwnBadgeResponse, section: String, onSection: (String) -> Unit) {
+private fun NodeBuilder.nav(customizer: OwnCustomizerResponse, section: String, onSection: (String) -> Unit) {
     segmented(value = section, onChange = onSection, className = "cz-nav") {
-        option(BadgePart.STAT, "Logo & Stat")
-        if (hasTag(badge)) option(BadgePart.TAG, "Tag")
-        option(BadgePart.LEVEL, "Level")
-        option(BadgePart.RANK, "Rank")
-        option(BadgePart.NAME, "Name")
+        option(CustomizerPart.STAT, "Logo & Stat")
+        if (hasTag(customizer)) option(CustomizerPart.TAG, "Tag")
+        option(CustomizerPart.LEVEL, "Level")
+        option(CustomizerPart.RANK, "Rank")
+        option(CustomizerPart.NAME, "Name")
         option(PLAYER, "Player")
         option(SUPPORTERS, "Supporters")
     }
 }
 
-internal fun hasTag(badge: OwnBadgeResponse): Boolean = badge.team && badge.rankInfo?.tag != null
+internal fun hasTag(customizer: OwnCustomizerResponse): Boolean = customizer.team && customizer.rankInfo?.tag != null
 
 private fun NodeBuilder.failed(state: Load.Failed) {
     if (!state.notEligible) {
@@ -204,6 +204,6 @@ private fun NodeBuilder.failed(state: Load.Failed) {
         div(className = "cz-steps-title") { +"For SBO supporters (Patreon or Ko-fi)." }
         div(className = "cz-step") { +"1. Link your Minecraft account: /link followed by your Minecraft name on the SBO Discord." }
         div(className = "cz-step") { +"2. Use the Discord account with the supporter role." }
-        div(className = "cz-step") { +"3. Open this again with /${SboBadges.COMMAND}. New roles can take a few minutes." }
+        div(className = "cz-step") { +"3. Open this again with /${SboCustomizer.COMMAND}. New roles can take a few minutes." }
     }
 }

@@ -4,7 +4,7 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
-import net.sbo.mod.general.SboBadges;
+import net.sbo.mod.customizer.SboCustomizer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 /**
  * Skyblocker's fancy tab list reads the tab name straight from the PlayerInfo and skips
- * PlayerTabOverlay.getNameForDisplay, so the badge is added where its player entry takes the name.
+ * PlayerTabOverlay.getNameForDisplay, so the customizer is added where its player entry takes the name.
  * The entry measures its width after that, so the logo fits.
  * <p>
  * No handler takes the PlayerElement itself: MixinExtras wants its exact type, which a @Pseudo mixin can't name.
@@ -23,18 +23,18 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 @Pseudo
 @Mixin(targets = "de.hysky.skyblocker.skyblock.tabhud.widget.element.PlayerElement", remap = false)
 final class SkyblockerPlayerElementMixin {
-    // Player list: no name is passed, the second read of the tab name is the one the entry keeps
+    /** Player list: no name is passed, the second read of the tab name is the one the entry keeps. */
     @SuppressWarnings("UnresolvedMixinReference")
     @ModifyExpressionValue(
             method = "<init>(Lnet/minecraft/client/multiplayer/PlayerInfo;Lnet/minecraft/network/chat/Component;Z)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/PlayerInfo;getTabListDisplayName()Lnet/minecraft/network/chat/Component;", ordinal = 1),
             require = 0
     )
-    private final @Nullable Component sbo$addBadge(@Nullable final Component name, @Local(argsOnly = true) @NonNull final PlayerInfo info) {
-        return name != null ? SboBadges.INSTANCE.decorateTab(info, name) : null;
+    private final @Nullable Component sbo$addCustomizer(@Nullable final Component name, @Local(argsOnly = true) @NonNull final PlayerInfo info) {
+        return name != null ? SboCustomizer.INSTANCE.decorateTab(info, name) : null;
     }
 
-    // Dungeon party list: passes the tab name without the class, changed before the entry first reads it
+    /** Dungeon party list: passes the tab name without the class, changed before the entry first reads it. */
     @SuppressWarnings("UnresolvedMixinReference")
     @ModifyVariable(
             method = "<init>(Lnet/minecraft/client/multiplayer/PlayerInfo;Lnet/minecraft/network/chat/Component;Z)V",
@@ -42,7 +42,7 @@ final class SkyblockerPlayerElementMixin {
             argsOnly = true,
             require = 0
     )
-    private final @Nullable Component sbo$addBadgeToPassedName(@Nullable final Component name, @Local(argsOnly = true) @NonNull final PlayerInfo info) {
-        return name != null && info.getTabListDisplayName() != null ? SboBadges.INSTANCE.decorateTab(info, name) : name;
+    private final @Nullable Component sbo$addCustomizerToPassedName(@Nullable final Component name, @Local(argsOnly = true) @NonNull final PlayerInfo info) {
+        return name != null && info.getTabListDisplayName() != null ? SboCustomizer.INSTANCE.decorateTab(info, name) : name;
     }
 }

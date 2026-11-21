@@ -13,15 +13,15 @@ import net.sbo.mod.diana.tracker.Tracker
 import net.sbo.mod.diana.DianaMobDetect
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.diana.guesses.ArrowGuessBurrow
+import net.sbo.mod.diana.guesses.SpadeGuessOptimizer
 import net.sbo.mod.settings.categories.Burrows
 import net.sbo.mod.settings.categories.RareMobs
 import net.sbo.mod.settings.categories.Warps
 import net.sbo.mod.settings.categories.Waypoints
 import net.sbo.mod.settings.categories.Waypoints.hideOwnWaypoints
 import net.sbo.mod.settings.categories.Waypoints.patcherWaypoints
-import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.Helper.removeFormatting
-import net.sbo.mod.utils.Helper.sleep
+import net.sbo.mod.utils.TextUtil.removeFormatting
+import net.sbo.mod.utils.events.TickScheduler.sleep
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.SoundHandler.playCustomSound
 import net.sbo.mod.utils.chat.Chat
@@ -35,9 +35,11 @@ import java.awt.Color
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
+import net.sbo.mod.diana.DianaState
 
 private const val RARE_MOB_STALE_TICKS = 20
 private const val RARE_MOB_VALIDATION_DISTANCE = 25.0
+private const val CLOSE_SPADE_GUESS_DISTANCE = 15.0
 
 object WaypointManager {
     private val waypoints = mutableMapOf<String, MutableList<Waypoint>>()
@@ -125,7 +127,7 @@ object WaypointManager {
 
         Register.onTick(1) { _ ->
             val inHub = World.isInHub()
-            val hasSpade = Helper.hasSpade
+            val hasSpade = DianaState.hasSpade
 
             if (inHub && hasSpade && RareMobs.receiveRareMob) {
                 updateRareMobWaypoints()
@@ -243,12 +245,19 @@ object WaypointManager {
             }
 
             // Remove the shovel guess if a known burrow, or an arrow guess exists at the same block, or 2 blocks near it (a shovel guess is exact or next to the burrow, so a farther one is a different burrow).
+            // A spade used closer than 15 blocks to the burrow guesses up to ~3 blocks off, 4 blocks for those.
             // The old spade guess is less precise, 30 blocks for it
-            val shovelMergeDistance = if (Burrows.curveSpadeGuess) 2 else 30
+            val playerPos = Player.getLastPosition()
+            fun shovelMergeDistanceOf(shovelGuess: Waypoint) = when {
+                !Burrows.curveSpadeGuess -> 30
+                shovelGuess.pos.distanceTo(playerPos) < CLOSE_SPADE_GUESS_DISTANCE -> 4
+                else -> 2
+            }
             val redundantShovelIterator = shovelGuesses.iterator()
             while (redundantShovelIterator.hasNext()) {
                 val shovelGuess = redundantShovelIterator.next()
                 val shovelGuessBlock = shovelGuess.pos.roundLocationToBlock()
+                val shovelMergeDistance = shovelMergeDistanceOf(shovelGuess)
 
                 allStaticBurrowWaypoints.firstOrNull { staticBurrow ->
                     val waypointBlock = staticBurrow.pos.roundLocationToBlock()
@@ -260,11 +269,12 @@ object WaypointManager {
                 }
             }
 
-            // Remove duplicate shovel guesses that are within 2 blocks of each other (30 with the old spade guess)
+            // Remove duplicate shovel guesses that are within 2 blocks of each other (4 close to you, 30 with the old spade guess)
             val duplicates = mutableSetOf<Waypoint>()
             for (index in shovelGuesses.indices) {
                 val shovelGuess = shovelGuesses[index]
                 val shovelGuessBlock = shovelGuess.pos.roundLocationToBlock()
+                val shovelMergeDistance = shovelMergeDistanceOf(shovelGuess)
 
                 shovelGuesses.asSequence().drop(index + 1).firstOrNull { otherGuess ->
                     shovelGuessBlock.distanceTo(otherGuess.pos.roundLocationToBlock()) <= shovelMergeDistance
@@ -369,7 +379,7 @@ object WaypointManager {
             // For other's mobs, the title and sound does not play unless the mob was selected in "Mobs to Receive".
             if (!fromSelfSpawnMessage && mobType !in RareMobs.ReceiveMobs) return mobData.mobName
 
-            Helper.showTitle(
+            Chat.showTitle(
                 mobData.title,
                 player.ifEmpty { null },
                 RareMobs.rareMobTitleFadeInTime,
@@ -613,7 +623,7 @@ object WaypointManager {
      * @param context The world render context.
      */
     fun renderAllWaypoints(context: LevelRenderContext) {
-        if (!World.isInHub() || !Helper.hasSpade) {
+        if (!World.isInHub() || !DianaState.hasSpade) {
             getWaypointsOfType("world").forEach { waypoint -> waypoint.render(context) }
             getWaypointsOfType("debug").forEach { waypoint -> waypoint.render(context) }
             return
@@ -900,6 +910,10 @@ object WaypointManager {
 
     private fun getBestGuessAt(pos: SboVec): Waypoint? {
         val ignoreYLevel = Warps.ignoreYLevel
+        // A place to use the spade comes before any burrow
+        SpadeGuessOptimizer.shownSpot()?.let { return it }
+        // Nor a burrow while the place is gone for a spade use there, the next place comes once its guess settled
+        if (SpadeGuessOptimizer.hidesBurrows()) return null
         return getAllGuessesAndBurrows()
             .asSequence()
             .filter { !it.hidden }
@@ -1077,6 +1091,8 @@ object WaypointManager {
 
     fun warpToGuess() {
         val bestGuess = getBestGuess() ?: return
+        // The Spade Guess Optimizer's place is near the chain you just finished, no warp needed
+        if (SpadeGuessOptimizer.isNearChainEnd(bestGuess)) return
         getFinalClosestWarp(bestGuess.pos)?.let { executeWarpCommand(it) } ?: return
     }
 
@@ -1099,7 +1115,7 @@ object WaypointManager {
     private var tryWarp: Boolean = false
 
     private fun executeWarpCommand(warp: String) {
-        if (!World.isInHub() || !Helper.hasSpade) return
+        if (!World.isInHub() || !DianaState.hasSpade) return
         if (warp.isNotEmpty() && !tryWarp) {
             tryWarp = true
             Chat.command("warp $warp")

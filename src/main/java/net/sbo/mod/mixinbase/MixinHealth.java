@@ -21,12 +21,12 @@ public final class MixinHealth {
 
     // Mixin class (simple name) to its handlers that have to be called in the target class, with what they do
     private static final @NonNull Map<String, Map<String, String>> WATCHED = Map.of(
-            "ChatComponentMixin", Map.of("sbo$decorateChat", "Badges in chat"),
-            "EntityRendererMixin", Map.of("sbo$submitBadge", "Badges above heads"),
+            "ChatComponentMixin", Map.of("sbo$decorateChat", "Customizers in chat"),
+            "EntityRendererMixin", Map.of("sbo$submitCustomizer", "Customizers above heads"),
             "AvatarRendererMixin", Map.of(
-                    "sbo$extractBadge", "Badges above heads",
-                    "sbo$showOwnBadge", "Own badge in third person"),
-            "PlayerTabOverlayMixin", Map.of("sbo$addBadge", "Badges in the tab list"));
+                    "sbo$extractCustomizer", "Customizers above heads",
+                    "sbo$showOwnCustomizer", "Own customizer in third person"),
+            "PlayerTabOverlayMixin", Map.of("sbo$addCustomizer", "Customizers in the tab list"));
 
     private static final @NonNull List<FailedHook> FAILED = new CopyOnWriteArrayList<>();
 

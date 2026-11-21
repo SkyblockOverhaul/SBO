@@ -11,10 +11,10 @@ import kotlinx.serialization.json.doubleOrNull
 import net.sbo.mod.partyfinder.api.ItemChoice
 import net.sbo.mod.partyfinder.api.PfError
 import net.sbo.mod.partyfinder.api.Problem
-import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.MojangAuth
 import java.util.Locale
 import kotlin.math.floor
+import net.sbo.mod.utils.math.NumberUtil
 
 object ProblemText {
     private const val RELOAD = "/sboreloadstats"
@@ -96,7 +96,7 @@ object ProblemText {
                 when {
                     number != null && stat?.valueLabels?.isNotEmpty() == true ->
                         stat.valueLabels.getOrNull(number.toInt()) ?: number(number)
-                    number != null && (number >= 1_000_000 || COMPACT_STATS.any(statId::endsWith)) -> Helper.formatNumber(number)
+                    number != null && (number >= 1_000_000 || COMPACT_STATS.any(statId::endsWith)) -> NumberUtil.formatNumber(number)
                     number != null -> number(number)
                     stat?.kind == "rarity" -> rarity(value)
                     else -> value.contentOrNull ?: "no data"

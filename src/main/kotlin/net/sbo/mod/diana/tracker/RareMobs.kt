@@ -3,12 +3,12 @@ package net.sbo.mod.diana.tracker
 import net.sbo.mod.diana.DianaMobDetect
 import net.sbo.mod.diana.achievements.AchievementManager.unlockAchievement
 import net.sbo.mod.settings.categories.Drops
-import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.DataManager.dianaTrackerTotalData
 import net.sbo.mod.utils.data.DataManager.sboData
 import net.sbo.mod.utils.data.configs.sbo.SboData
 import kotlin.reflect.KMutableProperty1
+import net.sbo.mod.utils.time.TimeUtil
 
 /** Mob spawns: the since counters and b2b streaks of the rare mobs. */
 internal object RareMobs {
@@ -81,7 +81,7 @@ internal object RareMobs {
         val mobsSince = rare.mobsSince.value
         if (Drops.sendSinceMessage) {
             val lastDate = rare.lastDate.value
-            val time = if (lastDate != 0L) " and §c${Helper.formatTime(dianaTrackerTotalData.items.TIME - lastDate)} §e" else " "
+            val time = if (lastDate != 0L) " and §c${TimeUtil.formatTime(dianaTrackerTotalData.items.TIME - lastDate)} §e" else " "
             Chat.chat("§6[SBO] §eTook §c$mobsSince §eMobs${time}to get ${rare.sinceName}!")
         }
         rare.lastDate.value = dianaTrackerTotalData.items.TIME

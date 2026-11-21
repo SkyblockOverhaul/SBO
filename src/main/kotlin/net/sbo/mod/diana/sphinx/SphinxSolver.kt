@@ -3,8 +3,7 @@ package net.sbo.mod.diana.sphinx
 import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.network.chat.Component
 import net.sbo.mod.settings.categories.RareMobs
-import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.Helper.removeFormatting
+import net.sbo.mod.utils.TextUtil.removeFormatting
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.chat.ChatUtils.formattedString
 import net.sbo.mod.utils.chat.ChatUtils.getShowTextHoverEvent
@@ -14,6 +13,7 @@ import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.guis.GuiMouseClickBefore
 import java.util.regex.Pattern
+import net.sbo.mod.utils.events.TickScheduler
 
 object SphinxSolver {
     private var currentSession: SphinxSession? = null
@@ -49,7 +49,7 @@ object SphinxSolver {
             for (sphinxQuestion in SphinxQuestions.QUESTIONS) {
                 if (clean == null) clean = questionText.removeFormatting()
                 if (sphinxQuestion.question.equals(clean, ignoreCase = true)) {
-                    Helper.sleep(100) {
+                    TickScheduler.sleep(100) {
                         Chat.chat("§6[SBO] §bClick anywhere on the screen to answer while the chat is open.", true)
                     }
                 }

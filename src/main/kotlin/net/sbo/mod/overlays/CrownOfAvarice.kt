@@ -11,13 +11,12 @@ import net.sbo.mod.config.nextOption
 import net.sbo.mod.guis.ConfirmGui
 import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.utils.isCrownOfAvarice
-import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.overlay.CHAT_SCREEN_FILTER
 import net.sbo.mod.utils.overlay.CRAFTING_PLAYER_INVENTORY_FILTER
 import net.sbo.mod.utils.overlay.GuiLibOverlay
 import net.sbo.mod.utils.overlay.Overlay
 import net.sbo.mod.utils.overlay.OverlayTextLine
-import net.sbo.mod.utils.Helper.formatNumber
+import net.sbo.mod.utils.math.NumberUtil.formatNumber
 import net.sbo.mod.utils.HypixelModApi
 import net.sbo.mod.utils.SboTimerManager
 import net.sbo.mod.utils.chat.Chat
@@ -31,6 +30,10 @@ import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.overlay.isCraftingScreenOpen
 import net.sbo.mod.utils.render.RenderUtils2D
+import net.sbo.mod.diana.DianaState
+import net.sbo.mod.utils.TextUtil
+import net.sbo.mod.utils.game.ItemPrices
+import net.sbo.mod.utils.time.TimeUtil
 
 object CrownOfAvarice {
     private const val MAX_COINS = 1_000_000_000L
@@ -50,12 +53,12 @@ object CrownOfAvarice {
         stylesheets = listOf("sbo:ui/coa/coa.css")
     )
         .setCondition { Trackers.coaTracker != Trackers.TrackerMode.OFF && !Trackers.isLegacy(Trackers.TrackerLook.COA) }
-        .setExtraCondition { World.isInHub() && Helper.hasSpade && !primaryCoaUuid.isNullOrEmpty() }
+        .setExtraCondition { World.isInHub() && DianaState.hasSpade && !primaryCoaUuid.isNullOrEmpty() }
 
     // The legacy look: Minecraft text lines like the other overlays, slightly better performance
     private val legacyOverlay = Overlay(OVERLAY_NAME, 10f, 10f, allowedScreens = listOf(CRAFTING_PLAYER_INVENTORY_FILTER, CHAT_SCREEN_FILTER))
         .setCondition { Trackers.coaTracker != Trackers.TrackerMode.OFF && Trackers.isLegacy(Trackers.TrackerLook.COA) }
-        .setExtraCondition { World.isInHub() && Helper.hasSpade && !primaryCoaUuid.isNullOrEmpty() }
+        .setExtraCondition { World.isInHub() && DianaState.hasSpade && !primaryCoaUuid.isNullOrEmpty() }
 
     private val changeView = OverlayUtils.createClickableTextLine(
         text = "§eChange View",
@@ -122,7 +125,7 @@ object CrownOfAvarice {
         // world change), so comparing the reference each tick finds every change without reading the lore.
         // Rates (/h, maxed in) move with the playtime, they are refreshed every few seconds while it runs.
         Register.onTick(1) {
-            if (!World.isInHub() || !Helper.hasSpade) return@onTick
+            if (!World.isInHub() || !DianaState.hasSpade) return@onTick
 
             val stack = mc.player?.inventory?.getItem(39)
             val trackerOn = tracker != null
@@ -353,7 +356,7 @@ object CrownOfAvarice {
         val percent = "${percentTenths / 10}.${percentTenths % 10}"
         return View(
             icon = icon,
-            mode = Helper.toTitleCase(Trackers.coaTracker.name),
+            mode = TextUtil.toTitleCase(Trackers.coaTracker.name),
             lookClasses = Trackers.lookClasses(Trackers.TrackerLook.COA),
             boxStyle = Trackers.boxStyle(Trackers.TrackerLook.COA),
             // Whole tenths of a percent are finer than a pixel of the bar
@@ -439,7 +442,7 @@ object CrownOfAvarice {
         if (coins >= MAX_COINS) return "Maxed!"
         val hours = maxedIn(coins)
         // No estimate until something was earned in this view
-        return if (hours.isFinite()) Helper.formatTime((hours * 3_600_000).toLong()) else "-"
+        return if (hours.isFinite()) TimeUtil.formatTime((hours * 3_600_000).toLong()) else "-"
     }
 
     /** Profit/h = total CoA profit / hours played */
@@ -481,8 +484,8 @@ object CrownOfAvarice {
     }
 
     private fun updateCoaPrice() {
-        cleanCOAPrice = Helper.getItemPrice("CROWN_OF_AVARICE")
-        maxCOAPrice = Helper.getItemPrice("CROWN_OF_AVARICE_MAXED")
+        cleanCOAPrice = ItemPrices.getItemPrice("CROWN_OF_AVARICE")
+        maxCOAPrice = ItemPrices.getItemPrice("CROWN_OF_AVARICE_MAXED")
     }
 
     // The click hint only shows in the inventory

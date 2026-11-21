@@ -1,8 +1,8 @@
-package net.sbo.mod.mixin.badges;
+package net.sbo.mod.mixin.customizer;
 
 import net.minecraft.client.gui.Font;
 import net.minecraft.util.FormattedCharSequence;
-import net.sbo.mod.general.SboBadges;
+import net.sbo.mod.customizer.SboCustomizer;
 import org.jspecify.annotations.NonNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -10,8 +10,10 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 @Mixin(Font.class)
 final class FontMixin {
-    // Badge holders' names in any drawn text; only their colors change, so the width stays the same and needs no hook.
-    // require = 0: no crash if it can't apply
+    /**
+     * Customizer holders' names in any drawn text, and chat lines with moving customizers in their current colors. Only
+     * the colors change, so the width stays the same and needs no hook. require = 0: no crash if it can't apply.
+     */
     @ModifyVariable(
         method = "prepareText(Lnet/minecraft/util/FormattedCharSequence;FFIZZI)Lnet/minecraft/client/gui/Font$PreparedText;",
         at = @At("HEAD"),
@@ -19,10 +21,9 @@ final class FontMixin {
         require = 0
     )
     private final @NonNull FormattedCharSequence sbo$recolorNames(@NonNull final FormattedCharSequence text) {
-        // Chat lines with moving badges in their current colors
-        final var animated = SboBadges.INSTANCE.animatedChatLine(text);
+        final var animated = SboCustomizer.INSTANCE.animatedChatLine(text);
         if (animated != null) return animated;
-        final var recolored = SboBadges.INSTANCE.replaceEverywhere(text);
+        final var recolored = SboCustomizer.INSTANCE.replaceEverywhere(text);
         return recolored != null ? recolored : text;
     }
 }

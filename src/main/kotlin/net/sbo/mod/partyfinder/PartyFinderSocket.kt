@@ -11,7 +11,6 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.partyfinder.api.PfError
-import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.MojangAuth
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.SboKey
@@ -25,6 +24,7 @@ import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionStage
 import java.util.concurrent.ConcurrentHashMap
+import net.sbo.mod.utils.TextUtil
 
 /** Join requests over `/pf/ws` instead of `/msg`, only connected while the own party is listed or an answer is due. */
 object PartyFinderSocket {
@@ -196,7 +196,7 @@ object PartyFinderSocket {
                 val name = message["name"]?.jsonPrimitive?.contentOrNull ?: return
                 val uuid = message["uuid"]?.jsonPrimitive?.contentOrNull ?: return
                 // The name ends up in /p invite
-                if (!Helper.isPlayerName(name)) return answer(requestId, invited = false)
+                if (!TextUtil.isPlayerName(name)) return answer(requestId, invited = false)
                 val role = message["role"]?.takeIf { it !== JsonNull }?.jsonPrimitive?.contentOrNull
                 SBOKotlin.mc.execute { PartyFinderManager.onSocketJoinRequest(requestId, uuid, name, role) }
             }

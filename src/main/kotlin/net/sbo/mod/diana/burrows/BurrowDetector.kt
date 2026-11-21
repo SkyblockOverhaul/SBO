@@ -2,9 +2,9 @@ package net.sbo.mod.diana.burrows
 
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
 import net.sbo.mod.diana.guesses.ArrowGuessBurrow
+import net.sbo.mod.diana.guesses.SpadeGuessOptimizer
 import net.sbo.mod.settings.categories.Burrows
 import net.sbo.mod.settings.categories.Debug
-import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.DianaEvents
@@ -20,6 +20,7 @@ import java.util.*
 import java.util.regex.Pattern
 import java.util.concurrent.TimeUnit
 import net.minecraft.core.particles.ParticleTypes as MCParticleTypes
+import net.sbo.mod.diana.DianaState
 
 object BurrowDetector {
     internal val burrows = mutableMapOf<String, Burrow>()
@@ -83,6 +84,7 @@ object BurrowDetector {
             ArrowGuessBurrow.allGuesses.clear()
             chainExpirations.clear()
             ChainTracker.clear()
+            SpadeGuessOptimizer.reset()
             Chat.chat("§6[SBO] §4Burrow Waypoints Cleared!")
         }
 
@@ -141,8 +143,9 @@ object BurrowDetector {
             lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec.ZERO
             refreshBurrows(deathOriginating = false, expectedTimesDug = 2)
 
-            val anyClose = WaypointManager.getAllGuessesAndBurrows().filter { it.distanceToPlayer < 90 }
-            if (Burrows.showTitleWhenChainEnds && anyClose.isEmpty()) requestSpade("chain")
+            val anyClose = WaypointManager.getAllGuessesAndBurrows().any { it.distanceToPlayer < Burrows.chainEndTitleDistance }
+            // With the optimizer the spade is used here first, the place to use it is only shown if that finds nothing new
+            if (Burrows.showTitleWhenChainEnds && (Burrows.spadeGuessOptimizer || !anyClose)) requestSpade("chain")
             true
         }
 
@@ -169,7 +172,7 @@ object BurrowDetector {
                     pendingUseSpadeTitle = null
                     return@let
                 }
-                Helper.showTitle(it, "", 0, 1, 0)
+                Chat.showTitle(it, "", 0, 1, 0)
             }
         }
     }
@@ -214,8 +217,11 @@ object BurrowDetector {
         return "${block.x.toInt()} ${block.y.toInt()} ${block.z.toInt()}"
     }
 
-    private fun chainFinish() {
+    /** @param death Whether dying failed the chain, you respawn far from it then. */
+    private fun chainFinish(death: Boolean = false) {
         purgeExpiredChains()
+        // A new chain starts somewhere, even where you've already looked
+        if (death) SpadeGuessOptimizer.onDeath() else SpadeGuessOptimizer.reset(chainFinished = true)
 
         if (chainExpirations.isNotEmpty()) {
             chainExpirations.removeFirst()
@@ -246,7 +252,7 @@ object BurrowDetector {
         return "Mob" // assume mob if not a known treasure drop
     }
 
-    private fun canShowUseSpade() = Burrows.spadeGuess && Helper.hasSpade && World.isInHub()
+    private fun canShowUseSpade() = Burrows.spadeGuess && DianaState.hasSpade && World.isInHub()
 
     fun requestSpade(reason: String) {
         if (!canShowUseSpade()) return
@@ -259,6 +265,8 @@ object BurrowDetector {
 
     fun removeFromInternalState(pos: SboVec) {
         burrows.remove(blockKey(pos))
+        // Dug or gone: a new burrow on this block is a new spawn
+        BurrowMap.forget(pos)
     }
 
     fun hasKnownBurrowAt(pos: SboVec): Boolean = burrows.containsKey(blockKey(pos))
@@ -274,10 +282,25 @@ object BurrowDetector {
             // last burrow: do nothing
             // chainFinish() is already handled by chat
         }
+        // Until the chain is finished the spade points at its next burrow
+        if (event.currentBurrow != event.maxBurrow) SpadeGuessOptimizer.onChainDig()
 
         if (!Burrows.closeBurrowDetection) return
         lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec.ZERO
         refreshBurrows(deathOriginating = false, expectedTimesDug = 2)
+    }
+
+    /**
+     * The particles prove the burrow is there, it counts for the burrow map the first time they do. [BurrowMap] counts
+     * a block once until the burrow is dug or gone, so seeing it again after a lobby switch doesn't count it twice.
+     */
+    private fun confirmFromParticles(burrow: Burrow) {
+        if (burrow.fromParticles) return
+        burrow.fromParticles = true
+        val skipped = BurrowMap.record(burrow.pos)
+        if (Debug.debugOnlyMessages) {
+            Chat.chat("SBO(debug): burrow map ${blockKey(burrow.pos)} " + (skipped?.let { "skipped, $it" } ?: "counted"))
+        }
     }
 
     @SboEvent
@@ -325,6 +348,7 @@ object BurrowDetector {
             "ENCHANT" -> {
                 val burrow = burrows.getOrPut(posString) { Burrow(pos) }
                 burrow.hasEnchant = true
+                confirmFromParticles(burrow)
                 registerUnknownBurrow(burrow)
                 return
             }
@@ -364,6 +388,7 @@ object BurrowDetector {
         val burrow = burrows.getOrPut(posString) {
             Burrow(pos)
         }
+        if (source == "particle") confirmFromParticles(burrow)
 
         if (burrow.type == null || burrow.waypoint?.text == "Guess") {
             burrow.type = type
@@ -453,7 +478,7 @@ object BurrowDetector {
 
             if (removalCondition) {
                 if (death) {
-                    chainFinish() // dying finishes (fails) a chain
+                    chainFinish(death = true) // dying finishes (fails) a chain
                     Chat.chat("§6[SBO] §eRemoved Mob burrow waypoint since you died.", true)
                 }
 

@@ -38,6 +38,11 @@ object Debug : Category("Debug") {
         if (old != new) AlphaData.check()
     }
 
+    var sendBurrowSpots by boolean(true) {
+        this.name = literal("Send Burrow Spots")
+        this.description = literal("While SBO collects them, sends the blocks you dug a burrow from to the SBO server, which counts them per block for a map of where burrows spawn. Only the block is sent, nothing about you is stored. Default enabled.")
+    }
+
     var lootshareDisplayTest by boolean(false) {
         this.name = literal("Lootshare Display Test")
         this.description = literal("Shows the lootshare display without a party and on rare mobs you spawned yourself, for testing.")

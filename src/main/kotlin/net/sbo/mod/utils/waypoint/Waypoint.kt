@@ -6,10 +6,10 @@ import net.minecraft.network.chat.Component
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.RareMob
 import net.sbo.mod.diana.burrows.ChainTracker
+import net.sbo.mod.diana.guesses.SpadeGuessOptimizer
 import net.sbo.mod.settings.categories.Burrows
 import net.sbo.mod.settings.categories.Warps
 import net.sbo.mod.settings.categories.Waypoints
-import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.math.SboVec
@@ -18,6 +18,8 @@ import java.awt.Color
 import java.time.Duration
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
+import net.sbo.mod.diana.DianaState
+import net.sbo.mod.utils.chat.Chat
 
 private const val MIN_OPACITY = 0.2f
 private const val MAX_OPACITY = 1.0f
@@ -196,14 +198,19 @@ class Waypoint(
         val chainStepText = getChainStepText()
 
         if (isClosest && !hidden) {
-            val closest = if (this.type == "rareMob") WaypointManager.getFinalClosestWarpToFixedTarget(this.pos) else WaypointManager.getFinalClosestWarp(this.pos)
+            val closest = when {
+                this.type == "rareMob" -> WaypointManager.getFinalClosestWarpToFixedTarget(this.pos)
+                // The warp key doesn't warp to a place near the chain you just finished
+                SpadeGuessOptimizer.isNearChainEnd(this) -> null
+                else -> WaypointManager.getFinalClosestWarp(this.pos)
+            }
 
             this.formattedText = closest?.let {
                 "$text§7 (warp $it)$waypointDistanceText$chainStepText$timesDugText"
             } ?: "${this.text}$waypointDistanceText$chainStepText$timesDugText"
 
             val title = Warps.showTitleWhenWarpAvailable
-            if (title && closest != null && World.isInHub() && Helper.hasSpade) {
+            if (title && closest != null && World.isInHub() && DianaState.hasSpade) {
                 val warpName = closest.replaceFirstChar(Char::titlecase)
 
                 val text = "§" + (if (this.type == "rareMob") "d" else "b") + "Warp §e$warpName${if (Waypoints.lookAlike) " §b[${distanceToPlayer.roundToInt()}m]" else distanceText}"
@@ -222,7 +229,7 @@ class Waypoint(
                 val titleBusy = mc.gui.title != null && mc.gui.titleTime > 0 && !isEmpty && !isOurs
 
                 if (!titleBusy) {
-                    Helper.showTitle(title, subtitle, 0, 1, 0) // 1 tick because next tick this will be called again
+                    Chat.showTitle(title, subtitle, 0, 1, 0) // 1 tick because next tick this will be called again
                     lastWarpTitle = title
                     lastWarpSubtitle = subtitle
                 }
@@ -273,6 +280,9 @@ class Waypoint(
             "subGuess" -> {
                 return Color(Waypoints.SubGuessColor)
             }
+            "spadeSpot" -> {
+                return Color(Burrows.SpadeGuessOptimizerColor)
+            }
             "debug" -> {
                 return Color(255, 255, 255)
             }
@@ -300,7 +310,7 @@ class Waypoint(
         setDistanceText()
 
         when (this.type) {
-            "guess", "arrow", "burrow" -> {
+            "guess", "arrow", "burrow", "spadeSpot" -> {
                 if (isClosest && !rareMobWaypoints.isEmpty()) isClosest = false
                 this.line = Waypoints.guessAndBurrowLine && isClosest
 

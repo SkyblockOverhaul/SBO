@@ -40,7 +40,7 @@ Easiest: open the window in the game and press Ctrl + Shift + C. That turns on t
 Or search the files here: each window's classes start with a short name, e.g.
   hub-   hub.css          cfg-   settings.css     pf-    partyfinder.css   pv-   profileviewer.css
   ev-    events.css       ach-   achievements.css snd-   sounds.css        cs-   cloud.css
-  bd-    badge.css
+  cz-    customizer.css
 
 
 WHAT STAYS THE SAME IN UPDATES

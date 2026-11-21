@@ -54,7 +54,6 @@ import net.sbo.mod.partyfinder.gui.supporterLogo
 import net.sbo.mod.partyfinder.gui.teamTag
 import net.sbo.mod.partyfinder.gui.uuidOf
 import net.sbo.mod.settings.categories.Themes
-import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.HypixelModApi
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.data.DataManager
@@ -63,6 +62,7 @@ import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.game.World
 import java.util.Locale
 import kotlin.random.Random
+import net.sbo.mod.utils.math.NumberUtil
 
 object ProfileViewerGui {
     private val STYLES = listOf("sbo:ui/partyfinder/partyfinder.css", "sbo:ui/profileviewer/profileviewer.css", SboLook.STYLE)
@@ -997,7 +997,7 @@ object ProfileViewerGui {
     private fun coinsPiece(value: Double?): Piece {
         if (value == null) return Piece("no data")
         // Small amounts keep their decimal like in game
-        return Piece(if (value < 1000) number(value) else Helper.formatNumber(value), "pf-c-gold")
+        return Piece(if (value < 1000) number(value) else NumberUtil.formatNumber(value), "pf-c-gold")
     }
 
     private fun number(value: Double): String =

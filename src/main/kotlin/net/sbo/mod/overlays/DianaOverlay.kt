@@ -6,7 +6,6 @@ import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.guilib.core.dsl.div
 import net.sbo.guilib.core.dsl.span
 import net.sbo.mod.settings.categories.Trackers
-import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.overlay.CHAT_SCREEN_FILTER
@@ -16,6 +15,7 @@ import net.sbo.mod.utils.overlay.GuiLibOverlay
 import net.sbo.mod.utils.overlay.Overlay
 import net.sbo.mod.utils.overlay.OverlayTextLine
 import net.sbo.mod.utils.overlay.isCraftingScreenOpen
+import net.sbo.mod.diana.DianaState
 
 /**
  * A Diana overlay with two looks: the new one built with GuiLib (sbo:ui/tracker/tracker.css) and, when picked in
@@ -32,7 +32,7 @@ abstract class DianaOverlay<V : Any>(
     x: Float = 10f,
     y: Float = 10f,
     allowedScreens: List<(screen: Screen?) -> Boolean> = SCREENS,
-    extraCondition: () -> Boolean = { Helper.hasSpade && World.isInHub() },
+    extraCondition: () -> Boolean = { DianaState.hasSpade && World.isInHub() },
     exampleLines: List<OverlayTextLine> = emptyList()
 ) : DirtyFlushableOverlay() {
     final override val overlay = Overlay(name, x, y, allowedScreens = allowedScreens, exampleView = exampleLines)

@@ -7,12 +7,11 @@ import net.sbo.mod.overlays.DianaLoot
 import net.sbo.mod.partyfinder.PartyFinderManager
 import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.settings.categories.PartyCommands
-import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.Helper.calcPercentOne
-import net.sbo.mod.utils.Helper.formatNumber
-import net.sbo.mod.utils.Helper.formatTime
-import net.sbo.mod.utils.Helper.getPlayerName
-import net.sbo.mod.utils.Helper.removeFormatting
+import net.sbo.mod.diana.DianaRates.calcPercentOne
+import net.sbo.mod.utils.math.NumberUtil.formatNumber
+import net.sbo.mod.utils.time.TimeUtil.formatTime
+import net.sbo.mod.utils.TextUtil.getPlayerName
+import net.sbo.mod.utils.TextUtil.removeFormatting
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.SboTimerManager
 import net.sbo.mod.utils.chat.Chat
@@ -25,6 +24,8 @@ import java.text.DecimalFormatSymbols
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
+import net.sbo.mod.diana.DianaRates
+import net.sbo.mod.utils.TextUtil
 
 object PartyCommands {
     // How to add a new party command:
@@ -124,7 +125,7 @@ object PartyCommands {
         },
         PartyCommand(listOf("!burrows", "!burrow"), { settings.dianaPartyCommands }) {
             val burrows = dianaTrackerMayorData.items.TOTAL_BURROWS
-            val perHr = Helper.getBurrowsPerHr(dianaTrackerMayorData, SboTimerManager.timerMayor)
+            val perHr = DianaRates.getBurrowsPerHr(dianaTrackerMayorData, SboTimerManager.timerMayor)
             val edited = if (dianaTrackerMayorData.edited) " (edited)" else ""
             "Burrows: ${formatNumber(burrows, withCommas = true)} ($perHr/h)$edited"
         },
@@ -199,7 +200,7 @@ object PartyCommands {
         },
         PartyCommand(listOf("!mobs", "!mob"), { settings.dianaPartyCommands }) {
             val totalMobs = dianaTrackerMayorData.mobs.TOTAL_MOBS
-            val perHr = Helper.getMobsPerHr(dianaTrackerMayorData, SboTimerManager.timerMayor)
+            val perHr = DianaRates.getMobsPerHr(dianaTrackerMayorData, SboTimerManager.timerMayor)
             "Mobs: $totalMobs ($perHr/h)"
         },
         PartyCommand(listOf("!mf", "!magicfind"), { settings.dianaPartyCommands }) {
@@ -214,7 +215,7 @@ object PartyCommands {
             val profit = DianaLoot.totalProfit(dianaTrackerMayorData) + CrownOfAvarice.getProfit()
             val offerType = if (Trackers.npcOnlyPrices) "NPC Sell" else Trackers.bazaarSettingDiana.name
             val profitHour = profit / playTimeHrs
-            "Profit: ${formatNumber(profit)} (${Helper.toTitleCase(offerType)}) ${formatNumber(profitHour)}/h"
+            "Profit: ${formatNumber(profit)} (${TextUtil.toTitleCase(offerType)}) ${formatNumber(profitHour)}/h"
         },
     )
 
@@ -256,12 +257,12 @@ object PartyCommands {
                 "!w", "!warp" -> if (settings.warpCommand) sendCommand("p warp")
                 "!allinv", "!allinvite" -> if (settings.allinviteCommand) sendCommand("p setting allinvite")
                 // Names from party chat end up in /p commands
-                "!ptme", "!transfer" -> if (settings.transferCommand && Helper.isPlayerName(playerName)) sendCommand("p transfer $playerName")
+                "!ptme", "!transfer" -> if (settings.transferCommand && TextUtil.isPlayerName(playerName)) sendCommand("p transfer $playerName")
                 "!demote" -> (secondArg ?: playerName).let { name ->
-                    if (settings.moteCommand && Helper.isPlayerName(name)) sendCommand("p demote $name")
+                    if (settings.moteCommand && TextUtil.isPlayerName(name)) sendCommand("p demote $name")
                 }
                 "!promote" -> (secondArg ?: playerName).let { name ->
-                    if (settings.moteCommand && Helper.isPlayerName(name)) sendCommand("p promote $name")
+                    if (settings.moteCommand && TextUtil.isPlayerName(name)) sendCommand("p promote $name")
                 }
                 "!c", "!carrot" -> if (settings.carrotCommand) sendResponse(carrot.random())
                 "!time" -> if (settings.timeCommand) sendResponse(SimpleDateFormat("HH:mm:ss").format(Date()))

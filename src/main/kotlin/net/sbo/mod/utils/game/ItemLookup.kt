@@ -5,7 +5,7 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.component.CustomData
 import net.sbo.mod.utils.chat.toFormattedString
-import net.sbo.mod.utils.Helper.removeFormatting
+import net.sbo.mod.utils.TextUtil.removeFormatting
 
 private val SENTINEL = Any()
 private const val LONG_SENTINEL = Long.MIN_VALUE + 31L

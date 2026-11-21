@@ -14,6 +14,7 @@ import net.minecraft.util.Util
 //#endif
 import net.sbo.mod.compat.IrisCompatibility
 import net.sbo.mod.diana.DianaMobDetect
+import net.sbo.mod.diana.DianaState
 import net.sbo.mod.diana.tracker.MayorReset
 import net.sbo.mod.diana.tracker.Tracker
 import net.sbo.mod.diana.LootshareDisplay
@@ -24,15 +25,17 @@ import net.sbo.mod.diana.MuteBuggedSpadeSounds
 import net.sbo.mod.diana.achievements.AchievementManager
 import net.sbo.mod.diana.achievements.AchievementManager.unlockAchievement
 import net.sbo.mod.diana.burrows.BurrowDetector
+import net.sbo.mod.diana.burrows.BurrowMap
 import net.sbo.mod.diana.guesses.HubBoundsScan
 import net.sbo.mod.diana.guesses.PreciseGuessBurrow
+import net.sbo.mod.diana.guesses.SpadeGuessOptimizer
 import net.sbo.mod.utils.hubcache.HubChunkCache
 import net.sbo.mod.diana.sphinx.SphinxSolver
 import net.sbo.mod.utils.data.cloud.CloudSync
 import net.sbo.mod.general.HelpCommand
 import net.sbo.mod.general.PartyCommands
 import net.sbo.mod.general.ModConflicts
-import net.sbo.mod.general.SboBadges
+import net.sbo.mod.customizer.SboCustomizer
 import net.sbo.mod.general.Pickuplog
 import net.sbo.mod.guis.AchievementsGui
 import net.sbo.mod.guis.EventsGui
@@ -57,9 +60,11 @@ import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.events.*
 import net.sbo.mod.utils.game.InventoryUtils
+import net.sbo.mod.utils.game.ItemPrices
 import net.sbo.mod.utils.game.Mayor
 import net.sbo.mod.utils.game.TabList
 import net.sbo.mod.utils.game.World
+import net.sbo.mod.utils.http.ActiveUsers
 import net.sbo.mod.utils.input.KeybindConflicts
 import net.sbo.mod.utils.time.TimeUtil
 import net.sbo.mod.utils.overlay.OverlayManager
@@ -182,7 +187,7 @@ object SBOKotlin : ClientModInitializer {
 		HelpCommand.init()
 		HubBoundsScan.init()
 		CloudSync.init()
-		SboBadges.init()
+		SboCustomizer.init()
 		ModConflicts.init()
 		ClickActionManager.init()
 		LoadoutKeybinds.init()
@@ -194,7 +199,9 @@ object SBOKotlin : ClientModInitializer {
 		OwnStats.init()
 		StatReporter.init()
 		BurrowDetector.init()
+		BurrowMap.init()
 		PreciseGuessBurrow.init()
+		SpadeGuessOptimizer.init()
 		HubChunkCache.init()
 		TimeUtil.start()
 		Tracker.init()
@@ -202,7 +209,9 @@ object SBOKotlin : ClientModInitializer {
 		Pickuplog.init()
 		OverlayManager.init()
 		SboTimerManager.init()
-		Helper.init()
+		DianaState.init()
+		ItemPrices.init()
+		ActiveUsers.init()
 		Bobber.init()
 		Legion.init()
 		DianaStats.init()

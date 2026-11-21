@@ -3,9 +3,8 @@ package net.sbo.mod.diana.tracker
 import net.sbo.mod.diana.achievements.AchievementManager.trackMagicFind
 import net.sbo.mod.diana.achievements.AchievementManager.unlockAchievement
 import net.sbo.mod.settings.categories.Drops
-import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.Helper.gotLootShareRecently
-import net.sbo.mod.utils.Helper.removeFormatting
+import net.sbo.mod.diana.DianaState.gotLootShareRecently
+import net.sbo.mod.utils.TextUtil.removeFormatting
 import net.sbo.mod.utils.SoundHandler.playCustomSound
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.DataManager
@@ -14,6 +13,9 @@ import net.sbo.mod.utils.data.configs.sbo.SboData
 import net.sbo.mod.utils.data.configs.sound.SoundSettingsData
 import net.sbo.mod.utils.medal.MedalIntegration
 import kotlin.reflect.KProperty1
+import net.sbo.mod.diana.DropMessages
+import net.sbo.mod.utils.TextUtil
+import net.sbo.mod.utils.game.ItemPrices
 
 /** Announces a drop in chat, as title and to the party, and tracks it. */
 internal object DropAnnouncer {
@@ -66,8 +68,8 @@ internal object DropAnnouncer {
         }
 
         val color = dropColors[itemId]
-        val hidePrice = Helper.getItemPrice(itemId, amount) == 0L
-        val price = "§6${Helper.getItemPriceFormatted(itemId, amount)} coins"
+        val hidePrice = ItemPrices.getItemPrice(itemId, amount) == 0L
+        val price = "§6${ItemPrices.getItemPriceFormatted(itemId, amount)} coins"
 
         val ls = gotLootShareRecently() && itemId !in lootShareBlocklist
         val lsText = if (ls) " (LS)" else ""
@@ -89,7 +91,7 @@ internal object DropAnnouncer {
 
         if (Drops.lootAnnouncerChat && showMessageOrTitle) {
             val customKey = RareDrops.rareDrops.firstOrNull { it.itemId == itemId }?.customKey
-            val customMsg = customKey?.let { Helper.checkCustomDropMessage(it, magicFind, ls, totalCount) } ?: false to ""
+            val customMsg = customKey?.let { DropMessages.checkCustomDropMessage(it, magicFind, ls, totalCount) } ?: false to ""
 
             if (customMsg.first) {
                 Chat.chat(customMsg.second)
@@ -99,7 +101,7 @@ internal object DropAnnouncer {
         }
 
         if (Drops.lootAnnouncerScreen && showMessageOrTitle && actuallyRare && (!isCoG || Drops.announceCrownOfGreed)) {
-            Helper.showTitle("${color ?: "§f"}§l$item$lsText!", if (hidePrice) null else price, 0, 25, 35)
+            Chat.showTitle("${color ?: "§f"}§l$item$lsText!", if (hidePrice) null else price, 0, 25, 35)
         }
 
         if (ls) {
@@ -127,11 +129,11 @@ internal object DropAnnouncer {
 
     fun announceLootToParty(item: String, customMsg: String? = null, replaceDropMessage: Boolean = false, amount: Int = -1, lsAmount: Int = -1) {
         if (!Drops.lootAnnouncerParty) return
-        var msg = customMsg?.removeFormatting() ?: Helper.toTitleCase(item.replace("_LS", "").replace("_", " "))
+        var msg = customMsg?.removeFormatting() ?: TextUtil.toTitleCase(item.replace("_LS", "").replace("_", " "))
 
         if (!replaceDropMessage) {
             val itemId = item.toItemId()
-            val price = Helper.getItemPriceFormatted(itemId)
+            val price = ItemPrices.getItemPriceFormatted(itemId)
             val priceStr = if (price != "0") " (+$price coins)" else ""
             val ls = gotLootShareRecently() && itemId !in lootShareBlocklist
 

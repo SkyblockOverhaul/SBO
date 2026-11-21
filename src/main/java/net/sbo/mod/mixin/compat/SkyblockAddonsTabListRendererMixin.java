@@ -1,7 +1,7 @@
 package net.sbo.mod.mixin.compat;
 
 import net.minecraft.network.chat.FormattedText;
-import net.sbo.mod.general.SboBadges;
+import net.sbo.mod.customizer.SboCustomizer;
 import org.jspecify.annotations.NonNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
@@ -25,7 +25,7 @@ final class SkyblockAddonsTabListRendererMixin {
             require = 0
     )
     private static final @NonNull FormattedText sbo$decorateLine(@NonNull final FormattedText line) {
-        final var decorated = SboBadges.INSTANCE.decorateSbaTab(line.getString());
+        final var decorated = SboCustomizer.INSTANCE.decorateSbaTab(line.getString());
         return decorated != null ? decorated : line;
     }
 }

@@ -5,7 +5,7 @@ import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.utils.Helper.fastForEach
+import net.sbo.mod.utils.collection.fastForEach
 import net.sbo.mod.utils.game.World
 import java.awt.Color
 import java.util.Locale

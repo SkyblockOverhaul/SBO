@@ -24,10 +24,10 @@ import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.config.Category
 import net.sbo.mod.config.ConfigGui
-import net.sbo.mod.general.SboBadges
+import net.sbo.mod.customizer.SboCustomizer
 import net.sbo.mod.utils.data.cloud.CloudSync
 import net.sbo.mod.general.HelpCommand
-import net.sbo.mod.guis.customizer.CustomizerGui
+import net.sbo.mod.customizer.gui.CustomizerGui
 import net.sbo.mod.guis.look.SboLook
 import net.sbo.mod.guis.look.useFitScale
 import net.sbo.mod.guis.look.useSboScale
@@ -125,12 +125,12 @@ object HubGui {
         Tile(
             "Cloud Sync", "Keep your settings and trackers on every PC", "/sbocloud", Items.ENDER_CHEST,
             supporter = Supporter("Patreon and Ko-fi supporters and server boosters") {
-                if (CloudSync.premium() == true || SboBadges.hasAccess() == true) true else CloudSync.premium()
+                if (CloudSync.premium() == true || SboCustomizer.hasAccess() == true) true else CloudSync.premium()
             },
         ) { CloudSyncGui.open() },
         Tile(
-            "SBO Customizer", "Your badge, name look and player size", "/sbocustomizer", Items.NAME_TAG,
-            supporter = Supporter("Patreon and Ko-fi supporters, maintainers and moderators") { SboBadges.hasAccess() },
+            "SBO Customizer", "Your customizer, name look and player size", "/sbocustomizer", Items.NAME_TAG,
+            supporter = Supporter("Patreon and Ko-fi supporters, maintainers and moderators") { SboCustomizer.hasAccess() },
         ) { CustomizerGui.open() },
     )
 

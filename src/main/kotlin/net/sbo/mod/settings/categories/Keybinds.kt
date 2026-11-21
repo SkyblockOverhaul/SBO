@@ -49,7 +49,7 @@ object Keybinds : Category("Keybinds") {
 
     var loadoutKeybinds by boolean(true) {
         this.name = literal("Loadout Keybinds")
-        this.since = "0.7.3"
+        this.since = "0.8.0"
         this.description = literal("In the /loadouts menu, the keys below equip the loadouts on the current page and change the page. Locked and not yet customized loadouts are skipped. Only work in that menu, so they can share keys with the hotbar.")
     }
 

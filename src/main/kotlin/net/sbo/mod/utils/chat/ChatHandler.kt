@@ -3,7 +3,7 @@ package net.sbo.mod.utils.chat
 import net.minecraft.network.chat.Component
 import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.settings.categories.Debug
-import net.sbo.mod.utils.Helper.removeFormatting
+import net.sbo.mod.utils.TextUtil.removeFormatting
 import net.sbo.mod.utils.chat.ChatUtils.formattedString
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.ChatMessageAllowEvent

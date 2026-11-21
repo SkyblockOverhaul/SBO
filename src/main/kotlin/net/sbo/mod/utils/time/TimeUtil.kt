@@ -225,4 +225,55 @@ object TimeUtil {
         val localSendNanoTime: Long,
         val localReceiveNanoTime: Long
     )
+
+    fun formatTime(milliseconds: Long, decimalSeconds: Boolean = false): String {
+        if (milliseconds <= 0) {
+            return "0s"
+        }
+
+        val totalSeconds = milliseconds / 1000
+        val totalMinutes = totalSeconds / 60
+        val totalHours = totalMinutes / 60
+        val days = totalHours / 24
+        val hours = totalHours % 24
+        val minutes = totalMinutes % 60
+        val seconds = totalSeconds % 60
+
+        val builder = StringBuilder()
+
+        if (days > 0) {
+            builder.append(days).append('d')
+        }
+        if (hours > 0 || days > 0) {
+            if (builder.isNotEmpty()) builder.append(' ')
+            builder.append(hours).append('h')
+        }
+        if (minutes > 0 || hours > 0 || days > 0) {
+            if (builder.isNotEmpty()) builder.append(' ')
+            builder.append(minutes).append('m')
+        }
+        if (builder.isEmpty()) {
+            if (decimalSeconds) {
+                val tenths = (milliseconds + 50) / 100
+                builder.append(tenths / 10)
+                    .append('.')
+                    .append(tenths % 10)
+                    .append('s')
+            } else {
+                builder.append(seconds).append('s')
+            }
+        }
+
+        return builder.toString()
+    }
+
+    /**
+     * Returns the number of seconds since an epoch timestamp.
+     *
+     * The timestamp must originate from System.currentTimeMillis() or another
+     * Unix epoch source (e.g. Hypixel item NBT timestamp).
+     *
+     * For nanoTime, use {@link #getSecondsPassedSinceNano(Long)}
+     */
+    fun getSecondsPassed(timestamp: Long): Long = (TimeUtil.currentTimeMillis() - timestamp) / 1000
 }

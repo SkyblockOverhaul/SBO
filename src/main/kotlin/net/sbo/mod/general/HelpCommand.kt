@@ -2,10 +2,10 @@ package net.sbo.mod.general
 
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.guis.HubGui
-import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.Register
 import java.util.Locale
+import net.sbo.mod.diana.DianaRates
 
 object HelpCommand {
     val commands = arrayOf(
@@ -33,7 +33,7 @@ object HelpCommand {
         mapOf("cmd" to "sboKey", "desc" to "Set your sbokey"),
         mapOf("cmd" to "sboClearKey", "desc" to "Reset your sbokey"),
         mapOf("cmd" to "sbocloud", "desc" to "Opens the Cloud Sync window (also to load backups)"),
-        mapOf("cmd" to "sbocustomizer", "desc" to "Your badge, name look and player size (supporters, maintainers and moderators)"),
+        mapOf("cmd" to "sbocustomizer", "desc" to "Your customizer, name look and player size (supporters, maintainers and moderators)"),
         mapOf("cmd" to "sboinforeport", "desc" to "Sends your SBO settings and mods that break SBO features to the SBO team"),
         mapOf("cmd" to "sbotestmedalclip [drop|all]", "desc" to "Test Medal clip saving"),
         mapOf("cmd" to "sbosounds", "desc" to "Opens custom sounds setting Gui"),
@@ -103,12 +103,12 @@ object HelpCommand {
                 else -> listOf("Chimera" to "chim", "Stick" to "stick", "Relic" to "relic", "Food" to "food", "Wool" to "wool", "Core" to "core", "Stinger" to "stinger")
             }
 
-            val label = Helper.formatMagicFind(mf)
+            val label = DianaRates.formatMagicFind(mf)
             listOf(false, true).forEach { lootshare ->
-                val chances = Helper.getChance(mf, rarity, lootshare)
+                val chances = DianaRates.getChance(mf, rarity, lootshare)
                 val lsPrefix = if (lootshare) "§7[§bLS§7] " else ""
                 items.forEach { (name, key) ->
-                    Chat.chat("§6[SBO] $lsPrefix§e$name ${Helper.formatChances(chances[key] ?: 0.0, label)}")
+                    Chat.chat("§6[SBO] $lsPrefix§e$name ${DianaRates.formatChances(chances[key] ?: 0.0, label)}")
                 }
             }
         }

@@ -91,7 +91,7 @@ Selectors you can use
   body.sbo                    Every SBO window. Put color variables here, so they beat the base theme.
   body.sbo-theme-<base>       The base theme that is active, e.g. body.sbo-theme-minecraft
   body.sbo-window-<name>      Only one window. Names: hub, settings, partyfinder, profileviewer,
-                              events, achievements, sounds, cloud, badge
+                              events, achievements, sounds, cloud, customizer
   button, input, select ...   The elements themselves, like on a web page
 
 Each window also has its own classes, e.g. .hub-window, .pf-window, .cfg-sidebar or .ev-header.

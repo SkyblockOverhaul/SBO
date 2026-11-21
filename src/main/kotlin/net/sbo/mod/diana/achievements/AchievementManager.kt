@@ -14,8 +14,7 @@ import net.sbo.mod.overlays.CrownOfAvarice
 import net.sbo.mod.overlays.DianaLoot.totalProfit
 import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.utils.isCrownOfAvarice
-import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.Helper.removeFormatting
+import net.sbo.mod.utils.TextUtil.removeFormatting
 import net.sbo.mod.utils.HypixelModApi.isOnHypixel
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.chat.Chat
@@ -41,6 +40,9 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.regex.Pattern
 import java.util.regex.Matcher
+import net.sbo.mod.diana.DianaState
+import net.sbo.mod.utils.events.TickScheduler
+import net.sbo.mod.utils.game.InventoryUtils
 
 object AchievementManager {
     val rarityColorDict = mapOf(
@@ -313,24 +315,24 @@ object AchievementManager {
 
     @SboEvent
     fun trackBeKills(event: GuiOpenEvent) {
-        Helper.sleep(500) {
+        TickScheduler.sleep(500) {
             val screen = event.screen
             if (screen !is AbstractContainerScreen<*>) return@sleep
             if (!event.screen.title.string.contains("Mythological Creatur", ignoreCase = true)) return@sleep
             val slots = screen.menu.slots
 
-            val bullKills = Helper.getKillsFromLore(slots[10].item)
-            val gaiaKills = Helper.getKillsFromLore(slots[11].item)
-            val harpyKills = Helper.getKillsFromLore(slots[12].item)
-            val kingKills = Helper.getKillsFromLore(slots[13].item)
-            val mantiKills = Helper.getKillsFromLore(slots[14].item)
-            val champKills = Helper.getKillsFromLore(slots[15].item)
-            val hunterKills = Helper.getKillsFromLore(slots[16].item)
-            val inqKills = Helper.getKillsFromLore(slots[19].item)
-            val minoKills = Helper.getKillsFromLore(slots[20].item)
-            val catKills = Helper.getKillsFromLore(slots[21].item)
-            val sphinxKills = Helper.getKillsFromLore(slots[22].item)
-            val nymphKills = Helper.getKillsFromLore(slots[23].item)
+            val bullKills = InventoryUtils.getKillsFromLore(slots[10].item)
+            val gaiaKills = InventoryUtils.getKillsFromLore(slots[11].item)
+            val harpyKills = InventoryUtils.getKillsFromLore(slots[12].item)
+            val kingKills = InventoryUtils.getKillsFromLore(slots[13].item)
+            val mantiKills = InventoryUtils.getKillsFromLore(slots[14].item)
+            val champKills = InventoryUtils.getKillsFromLore(slots[15].item)
+            val hunterKills = InventoryUtils.getKillsFromLore(slots[16].item)
+            val inqKills = InventoryUtils.getKillsFromLore(slots[19].item)
+            val minoKills = InventoryUtils.getKillsFromLore(slots[20].item)
+            val catKills = InventoryUtils.getKillsFromLore(slots[21].item)
+            val sphinxKills = InventoryUtils.getKillsFromLore(slots[22].item)
+            val nymphKills = InventoryUtils.getKillsFromLore(slots[23].item)
 
             trackBestiaryKills(listOf(
                 gaiaKills to 50, inqKills to 45, minoKills to 46,
@@ -367,7 +369,7 @@ object AchievementManager {
 
     @SboEvent
     fun trackCarnivalPerks(event: GuiOpenEvent) {
-        Helper.sleep(200) {
+        TickScheduler.sleep(200) {
             val screen = event.screen
             if (screen !is AbstractContainerScreen<*>) return@sleep
             if (!event.screen.title.string.contains("Mythological Ritual", ignoreCase = true)) return@sleep
@@ -403,7 +405,7 @@ object AchievementManager {
     private val COA_MF_PATTERN_MATCHER: Matcher = Pattern.compile("\\+([0-9]*\\.?[0-9]+) Magic Find ")!!.matcher("")
 
     private fun trackCOA() {
-        if (!World.isInHub() || !Helper.hasSpade) return
+        if (!World.isInHub() || !DianaState.hasSpade) return
 
         val helmet = mc.player?.inventory?.getItem(39) ?: return
 
@@ -482,7 +484,7 @@ object AchievementManager {
 
     @SboEvent
     fun checkDaxeEnchants(event: WorldChangeEvent) {
-        Helper.sleep(2000) {
+        TickScheduler.sleep(2000) {
             var chimV = false
             var lootingV = false
             var divineGift3 = false

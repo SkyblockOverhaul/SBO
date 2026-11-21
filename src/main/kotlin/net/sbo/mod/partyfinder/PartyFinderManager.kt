@@ -20,8 +20,7 @@ import net.sbo.mod.partyfinder.api.Problem
 import net.sbo.mod.partyfinder.api.RolesBody
 import net.sbo.mod.settings.Settings
 import net.sbo.mod.utils.data.DataManager
-import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.Helper.sleep
+import net.sbo.mod.utils.events.TickScheduler.sleep
 import net.sbo.mod.utils.HypixelModApi
 import net.sbo.mod.utils.SboKey
 import net.sbo.mod.utils.chat.Chat
@@ -37,6 +36,7 @@ import net.sbo.mod.utils.http.Http.getInt
 import net.sbo.mod.utils.http.SboApi
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
+import net.sbo.mod.utils.TextUtil
 
 object PartyFinderManager {
     const val NOTE_MAX_LENGTH = 100
@@ -203,9 +203,9 @@ object PartyFinderManager {
             Pattern.compile("^§dFrom (.*?)§7: .*? join party request - id:(.*)$")
         ) { _, matchResult ->
             if (partyMemberCount < partySize) {
-                val playerName = Helper.getPlayerName(matchResult.group(1) ?: "no name")
+                val playerName = TextUtil.getPlayerName(matchResult.group(1) ?: "no name")
                 val request = JoinRequest.parse(matchResult.group(2) ?: "")
-                if (!Helper.isPlayerName(playerName) || BlockedPlayers.isBlockedName(playerName)) return@onChatMessageCancelable false
+                if (!TextUtil.isPlayerName(playerName) || BlockedPlayers.isBlockedName(playerName)) return@onChatMessageCancelable false
                 if (DataManager.partyFinderConfigState.autoInvite) {
                     invitePlayerIfMeetsReqs(playerName, request)
                 } else {
@@ -219,14 +219,14 @@ object PartyFinderManager {
         Register.onChatMessage(partyChatRegex) { _, match ->
             val parts = match.groupValues[2].trim().split(Regex("\\s+"))
             if (parts.firstOrNull()?.lowercase() != "!role" || parts.size != 2) return@onChatMessage
-            onRoleCommand(Helper.getPlayerName(match.groupValues[1]), parts[1])
+            onRoleCommand(TextUtil.getPlayerName(match.groupValues[1]), parts[1])
         }
 
         Register.onChatMessageCancelable(
             Pattern.compile("^§9§m(.*?) §ehas invited you to join their party!(.*?)$")
         ) { _, matchResult ->
-            val playername = Helper.getPlayerName(matchResult.group(1) ?: "")
-            if (Helper.isPlayerName(playername) && playersSentRequest.containsKey(playername)) {
+            val playername = TextUtil.getPlayerName(matchResult.group(1) ?: "")
+            if (TextUtil.isPlayerName(playername) && playersSentRequest.containsKey(playername)) {
                 Chat.chat("§6[SBO] §eJoining party of §b$playername§e...")
                 Chat.command("p accept $playername")
                 playersSentRequest.remove(playername)
@@ -437,7 +437,7 @@ object PartyFinderManager {
 
     // "!role <role>" in party chat; only the mod of the leader of a listed party answers
     private fun onRoleCommand(playerName: String, wanted: String) {
-        if (!inQueue || !isLeader || !Helper.isPlayerName(playerName)) return
+        if (!inQueue || !isLeader || !TextUtil.isPlayerName(playerName)) return
         val target = currentTarget() ?: return
         if (target.roles.isEmpty()) return
         val member = queuedParty?.members?.firstOrNull { it.name.equals(playerName, ignoreCase = true) } ?: return
@@ -591,7 +591,7 @@ object PartyFinderManager {
     /** [role] is needed when the party asks for roles. */
     fun sendJoinRequest(party: PartyView, role: String? = null) {
         // The name ends up in /msg
-        val leaderName = party.leader?.name?.takeIf { Helper.isPlayerName(it) } ?: return
+        val leaderName = party.leader?.name?.takeIf { TextUtil.isPlayerName(it) } ?: return
         val target = PartyCategories.target(party.partyType, party.subType)
         if (target == null) {
             tell("§6[SBO] §4This party type is unknown. Please reopen the party finder.", false)
@@ -699,7 +699,7 @@ object PartyFinderManager {
             // The leader's mod updates the listed party first
             listener?.invoke(
                 true,
-                "You joined ${Helper.getPlayerName(playerName)}'s party."
+                "You joined ${TextUtil.getPlayerName(playerName)}'s party."
             )
             sleep(3000) { joinedParties++ }
         }
