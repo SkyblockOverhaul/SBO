@@ -1,6 +1,7 @@
 package net.sbo.mod.utils.game
 
 import net.sbo.mod.SBOKotlin
+import net.sbo.mod.utils.HypixelModApi
 import net.sbo.mod.utils.data.MayorResponse
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.http.Http
@@ -20,6 +21,8 @@ object Mayor {
     /** Diana's perk that brings the burrows, as mayor or as minister. */
     private const val DIANA_PERK = "Mythological Ritual"
     private const val FALLBACK_PERK = DIANA_PERK
+    /** The mayor whose Perkpocalypse rotates other mayors' perks in, Diana's too, the API only lists his own. */
+    private const val JERRY = "Jerry"
 
     private var mayor: String? = null
     private var perks: MutableSet<String> = mutableSetOf()
@@ -34,9 +37,12 @@ object Mayor {
     val mayorElectedYear: Int
         get() = electedYearAt(Http.serverTimeMillis())
 
-    /** Whether Diana's burrows are out: her perk is on, as mayor or minister. False till the mayor is known. */
+    /**
+     * Whether Diana's burrows can be out: her perk is on, as mayor or minister, or [JERRY] is mayor. Always on the Alpha
+     * Network, the API only has the live mayor. False till the mayor is known.
+     */
     val dianaActive: Boolean
-        get() = DIANA_PERK in perks || ministerPerk == DIANA_PERK
+        get() = DIANA_PERK in perks || ministerPerk == DIANA_PERK || mayor == JERRY || HypixelModApi.isAlpha
 
     fun init() {
         refreshMayorData()
