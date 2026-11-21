@@ -248,12 +248,10 @@ object WaypointManager {
             // A spade used closer than 15 blocks to the burrow guesses up to ~3 blocks off, 4 blocks for those.
             // The old spade guess is less precise, 30 blocks for it
             val playerPos = Player.getLastPosition()
-            val shovelMergeDistanceOf = { shovelGuess: Waypoint ->
-                when {
-                    !Burrows.curveSpadeGuess -> 30
-                    shovelGuess.pos.distanceTo(playerPos) < CLOSE_SPADE_GUESS_DISTANCE -> 4
-                    else -> 2
-                }
+            fun shovelMergeDistanceOf(shovelGuess: Waypoint) = when {
+                !Burrows.curveSpadeGuess -> 30
+                shovelGuess.pos.distanceTo(playerPos) < CLOSE_SPADE_GUESS_DISTANCE -> 4
+                else -> 2
             }
             val redundantShovelIterator = shovelGuesses.iterator()
             while (redundantShovelIterator.hasNext()) {

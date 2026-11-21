@@ -118,21 +118,20 @@ object PreciseGuessBurrow {
             return
         }
         ticksInParticleRange.keys.retainAll(guesses)
-        var noParticles: MutableList<Waypoint>? = null
-        for (guess in guesses) {
+        // A burrow found at a guess replaces it, so a guess still here after NO_PARTICLE_TICKS has no burrow
+        val noParticles = guesses.filter { guess ->
             if (guess.pos.distanceTo(shownFrom) > BurrowParticleClock.SHOWN_RANGE) {
                 ticksInParticleRange.remove(guess)
-                continue
+                return@filter false
             }
-            // A burrow found at the guess replaces it, one still here has no burrow
             val ticks = (ticksInParticleRange[guess] ?: 0) + 1
             ticksInParticleRange[guess] = ticks
-            if (ticks >= NO_PARTICLE_TICKS) (noParticles ?: mutableListOf<Waypoint>().also { noParticles = it }).add(guess)
+            ticks >= NO_PARTICLE_TICKS
         }
-        // Removed once the loop is done, it iterates the waypoint list itself
-        noParticles?.forEach {
-            WaypointManager.removeWaypoint(it)
-            ticksInParticleRange.remove(it)
+        // Removed after the filter, it iterates the waypoint list itself
+        for (guess in noParticles) {
+            WaypointManager.removeWaypoint(guess)
+            ticksInParticleRange.remove(guess)
         }
     }
 

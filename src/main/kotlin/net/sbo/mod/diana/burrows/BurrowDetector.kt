@@ -206,10 +206,11 @@ object BurrowDetector {
         return "${block.x.toInt()} ${block.y.toInt()} ${block.z.toInt()}"
     }
 
-    private fun chainFinish() {
+    /** @param death Whether dying failed the chain, you respawn far from it then. */
+    private fun chainFinish(death: Boolean = false) {
         purgeExpiredChains()
         // A new chain starts somewhere, even where you've already looked
-        SpadeGuessOptimizer.reset(chainFinished = true)
+        if (death) SpadeGuessOptimizer.onDeath() else SpadeGuessOptimizer.reset(chainFinished = true)
 
         if (chainExpirations.isNotEmpty()) {
             chainExpirations.removeFirst()
@@ -449,7 +450,7 @@ object BurrowDetector {
 
             if (removalCondition) {
                 if (death) {
-                    chainFinish() // dying finishes (fails) a chain
+                    chainFinish(death = true) // dying finishes (fails) a chain
                     Chat.chat("§6[SBO] §eRemoved Mob burrow waypoint since you died.", true)
                 }
 
