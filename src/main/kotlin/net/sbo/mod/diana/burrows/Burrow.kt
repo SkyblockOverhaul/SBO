@@ -7,6 +7,7 @@ internal class Burrow(
     val pos: SboVec,
     var hasFootstep: Boolean = false,
     var hasEnchant: Boolean = false,
+    var fromParticles: Boolean = false,
     var type: String? = null,
     var waypoint: Waypoint? = null
 )
