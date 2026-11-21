@@ -222,7 +222,7 @@ object SboCustomizer {
     var menuModel = false
 
     private const val MIN_SIZE = 0.1f
-    private const val MAX_SIZE = 1.75f
+    private const val MAX_SIZE = 1f
 
     /** Text size of the customizer line above heads, the viewer's own choice for every customizer. */
     fun lineSize(): Float = textSize(DataManager.sboData.customizerLineSize)

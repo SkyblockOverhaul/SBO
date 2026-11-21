@@ -333,7 +333,7 @@ data class OwnCustomizerResponse(
 )
 
 @Serializable
-data class CustomizerSizes(val min: Float = 0.1f, val max: Float = 1.75f, val step: Float = 0.05f)
+data class CustomizerSizes(val min: Float = 0.1f, val max: Float = 1f, val step: Float = 0.05f)
 
 /** Model size; text styles and symbols are per part, see [PartColor]. `before`/`after` are the name's symbols on backends before that. */
 @Serializable

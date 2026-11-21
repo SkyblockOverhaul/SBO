@@ -24,7 +24,7 @@ internal const val SAMPLE_RANK = "§b[MVP§c+§b] "
 internal const val FRAME_MS = 20L
 /** Height of the model at the largest size; smaller sizes shrink from there, so the size shows as it is. */
 internal const val MODEL_HEIGHT = 150f
-internal const val MODEL_MAX_SIZE = 1.75f
+internal const val MODEL_MAX_SIZE = 1f
 
 internal data class StageProps(val customizer: OwnCustomizerResponse?, val settings: CustomizerSettings?, val textSizes: TextSizes)
 
