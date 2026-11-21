@@ -90,7 +90,7 @@ object General : Category("General") {
 
     var fastAotv by boolean(false) {
         this.name = literal("Fast AOTV")
-        this.since = "0.7.3"
+        this.since = "0.8.0"
         this.description = literal("Holding right click with an Aspect of the Void uses it as fast as spam clicking instead of Minecraft's default of every 4 ticks. Easier on your hand. Idea from Nopo Mod. §c⚠ USE AT YOUR OWN RISK ⚠")
     }
 
@@ -99,7 +99,7 @@ object General : Category("General") {
         this.range = 2..4
         this.slider = true
         this.name = literal("Fast AOTV Delay")
-        this.since = "0.7.3"
+        this.since = "0.8.0"
         depends(::fastAotv)
         this.description = literal("Ticks between uses while holding right click (20 ticks = 1 second): 2 is 10 uses a second, about spam clicking, 4 is Minecraft's default.")
     }

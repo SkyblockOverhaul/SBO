@@ -99,7 +99,7 @@ object Drops : Category("Drops") {
     var customLootingMessage by strings("") {
         this.template = "&6[SBO] &6&lRARE DROP! &dLooting 7! &b+{mf} ✯ Magic Find &b#{amount}"
         this.name = literal("Looting 7")
-        this.since = "0.7.3"
+        this.since = "0.8.0"
         this.description = literal("{since}: sphinx it took to drop the Looting 7 book.")
     }
 
