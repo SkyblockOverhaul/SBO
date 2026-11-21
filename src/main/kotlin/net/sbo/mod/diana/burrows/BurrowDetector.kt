@@ -1,6 +1,7 @@
 package net.sbo.mod.diana.burrows
 
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
+import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import net.sbo.mod.settings.categories.Burrows
 import net.sbo.mod.settings.categories.Debug
@@ -128,6 +129,7 @@ object BurrowDetector {
 
             // We need to update lastDugOutBurrowPos manually here since BurrowDugEvent does not set it since it is not triggered.
             lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec.ZERO
+            recordDugBlock(lastDugOutBurrowPos)
             refreshBurrows(deathOriginating = false, expectedTimesDug = 2)
 
             val anyClose = WaypointManager.getAllGuessesAndBurrows().filter { it.distanceToPlayer() < 90 }
@@ -266,7 +268,18 @@ object BurrowDetector {
 
         if (!Burrows.closeBurrowDetection) return
         lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec.ZERO
+        recordDugBlock(lastDugOutBurrowPos)
         refreshBurrows(deathOriginating = false, expectedTimesDug = 2)
+    }
+
+    // Only a block its particles showed: a guess promoted from chat would count the guess as the burrow. And only the
+    // block the spade last clicked: lastWaypointClicked stays on an older waypoint when a burrow without one is dug
+    private fun recordDugBlock(pos: SboVec) {
+        val clicked = DianaEvents.lastBlockClicked ?: return
+        if (blockKey(clicked) != blockKey(pos)) return
+        val burrow = burrows[blockKey(pos)]?.takeIf { it.fromParticles } ?: return
+        val player = SBOKotlin.mc.player ?: return
+        if (player.distanceToSqr(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5) <= 64.0) BurrowMap.record(burrow.pos)
     }
 
     @SboEvent
@@ -314,6 +327,7 @@ object BurrowDetector {
             "ENCHANT" -> {
                 val burrow = burrows.getOrPut(posString) { Burrow(pos) }
                 burrow.hasEnchant = true
+                burrow.fromParticles = true
                 registerUnknownBurrow(burrow)
                 return
             }
@@ -353,6 +367,7 @@ object BurrowDetector {
         val burrow = burrows.getOrPut(posString) {
             Burrow(pos)
         }
+        if (source == "particle") burrow.fromParticles = true
 
         if (burrow.type == null || burrow.waypoint?.text == "Guess") {
             burrow.type = type
