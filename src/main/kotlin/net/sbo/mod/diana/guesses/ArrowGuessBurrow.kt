@@ -9,6 +9,7 @@ import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.diana.burrows.BurrowParticleClock
 import net.sbo.mod.diana.burrows.ChainTracker
 import net.sbo.mod.settings.categories.Burrows
+import net.sbo.mod.utils.HypixelModApi
 import net.sbo.mod.utils.collection.TimeLimitedSet
 import net.sbo.mod.utils.events.DianaEvents
 import net.sbo.mod.utils.events.annotations.SboEvent
@@ -43,13 +44,15 @@ object ArrowGuessBurrow {
     private const val COUNT_NEAR_TIP = 4
     private const val COUNT_NEAR_BASE = 2
     private const val EPSILON = 1e-6
-    // TODO: measured with /sbodebughubscan on the live Hub and the Alpha Network (Nov 2026), re-check once the alpha
-    //  changes are live. Alpha needs max x 210 (fairy forest grass up to x 203), both need min y 51 (grass at y 52 in
-    //  a pit near 104 -25) and max y 110 (terrace near the castle at -207 109 88). Before: x -283..175, y 60..105.
-    private val HUB_BOUNDS_MIN = SboVec(-283.0, 51.0, -208.0)
-    private val HUB_BOUNDS_MAX = SboVec(210.0, 110.0, 208.0)
-    /** The Hub island, guesses outside of it are never valid. The min is exclusive, the max inclusive. */
-    val HUB_BOUNDS: AABB = AABB(HUB_BOUNDS_MIN.x, HUB_BOUNDS_MIN.y, HUB_BOUNDS_MIN.z, HUB_BOUNDS_MAX.x, HUB_BOUNDS_MAX.y, HUB_BOUNDS_MAX.z)
+    // TODO: measured with /sbodebughubscan on the live Hub and the Alpha Network (Nov 2026). Alpha's fairy forest has
+    //  grass up to x 203, so its max x is 210; on live the Hub ends at 175 and a guess past it would be over the void,
+    //  never loaded, and float at the arrow's height. Once the alpha changes are live, use the alpha bounds for both.
+    //  Both need min y 51 (grass at y 52 in a pit near 104 -25) and max y 110 (terrace near the castle at -207 109 88).
+    //  Before: x -283..175, y 60..105.
+    private val LIVE_HUB_BOUNDS = AABB(-283.0, 51.0, -208.0, 175.0, 110.0, 208.0)
+    private val ALPHA_HUB_BOUNDS = AABB(-283.0, 51.0, -208.0, 210.0, 110.0, 208.0)
+    /** The Hub island of the server the player is on, guesses outside of it are never valid. The min is exclusive, the max inclusive. */
+    val HUB_BOUNDS: AABB get() = if (HypixelModApi.isAlpha) ALPHA_HUB_BOUNDS else LIVE_HUB_BOUNDS
     private val recentFoundArrows = TimeLimitedSet<RaycastUtils.Ray>(18.seconds)
     private var spadeTitleShown = false
     private val locations = mutableSetOf<SboVec>()
