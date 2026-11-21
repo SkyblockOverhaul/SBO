@@ -82,6 +82,7 @@ object OverlayManager {
         if (!World.isInSkyblock() && !inEditScreen) return
         if (mc.options.hideGui || isTabListShown()) return
         if (!inEditScreen && renderScreen != null) return
+        if (!inEditScreen && mc.debugOverlay.showDebugScreen()) return
 
         val scaleFactor = mc.window.guiScale
         val mouseX = mc.mouseHandler.xpos() / scaleFactor
