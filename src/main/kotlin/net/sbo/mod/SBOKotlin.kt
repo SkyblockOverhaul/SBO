@@ -27,6 +27,7 @@ import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.diana.burrows.BurrowMap
 import net.sbo.mod.diana.guesses.HubBoundsScan
 import net.sbo.mod.diana.guesses.PreciseGuessBurrow
+import net.sbo.mod.diana.guesses.SpadeGuessOptimizer
 import net.sbo.mod.utils.hubcache.HubChunkCache
 import net.sbo.mod.diana.sphinx.SphinxSolver
 import net.sbo.mod.utils.data.cloud.CloudSync
@@ -197,6 +198,7 @@ object SBOKotlin : ClientModInitializer {
 		BurrowDetector.init()
 		BurrowMap.init()
 		PreciseGuessBurrow.init()
+		SpadeGuessOptimizer.init()
 		HubChunkCache.init()
 		TimeUtil.start()
 		Tracker.init()

@@ -17,7 +17,9 @@ object Mayor {
     private const val ELECTION_DAY_OF_YEAR = (ELECTION_MONTH - 1) * DAYS_IN_MONTH + ELECTION_DAY - 1
 
     private const val FALLBACK_MAYOR = "Diana"
-    private const val FALLBACK_PERK = "Mythological Ritual"
+    /** Diana's perk that brings the burrows, as mayor or as minister. */
+    private const val DIANA_PERK = "Mythological Ritual"
+    private const val FALLBACK_PERK = DIANA_PERK
 
     private var mayor: String? = null
     private var perks: MutableSet<String> = mutableSetOf()
@@ -31,6 +33,10 @@ object Mayor {
     /** The SkyBlock year of the election the current mayor won, worked out from the server time on every read so it can't go stale. */
     val mayorElectedYear: Int
         get() = electedYearAt(Http.serverTimeMillis())
+
+    /** Whether Diana's burrows are out: her perk is on, as mayor or minister. False till the mayor is known. */
+    val dianaActive: Boolean
+        get() = DIANA_PERK in perks || ministerPerk == DIANA_PERK
 
     fun init() {
         refreshMayorData()
