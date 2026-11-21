@@ -10,6 +10,7 @@ import kotlinx.serialization.json.jsonObject
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.ModContainer
 import net.sbo.mod.SBOKotlin
+import net.sbo.mod.customizer.SboCustomizer
 import net.sbo.mod.mixinbase.MixinHealth
 import net.sbo.mod.settings.Settings
 import net.sbo.mod.utils.Helper
@@ -129,7 +130,7 @@ object ModConflicts {
         }
     }
 
-    /** What the player set in the settings, the GUIs and their own badge; other players' names and keys are left out. */
+    /** What the player set in the settings, the GUIs and their own customizer; other players' names and keys are left out. */
     private fun settings(): JsonObject {
         val gson = Gson()
         val account = Player.accountUuid()
@@ -145,8 +146,8 @@ object ModConflicts {
                     state.premium?.let { sync.add("premium", JsonPrimitive(it)) }
                 }
             })
-            remove("badgeAccess")
-            DataManager.sboData.badgeAccess[account]?.let { add("badgeAccess", JsonPrimitive(it)) }
+            remove("customizerAccess")
+            DataManager.sboData.customizerAccess[account]?.let { add("customizerAccess", JsonPrimitive(it)) }
         }
         val partyFinder = gson.toJsonTree(DataManager.partyFinderConfigState).asJsonObject.apply {
             add("blockedPlayers", JsonPrimitive(DataManager.partyFinderConfigState.blockedPlayers.size))
@@ -159,7 +160,7 @@ object ModConflicts {
             add("sounds", gson.toJsonTree(DataManager.soundSettingsData))
             add("partyFinder", partyFinder)
             add("alphaData", JsonPrimitive(DataManager.alphaActive))
-            SboBadges.own()?.let { add("ownBadge", gson.toJsonTree(it)) }
+            SboCustomizer.own()?.let { add("ownCustomizer", gson.toJsonTree(it)) }
         }
     }
 

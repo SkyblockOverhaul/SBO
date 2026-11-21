@@ -2,7 +2,7 @@
   "providers": [
     {
       "type": "bitmap",
-      "file": "sbo:font/badge.png",
+      "file": "sbo:font/customizer.png",
       "ascent": 7,
       "height": 8,
       "chars": [""]

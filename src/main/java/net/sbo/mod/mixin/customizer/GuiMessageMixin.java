@@ -1,4 +1,4 @@
-package net.sbo.mod.mixin.badges;
+package net.sbo.mod.mixin.customizer;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -8,14 +8,14 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.multiplayer.chat.GuiMessage;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Component;
-import net.sbo.mod.general.SboBadges;
+import net.sbo.mod.customizer.SboCustomizer;
 import org.jspecify.annotations.NonNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 /**
- * Remembers the chat lines of messages with moving badges and the width they were split at, so {@link FontMixin}
- * can draw them in their current colors. The split itself is left alone; require = 0: without it chat badges just stand still.
+ * Remembers the chat lines of messages with moving customizers and the width they were split at, so {@link FontMixin}
+ * can draw them in their current colors. The split itself is left alone; require = 0: without it chat customizers just stand still.
  */
 @Mixin(GuiMessage.class)
 final class GuiMessageMixin {
@@ -30,7 +30,7 @@ final class GuiMessageMixin {
     ) {
         final var lines = original.call(text, width, font);
         if (text instanceof final Component component) {
-            SboBadges.INSTANCE.splitChatLines(component, width, lines);
+            SboCustomizer.INSTANCE.splitChatLines(component, width, lines);
         }
         return lines;
     }

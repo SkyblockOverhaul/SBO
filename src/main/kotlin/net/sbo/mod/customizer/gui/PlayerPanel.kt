@@ -1,4 +1,4 @@
-package net.sbo.mod.guis.customizer
+package net.sbo.mod.customizer.gui
 
 import net.sbo.guilib.core.dom.component
 import net.sbo.guilib.core.dsl.NodeBuilder
@@ -6,30 +6,30 @@ import net.sbo.guilib.core.dsl.button
 import net.sbo.guilib.core.dsl.div
 import net.sbo.guilib.core.dsl.slider
 import net.sbo.guilib.core.dsl.switch
-import net.sbo.mod.utils.data.BadgeLook
-import net.sbo.mod.utils.data.BadgeSettings
+import net.sbo.mod.customizer.CustomizerLook
+import net.sbo.mod.customizer.CustomizerSettings
 import net.sbo.mod.utils.data.DataManager
-import net.sbo.mod.utils.data.OwnBadgeResponse
+import net.sbo.mod.customizer.OwnCustomizerResponse
 import java.util.Locale
 import kotlin.math.roundToInt
 
+/** Your player. The size snaps to the backend's steps; 1 is the normal size and is not saved. */
 internal fun NodeBuilder.playerPanel(
-    badge: OwnBadgeResponse,
-    settings: BadgeSettings,
+    customizer: OwnCustomizerResponse,
+    settings: CustomizerSettings,
     symbolPart: String,
     onSymbolPart: (String) -> Unit,
-    onChange: (BadgeSettings) -> Unit,
+    onChange: (CustomizerSettings) -> Unit,
 ) {
-    val sizes = badge.sizes
-    val look = settings.look ?: BadgeLook()
-    symbolsRow(badge, settings, symbolPart, onSymbolPart, onChange)
+    val sizes = customizer.sizes
+    val look = settings.look ?: CustomizerLook()
+    symbolsRow(customizer, settings, symbolPart, onSymbolPart, onChange)
     if (sizes != null) {
         row("Size", "How big others with SBO see you. Only your model changes, never your hitbox.") {
             div(className = "cz-inline") {
                 slider(
                     value = look.scale,
                     onChange = { v ->
-                        // On the steps; 1 is the normal size and is not saved
                         val size = ((v / sizes.step).roundToInt() * sizes.step * 100f).roundToInt() / 100f
                         onChange(settings.copy(look = look.copy(size = size.coerceIn(sizes.min, sizes.max).takeUnless { it == 1f })))
                     },
@@ -49,13 +49,13 @@ internal fun NodeBuilder.playerPanel(
     OwnView()
 }
 
-// Only on this PC, so it changes right away without saving
+/** Only on this PC, so it changes right away without saving. */
 private val OwnView = component("CustomizerOwnView") {
-    var inF5 by useState(DataManager.sboData.badgeOwnInF5)
-    row("Show me in F5", "See your own name tag and badge in third person.") {
+    var inF5 by useState(DataManager.sboData.customizerOwnInF5)
+    row("Show me in F5", "See your own name tag and customizer in third person.") {
         switch(checked = inF5, onChange = {
             inF5 = it.checked
-            DataManager.sboData.badgeOwnInF5 = it.checked
+            DataManager.sboData.customizerOwnInF5 = it.checked
             DataManager.sboData.save()
         })
     }

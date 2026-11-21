@@ -10,7 +10,7 @@ import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonObject
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.API_URL
-import net.sbo.mod.utils.data.BadgeSettings
+import net.sbo.mod.customizer.CustomizerSettings
 import net.sbo.mod.utils.data.CloudUploadRequest
 import net.sbo.mod.utils.MojangAuth
 import net.sbo.mod.utils.Player
@@ -120,13 +120,13 @@ object SboApi {
 
     fun ahItems(): HttpRequestHandle = get("/ahItems")
 
-    fun badges(knownVersion: String?): HttpRequestHandle =
+    fun customizers(knownVersion: String?): HttpRequestHandle =
         get("/badges" + knownVersion?.let { "?v=${encode(it)}" }.orEmpty())
 
     // format=2: hex colors, gradients and team tags; without it the backend answers like for 0.7.0
-    fun ownBadge(): HttpRequestHandle = authedGet("/badge?format=2")
+    fun ownCustomizer(): HttpRequestHandle = authedGet("/badge?format=2")
 
-    fun saveBadge(settings: BadgeSettings): HttpRequestHandle = authedPost("/badge?format=2", json.encodeToString(settings))
+    fun saveCustomizer(settings: CustomizerSettings): HttpRequestHandle = authedPost("/badge?format=2", json.encodeToString(settings))
 
     /** An info report (settings and mod conflicts) the player chose to send, it goes to the SBO Discord. */
     fun infoReport(report: String): HttpRequestHandle = post("/modConflicts", report)

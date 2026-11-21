@@ -1,5 +1,6 @@
 package net.sbo.mod.utils.data.configs.sbo
 
+import com.google.gson.annotations.SerializedName
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.configs.achievements.AchievementsView
 
@@ -87,21 +88,31 @@ data class SboData(
     var eventsHiddenLines: MutableList<String> = mutableListOf(),
     var pfOnboardingSeen: Boolean = false,
     var trackerLookAnswered: Boolean = false, // the new tracker look notice was answered with /sbolegacylook
-    var badgesInTab: Boolean = true,
-    var badgesInChat: Boolean = true,
-    var badgeOwnInF5: Boolean = true,
-    var badgeNamesInChat: String = "off", // "own" or "all": names inside chat messages look like the sender's, see SboBadges.NAMES_*
-    var badgeNamesTag: Boolean = true, // false: names inside chat messages only get their color, no team tag
-    var badgeReplaceEverywhere: Boolean = false, // true: the names badgeNamesInChat picks are colored in all drawn text (menus, titles, scoreboard, signs)
-    var badgeAnimationsOfOthers: Boolean = true, // false shows other players' moving badge colors standing still
-    var badgeMotionOfOthers: Boolean = true, // false keeps the chars of other players' badges from moving above heads
-    var badgeAnimationsInTab: Boolean = true, // false shows every badge in the tab list standing still, your own too
-    var badgeAnimationsInChat: String = "own", // "off", "own" or "all": whose badge colors and motion move in chat, see SboBadges.NAMES_*
-    var badgeLooksOfOthers: Boolean = true, // false hides the symbols and text styles (bold, italic...) of other players' names
-    var badgeSizesOfOthers: Boolean = true, // false shows every other player in their normal size
-    var badgeLineSize: Float = 1f, // text size of the badge line above heads, only on your screen, see SboBadges.lineSize
-    var badgeNameSize: Float = 1f, // text size of every player's name line above heads, only on your screen, see SboBadges.nameSize
-    var badgeAccess: MutableMap<String, Boolean> = mutableMapOf(), // account uuid -> may have a badge
+    @SerializedName("customizerInTab", alternate = ["badgesInTab"]) var customizerInTab: Boolean = true,
+    @SerializedName("customizerInChat", alternate = ["badgesInChat"]) var customizerInChat: Boolean = true,
+    @SerializedName("customizerOwnInF5", alternate = ["badgeOwnInF5"]) var customizerOwnInF5: Boolean = true,
+    /** Whose names inside chat messages look like the sender's: "off", "own" or "all", see [SboCustomizer.NAMES_OFF]. */
+    @SerializedName("customizerNamesInChat", alternate = ["badgeNamesInChat"]) var customizerNamesInChat: String = "off",
+    /** Names inside chat messages get the team tag too, not only their color. */
+    @SerializedName("customizerNamesTag", alternate = ["badgeNamesTag"]) var customizerNamesTag: Boolean = true,
+    /** The names [customizerNamesInChat] picks are colored in all drawn text: menus, titles, scoreboard, signs. */
+    @SerializedName("customizerReplaceEverywhere", alternate = ["badgeReplaceEverywhere"]) var customizerReplaceEverywhere: Boolean = false,
+    @SerializedName("customizerAnimationsOfOthers", alternate = ["badgeAnimationsOfOthers"]) var customizerAnimationsOfOthers: Boolean = true,
+    /** Whether the letters of other players' customizers move above heads, apart from their colors. */
+    @SerializedName("customizerMotionOfOthers", alternate = ["badgeMotionOfOthers"]) var customizerMotionOfOthers: Boolean = true,
+    /** Off, every customizer in the tab list stands still, your own too. */
+    @SerializedName("customizerAnimationsInTab", alternate = ["badgeAnimationsInTab"]) var customizerAnimationsInTab: Boolean = true,
+    /** Whose customizer colors and motion move in chat: "off", "own" or "all", see [SboCustomizer.NAMES_OFF]. */
+    @SerializedName("customizerAnimationsInChat", alternate = ["badgeAnimationsInChat"]) var customizerAnimationsInChat: String = "own",
+    /** Symbols and text styles (bold, italic...) of other players' names. */
+    @SerializedName("customizerLooksOfOthers", alternate = ["badgeLooksOfOthers"]) var customizerLooksOfOthers: Boolean = true,
+    @SerializedName("customizerSizesOfOthers", alternate = ["badgeSizesOfOthers"]) var customizerSizesOfOthers: Boolean = true,
+    /** Text size of the customizer line above heads, only on your screen. */
+    @SerializedName("customizerLineSize", alternate = ["badgeLineSize"]) var customizerLineSize: Float = 1f,
+    /** Text size of every player's name line above heads, only on your screen. */
+    @SerializedName("customizerNameSize", alternate = ["badgeNameSize"]) var customizerNameSize: Float = 1f,
+    /** Account uuid to whether it may use the customizer. */
+    @SerializedName("customizerAccess", alternate = ["badgeAccess"]) var customizerAccess: MutableMap<String, Boolean> = mutableMapOf(),
     var collapsedSettings: MutableSet<String> = mutableSetOf(), // collapsed subs in the settings, "Diana/Waypoints"
     var currentCoaUuid: String = "",
 ) {

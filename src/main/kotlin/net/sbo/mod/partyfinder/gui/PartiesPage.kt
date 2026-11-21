@@ -28,7 +28,7 @@ import net.sbo.guilib.core.dsl.tooltip
 import net.sbo.guilib.core.dsl.useClipboard
 import net.sbo.guilib.core.dsl.useToast
 import net.sbo.guilib.core.event.KeyboardEvent
-import net.sbo.mod.general.SboBadges
+import net.sbo.mod.customizer.SboCustomizer
 import net.sbo.mod.partyfinder.BlockedPlayers
 import net.sbo.mod.partyfinder.OwnStats
 import net.sbo.mod.partyfinder.PartyCategories
@@ -589,18 +589,18 @@ private fun NodeBuilder.filterRow(label: String, hint: String?, key: Any? = null
 
 // Only moderators and above have a tag, supporters don't
 internal fun NodeBuilder.teamTag(uuid: String, name: String? = null) {
-    val rank = SboBadges.teamRank(uuid) ?: return
+    val rank = SboCustomizer.teamRank(uuid) ?: return
     val text = if (name == null) rank.tag!! else "${rank.tag}: $name"
-    val color = SboBadges.badgeColor(uuid) ?: rank.color
+    val color = SboCustomizer.customizerColor(uuid) ?: rank.color
     tooltip("Works on SBO, ask them anything about the mod.", className = "pf-tip", key = "team-$uuid") {
         span(className = "pf-tag team", style = "color: $color; border-color: $color") { +text }
     }
 }
 
-private const val SUPPORTER_LOGO = "sbo:textures/font/badge.png"
+private const val SUPPORTER_LOGO = "sbo:textures/font/customizer.png"
 
 internal fun NodeBuilder.supporterLogo(uuid: String) {
-    if (!SboBadges.isSupporter(uuid)) return
+    if (!SboCustomizer.isSupporter(uuid)) return
     tooltip("This player supports SBO on Patreon or Ko-fi.", className = "pf-tip", key = "supporter-$uuid") {
         img(src = SUPPORTER_LOGO, className = "pf-supporter")
     }

@@ -2,7 +2,7 @@ package net.sbo.mod.mixin.compat;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.network.chat.Component;
-import net.sbo.mod.general.SboBadges;
+import net.sbo.mod.customizer.SboCustomizer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,7 +24,7 @@ final class SkyHanniAdvancedPlayerListMixin {
     @Unique
     private static final int sbo$CUSTOM_NAME_DEFAULT = 4;
 
-    // Players SkyHanni rebuilt: their custom name
+    /** Players SkyHanni rebuilt: their custom name. */
     @SuppressWarnings("UnresolvedMixinReference")
     @ModifyArg(
             method = "createTabLine(Lnet/minecraft/network/chat/Component;Lat/hannibal2/skyhanni/features/misc/compacttablist/TabStringType;)Lat/hannibal2/skyhanni/features/misc/compacttablist/TabLine;",
@@ -33,11 +33,11 @@ final class SkyHanniAdvancedPlayerListMixin {
             require = 0
     )
     private final @Nullable Component sbo$decorateCustomName(@Nullable final Component customName) {
-        final var decorated = SboBadges.INSTANCE.decorateSkyHanniTab(customName);
+        final var decorated = SboCustomizer.INSTANCE.decorateSkyHanniTab(customName);
         return decorated != null ? decorated : customName;
     }
 
-    // Lines SkyHanni shows as they are (dungeons, Kuudra, lines it does not parse): the decorated line becomes the custom name
+    /** Lines SkyHanni shows as they are (dungeons, Kuudra, lines it does not parse): the decorated line becomes the custom name. */
     @SuppressWarnings("UnresolvedMixinReference")
     @ModifyArg(
             method = "createTabLine(Lnet/minecraft/network/chat/Component;Lat/hannibal2/skyhanni/features/misc/compacttablist/TabStringType;)Lat/hannibal2/skyhanni/features/misc/compacttablist/TabLine;",
@@ -46,10 +46,10 @@ final class SkyHanniAdvancedPlayerListMixin {
             require = 0
     )
     private final @Nullable Component sbo$decorateLine(@Nullable final Component customName, @Local(argsOnly = true) @NonNull final Component component) {
-        return SboBadges.INSTANCE.decorateSkyHanniTab(component);
+        return SboCustomizer.INSTANCE.decorateSkyHanniTab(component);
     }
 
-    // Kotlin's default arguments: without clearing the bit the constructor would set the custom name back to null
+    /** Kotlin's default arguments: without clearing the bit the constructor would set the custom name back to null. */
     @SuppressWarnings("UnresolvedMixinReference")
     @ModifyArg(
             method = "createTabLine(Lnet/minecraft/network/chat/Component;Lat/hannibal2/skyhanni/features/misc/compacttablist/TabStringType;)Lat/hannibal2/skyhanni/features/misc/compacttablist/TabLine;",

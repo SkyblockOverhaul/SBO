@@ -1,4 +1,4 @@
-package net.sbo.mod.guis.customizer
+package net.sbo.mod.customizer.gui
 
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.guilib.core.dsl.button
@@ -9,13 +9,13 @@ import net.sbo.guilib.core.dsl.div
 import net.sbo.guilib.core.dsl.select
 import net.sbo.guilib.core.dsl.span
 import net.sbo.guilib.core.dsl.switch
-import net.sbo.mod.utils.data.BadgeEffect
-import net.sbo.mod.utils.data.BadgeMotion
-import net.sbo.mod.utils.data.BadgePart
-import net.sbo.mod.utils.data.BadgeSettings
-import net.sbo.mod.utils.data.OwnBadgeResponse
-import net.sbo.mod.utils.data.PartColor
-import net.sbo.mod.utils.data.TeamTagPlace
+import net.sbo.mod.customizer.CustomizerEffect
+import net.sbo.mod.customizer.CustomizerMotion
+import net.sbo.mod.customizer.CustomizerPart
+import net.sbo.mod.customizer.CustomizerSettings
+import net.sbo.mod.customizer.OwnCustomizerResponse
+import net.sbo.mod.customizer.PartColor
+import net.sbo.mod.customizer.TeamTagPlace
 
 private const val DEFAULT_GRADIENT_END = "#FFD966"
 
@@ -26,21 +26,26 @@ private const val ITALIC = "italic"
 private const val UNDERLINE = "underline"
 private const val STRIKE = "strike"
 
-internal fun NodeBuilder.partPanel(badge: OwnBadgeResponse, settings: BadgeSettings, part: String, onChange: (BadgeSettings) -> Unit) {
-    if (part == BadgePart.STAT) {
+/**
+ * The editor of one [part]. Where it shows: the stat has its rows above, the tag its own places. A wave needs both
+ * colors, without the second one it stands still. Without their own colors the brackets flow with the part's gradient
+ * and effect again.
+ */
+internal fun NodeBuilder.partPanel(customizer: OwnCustomizerResponse, settings: CustomizerSettings, part: String, onChange: (CustomizerSettings) -> Unit) {
+    if (part == CustomizerPart.STAT) {
         row("Logo", "The SBO logo: above your head, behind your name in the tab list and in chat.") {
-            val logo = settings.placesOf(BadgePart.LOGO)
+            val logo = settings.placesOf(CustomizerPart.LOGO)
             chips(
                 values = PLACES.map { it.first }.filter { it in logo },
-                onChange = { picked -> onChange(settings.withPlaces(BadgePart.LOGO, picked.toSet())) },
+                onChange = { picked -> onChange(settings.withPlaces(CustomizerPart.LOGO, picked.toSet())) },
                 className = "cz-chips",
                 key = "places-logo",
             ) { PLACES.forEach { (place, label) -> option(place, label) } }
         }
         row("Above head", "Your stat above your head, next to the logo if it shows there.") {
-            val statAtHead = TeamTagPlace.HEAD in settings.placesOf(BadgePart.STAT)
+            val statAtHead = TeamTagPlace.HEAD in settings.placesOf(CustomizerPart.STAT)
             switch(checked = statAtHead, onChange = {
-                onChange(settings.withPlaces(BadgePart.STAT, if (it.checked) setOf(TeamTagPlace.HEAD) else emptySet()))
+                onChange(settings.withPlaces(CustomizerPart.STAT, if (it.checked) setOf(TeamTagPlace.HEAD) else emptySet()))
             })
         }
         row("Stat", "Read from your SkyBlock profile.") {
@@ -51,20 +56,19 @@ internal fun NodeBuilder.partPanel(badge: OwnBadgeResponse, settings: BadgeSetti
                 searchable = true,
                 searchPlaceholder = "Search...",
             ) {
-                badge.stats.sortedWith(compareBy({ it.id != "none" }, { it.label.lowercase() })).forEach { option(it.id, it.label) }
+                customizer.stats.sortedWith(compareBy({ it.id != "none" }, { it.label.lowercase() })).forEach { option(it.id, it.label) }
             }
         }
     }
 
-    // Where it shows; the stat has its rows above, the tag its own places
-    if (part != BadgePart.STAT) {
-        val places = if (part == BadgePart.TAG) settings.teamTagPlaces else settings.placesOf(part)
+    if (part != CustomizerPart.STAT) {
+        val places = if (part == CustomizerPart.TAG) settings.teamTagPlaces else settings.placesOf(part)
         row("Shows in", SHOWS_HINTS.getValue(part)) {
             chips(
                 values = PLACES.map { it.first }.filter { it in places },
                 onChange = { picked ->
                     val next = picked.toSet()
-                    onChange(if (part == BadgePart.TAG) settings.withTeamTagPlaces(next) else settings.withPlaces(part, next))
+                    onChange(if (part == CustomizerPart.TAG) settings.withTeamTagPlaces(next) else settings.withPlaces(part, next))
                 },
                 className = "cz-chips",
                 key = "places-$part",
@@ -73,8 +77,8 @@ internal fun NodeBuilder.partPanel(badge: OwnBadgeResponse, settings: BadgeSetti
     }
 
     val flows = flowsAsLine(settings)
-    val target = if (flows && part in BadgePart.CHAINS) LINE else part
-    if (part in BadgePart.CHAINS) {
+    val target = if (flows && part in CustomizerPart.CHAINS) LINE else part
+    if (part in CustomizerPart.CHAINS) {
         row("One line", "Tag, level, rank and name share colors, effect and style, and effects run over all of them.") {
             switch(checked = flows, onChange = {
                 if (it.checked) {
@@ -101,17 +105,16 @@ internal fun NodeBuilder.partPanel(badge: OwnBadgeResponse, settings: BadgeSetti
                 span(className = "cz-muted") { +"→" }
                 colorInput(value = argb(to), onChange = { c -> onChange(settings.edit(target) { it.copy(to = hex(c)) }) }, key = "to-$target")
             }
-            if (badge.gradient) {
+            if (customizer.gradient) {
                 button(
                     className = classNames("cz-toggle", "cz-on" to (color.to != null)),
                     title = "A second color the first one fades into",
                     onClick = {
                         val on = color.to == null
-                        // A wave needs both colors, without the second one it stands still
                         onChange(settings.edit(target) {
                             it.copy(
                                 to = if (on) DEFAULT_GRADIENT_END else null,
-                                effect = if (!on && effect == BadgeEffect.WAVE) BadgeEffect.STATIC else it.effect,
+                                effect = if (!on && effect == CustomizerEffect.WAVE) CustomizerEffect.STATIC else it.effect,
                             )
                         })
                     },
@@ -124,21 +127,21 @@ internal fun NodeBuilder.partPanel(badge: OwnBadgeResponse, settings: BadgeSetti
             value = effect,
             onChange = { e ->
                 onChange(settings.edit(target) {
-                    it.copy(effect = e.value, to = if (e.value == BadgeEffect.WAVE && badge.gradient) it.to ?: DEFAULT_GRADIENT_END else it.to)
+                    it.copy(effect = e.value, to = if (e.value == CustomizerEffect.WAVE && customizer.gradient) it.to ?: DEFAULT_GRADIENT_END else it.to)
                 })
             },
             className = "cz-select",
             key = "effect-$target",
-        ) { BadgeEffect.ALL.forEach { option(it, EFFECT_LABELS.getValue(it)) } }
+        ) { CustomizerEffect.ALL.forEach { option(it, EFFECT_LABELS.getValue(it)) } }
     }
-    val motion = color.motion ?: BadgeMotion.NONE
+    val motion = color.motion ?: CustomizerMotion.NONE
     row("Motion", MOTION_HINTS[motion].orEmpty()) {
         select(
             value = motion,
-            onChange = { e -> onChange(settings.edit(target) { it.copy(motion = e.value.takeUnless { m -> m == BadgeMotion.NONE }) }) },
+            onChange = { e -> onChange(settings.edit(target) { it.copy(motion = e.value.takeUnless { m -> m == CustomizerMotion.NONE }) }) },
             className = "cz-select",
             key = "motion-$target",
-        ) { BadgeMotion.ALL.forEach { option(it, MOTION_LABELS.getValue(it)) } }
+        ) { CustomizerMotion.ALL.forEach { option(it, MOTION_LABELS.getValue(it)) } }
     }
     row("Style", "Bold draws wider; names in menus and the scoreboard stay thin so nothing gets cut off.") {
         chips(
@@ -162,13 +165,12 @@ internal fun NodeBuilder.partPanel(badge: OwnBadgeResponse, settings: BadgeSetti
         }
     }
 
-    if (part in BadgePart.BRACKETS) {
+    if (part in CustomizerPart.BRACKETS) {
         row("Brackets", "The [ and ] around it.") {
             div(className = "cz-inline") {
-                // Without their own colors the brackets flow with the part's gradient and effect again
                 if (color.open != null || color.close != null) {
                     button(
-                        title = if (part == BadgePart.TAG) "Gray brackets again, or the tag's colors while it flows with the parts next to it"
+                        title = if (part == CustomizerPart.TAG) "Gray brackets again, or the tag's colors while it flows with the parts next to it"
                         else "The brackets take the part's colors and effect again",
                         onClick = { onChange(settings.withColor(part, color.copy(open = null, close = null))) },
                         key = "reset-brackets-$part",
@@ -181,7 +183,7 @@ internal fun NodeBuilder.partPanel(badge: OwnBadgeResponse, settings: BadgeSetti
             }
         }
     }
-    if (part == BadgePart.RANK) {
+    if (part == CustomizerPart.RANK) {
         row("Plus", "The + of VIP+, MVP+ and MVP++.") {
             div(className = "cz-inline") {
                 if (color.plus != null) {
@@ -208,52 +210,52 @@ internal fun NodeBuilder.partPanel(badge: OwnBadgeResponse, settings: BadgeSetti
 }
 
 private val SHOWS_HINTS = mapOf(
-    BadgePart.TAG to "Your tag in front of your name.",
-    BadgePart.LEVEL to "Your SkyBlock level in your colors.",
-    BadgePart.RANK to "Your Hypixel rank, like [MVP+], in your colors where Hypixel shows it.",
-    BadgePart.NAME to "Your name in your colors, with its symbols and style.",
+    CustomizerPart.TAG to "Your tag in front of your name.",
+    CustomizerPart.LEVEL to "Your SkyBlock level in your colors.",
+    CustomizerPart.RANK to "Your Hypixel rank, like [MVP+], in your colors where Hypixel shows it.",
+    CustomizerPart.NAME to "Your name in your colors, with its symbols and style.",
 )
 
 private val COLOR_HINTS = mapOf(
-    BadgePart.STAT to "The stat above your head.",
-    BadgePart.NAME to "Your name where it is colored.",
-    BadgePart.LEVEL to "Your SkyBlock level in front of your name.",
-    BadgePart.TAG to "Your tag; others see the rank colors while your badge is hidden.",
-    BadgePart.RANK to "Your Hypixel rank, like [MVP+].",
+    CustomizerPart.STAT to "The stat above your head.",
+    CustomizerPart.NAME to "Your name where it is colored.",
+    CustomizerPart.LEVEL to "Your SkyBlock level in front of your name.",
+    CustomizerPart.TAG to "Your tag; others see the rank colors while your customizer is hidden.",
+    CustomizerPart.RANK to "Your Hypixel rank, like [MVP+].",
 )
 
 private const val NO_SYMBOL = "none"
 
 /** A symbol in front of and behind the part picked in the middle; every part keeps its own. */
 internal fun NodeBuilder.symbolsRow(
-    badge: OwnBadgeResponse,
-    settings: BadgeSettings,
+    customizer: OwnCustomizerResponse,
+    settings: CustomizerSettings,
     picked: String,
     onPick: (String) -> Unit,
-    onChange: (BadgeSettings) -> Unit,
+    onChange: (CustomizerSettings) -> Unit,
 ) {
     row("Symbols", "Next to the part wherever it is colored, in its colors and style. Every part has its own.") {
-        if (badge.symbols.isEmpty()) {
+        if (customizer.symbols.isEmpty()) {
             span(className = "cz-hint") { +"Not on the SBO server yet" }
             return@row
         }
-        val part = picked.takeUnless { it == BadgePart.TAG && !hasTag(badge) } ?: BadgePart.NAME
+        val part = picked.takeUnless { it == CustomizerPart.TAG && !hasTag(customizer) } ?: CustomizerPart.NAME
         val color = settings.colorOf(part)
         div(className = "cz-inline") {
-            symbolSelect(badge, color.before, "before-$part") { onChange(settings.withColor(part, color.copy(before = it))) }
+            symbolSelect(customizer, color.before, "before-$part") { onChange(settings.withColor(part, color.copy(before = it))) }
             select(value = part, onChange = { onPick(it.value) }, className = "cz-select cz-symbol-part", key = "symbol-part") {
-                option(BadgePart.STAT, "Stat")
-                if (hasTag(badge)) option(BadgePart.TAG, "Tag")
-                option(BadgePart.LEVEL, "Level")
-                option(BadgePart.RANK, "Rank")
-                option(BadgePart.NAME, "Name")
+                option(CustomizerPart.STAT, "Stat")
+                if (hasTag(customizer)) option(CustomizerPart.TAG, "Tag")
+                option(CustomizerPart.LEVEL, "Level")
+                option(CustomizerPart.RANK, "Rank")
+                option(CustomizerPart.NAME, "Name")
             }
-            symbolSelect(badge, color.after, "after-$part") { onChange(settings.withColor(part, color.copy(after = it))) }
+            symbolSelect(customizer, color.after, "after-$part") { onChange(settings.withColor(part, color.copy(after = it))) }
         }
     }
 }
 
-private fun NodeBuilder.symbolSelect(badge: OwnBadgeResponse, value: String?, key: String, onChange: (String?) -> Unit) {
+private fun NodeBuilder.symbolSelect(customizer: OwnCustomizerResponse, value: String?, key: String, onChange: (String?) -> Unit) {
     select(
         value = value ?: NO_SYMBOL,
         onChange = { onChange(it.value.takeUnless { v -> v == NO_SYMBOL }) },
@@ -261,15 +263,15 @@ private fun NodeBuilder.symbolSelect(badge: OwnBadgeResponse, value: String?, ke
         key = "symbol-$key",
     ) {
         option(NO_SYMBOL, "None")
-        badge.symbols.forEach { option(it, it) }
+        customizer.symbols.forEach { option(it, it) }
     }
 }
 
 /** Tag, level, rank and name share one look while all of them are chained. */
-private fun flowsAsLine(settings: BadgeSettings): Boolean = BadgePart.CHAINS.all { settings.colorOf(it).chain == true }
+private fun flowsAsLine(settings: CustomizerSettings): Boolean = CustomizerPart.CHAINS.all { settings.colorOf(it).chain == true }
 
-private fun partsOf(target: String): List<String> = if (target == LINE) BadgePart.CHAINS.toList() else listOf(target)
+private fun partsOf(target: String): List<String> = if (target == LINE) CustomizerPart.CHAINS.toList() else listOf(target)
 
 /** Applies [update] to every part of [target]; each part keeps what the update does not change. */
-private fun BadgeSettings.edit(target: String, update: (PartColor) -> PartColor): BadgeSettings =
+private fun CustomizerSettings.edit(target: String, update: (PartColor) -> PartColor): CustomizerSettings =
     partsOf(target).fold(this) { next, part -> next.withColor(part, update(next.colorOf(part))) }
