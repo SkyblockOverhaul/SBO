@@ -129,6 +129,7 @@ object BurrowDetector {
 
             // We need to update lastDugOutBurrowPos manually here since BurrowDugEvent does not set it since it is not triggered.
             lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec.ZERO
+            recordDugBlock(lastDugOutBurrowPos)
             refreshBurrows(deathOriginating = false, expectedTimesDug = 2)
 
             val anyClose = WaypointManager.getAllGuessesAndBurrows().filter { it.distanceToPlayer() < 90 }
@@ -271,8 +272,11 @@ object BurrowDetector {
         refreshBurrows(deathOriginating = false, expectedTimesDug = 2)
     }
 
-    // Only a block its particles showed: a guess promoted from chat would count the guess as the burrow
+    // Only a block its particles showed: a guess promoted from chat would count the guess as the burrow. And only the
+    // block the spade last clicked: lastWaypointClicked stays on an older waypoint when a burrow without one is dug
     private fun recordDugBlock(pos: SboVec) {
+        val clicked = DianaEvents.lastBlockClicked ?: return
+        if (blockKey(clicked) != blockKey(pos)) return
         val burrow = burrows[blockKey(pos)]?.takeIf { it.fromParticles } ?: return
         val player = SBOKotlin.mc.player ?: return
         if (player.distanceToSqr(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5) <= 64.0) BurrowMap.record(burrow.pos)

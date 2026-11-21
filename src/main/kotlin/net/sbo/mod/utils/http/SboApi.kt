@@ -131,6 +131,11 @@ object SboApi {
     /** An info report (settings and mod conflicts) the player chose to send, it goes to the SBO Discord. */
     fun infoReport(report: String): HttpRequestHandle = post("/modConflicts", report)
 
+    /** Whether the backend collects burrow spots right now, see [net.sbo.mod.diana.burrows.BurrowMap]. */
+    fun burrowsCollecting(): HttpRequestHandle = get("/burrows/collecting")
+
+    fun burrowUpload(body: String): HttpRequestHandle = authedPost("/burrows", body)
+
     fun cloudStatus(): HttpRequestHandle = authedGet("/cloudSync")
 
     fun cloudDownload(slot: String): HttpRequestHandle = authedGet("/cloudSync/${encode(slot)}")

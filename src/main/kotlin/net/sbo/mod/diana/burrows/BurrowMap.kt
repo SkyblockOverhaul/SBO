@@ -1,54 +1,114 @@
 package net.sbo.mod.diana.burrows
 
-import net.fabricmc.loader.api.FabricLoader
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.GameCloseEvent
+import net.sbo.mod.utils.http.Http.getBoolean
+import net.sbo.mod.utils.http.SboApi
+import net.sbo.mod.utils.hubcache.HubIsland
 import net.sbo.mod.utils.math.SboVec
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
+import kotlin.math.floor
 
-/** How many burrows this player dug from each block. Only the mod writes it, there is no command or menu to change it. */
+/**
+ * Sends the blocks this player dug a particle-confirmed burrow from to the SBO backend, which adds them to one count
+ * per block (no player data) to map where burrows spawn. Only while the backend collects, it is switched on for one
+ * Diana mayor term; nothing is kept on disk.
+ */
 object BurrowMap {
-    private const val SAVE_TICKS = 200
+    private const val SEND_TICKS = 20 * 60
+    /** BURROW_UPLOAD_MAX_DIGS of the backend. */
+    private const val MAX_PER_UPLOAD = 30
+    private const val MAX_QUEUED = 300
+    /** A "not collecting" answer is asked again after this, so collection can start while the game runs. */
+    private const val RECHECK_MS = 15 * 60 * 1000L
+    /** The chain finish message and BurrowDugEvent could both report the same dig. */
+    private const val SAME_DIG_MS = 5_000L
+    private const val MAX_FAILURES = 3
 
-    private val store = BurrowMapFile(FabricLoader.getInstance().gameDir.resolve(".sbo").resolve("burrow_map.bin"))
-    private val writer = Executors.newSingleThreadExecutor { Thread(it, "SBO-BurrowMap").apply { isDaemon = true } }
-    private var pending = HashMap<Long, Int>()
+    @Serializable
+    private data class Dig(val x: Int, val y: Int, val z: Int)
+
+    @Serializable
+    private data class Upload(val digs: List<Dig>)
+
+    private enum class State { UNKNOWN, ASKING, ON, OFF }
+
+    private val json = Json
+    private var state = State.UNKNOWN
+    private var checkedAt = 0L
+    private var sending = false
+    private var failures = 0
+    private val queue = ArrayDeque<Dig>()
+    private var lastDig: Dig? = null
+    private var lastDigAt = 0L
 
     fun init() {
-        writer.execute { runCatching { store.compact() }.onFailure { SBOKotlin.logger.error("Could not read the burrow map", it) } }
-        Register.onTick(SAVE_TICKS) { flush() }
+        Register.onTick(SEND_TICKS) { send() }
     }
 
     fun record(pos: SboVec) {
-        val y = pos.y.toInt()
-        if (y !in 0..255) return
-        pending.merge(BurrowMapFile.key(pos.x.toInt(), y, pos.z.toInt()), 1, Int::plus)
-    }
+        val dig = Dig(floor(pos.x).toInt(), floor(pos.y).toInt(), floor(pos.z).toInt())
+        if (dig.y !in 0..255 || !HubIsland.contains(dig.x shr 4, dig.z shr 4)) return
 
-    /** This player's whole map in the file format, for sending to the backend. */
-    fun export(): CompletableFuture<ByteArray> = flush().thenApplyAsync({ store.export() }, writer)
+        val now = System.currentTimeMillis()
+        if (dig == lastDig && now - lastDigAt < SAME_DIG_MS) return
+        lastDig = dig
+        lastDigAt = now
+
+        when (state) {
+            State.UNKNOWN -> askCollecting()
+            State.OFF -> if (now - checkedAt >= RECHECK_MS) askCollecting() else return
+            State.ASKING, State.ON -> {}
+        }
+        if (queue.size < MAX_QUEUED) queue.addLast(dig)
+    }
 
     @SboEvent
     fun onGameClose(event: GameCloseEvent) {
-        runCatching { flush().get(5, TimeUnit.SECONDS) }
+        send()
     }
 
-    private fun flush(): CompletableFuture<Void> {
-        if (pending.isEmpty()) return CompletableFuture.completedFuture(null)
-        val digs = pending
-        pending = HashMap()
-        return CompletableFuture.runAsync({
-            try {
-                store.add(digs)
-            } catch (e: Exception) {
-                SBOKotlin.logger.error("Could not save the burrow map", e)
-                // Tried again on the next save
-                SBOKotlin.mc.execute { digs.forEach { (block, n) -> pending.merge(block, n, Int::plus) } }
+    private fun askCollecting() {
+        state = State.ASKING
+        SboApi.burrowsCollecting()
+            .toJsonObject { body -> SBOKotlin.mc.execute { answered(body.getBoolean("collecting")) } }
+            .error { SBOKotlin.mc.execute { answered(false) } }
+    }
+
+    private fun answered(collecting: Boolean) {
+        state = if (collecting) State.ON else State.OFF
+        checkedAt = System.currentTimeMillis()
+        if (!collecting) queue.clear()
+    }
+
+    private fun send() {
+        if (state != State.ON || sending || queue.isEmpty()) return
+        val batch = List(minOf(MAX_PER_UPLOAD, queue.size)) { queue.removeFirst() }
+        sending = true
+        SboApi.burrowUpload(json.encodeToString(Upload(batch)))
+            .toJsonObject { body ->
+                SBOKotlin.mc.execute {
+                    sending = false
+                    failures = 0
+                    // Collection ended, or the key was refused: stop until the next check
+                    if (!body.getBoolean("Success") || !body.getBoolean("collecting")) answered(false)
+                }
             }
-        }, writer)
+            .error {
+                SBOKotlin.mc.execute {
+                    sending = false
+                    // Backend down or refusing the batch: stop until the next check instead of sending it every minute
+                    if (++failures >= MAX_FAILURES) {
+                        failures = 0
+                        answered(false)
+                    } else if (state == State.ON) {
+                        // Offline or the cooldown, tried again with the next send
+                        batch.asReversed().forEach { if (queue.size < MAX_QUEUED) queue.addFirst(it) }
+                    }
+                }
+            }
     }
 }
