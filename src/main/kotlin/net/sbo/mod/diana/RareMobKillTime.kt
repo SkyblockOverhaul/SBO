@@ -2,12 +2,12 @@ package net.sbo.mod.diana
 
 import it.unimi.dsi.fastutil.ints.IntSet
 import net.sbo.mod.settings.categories.RareMobs
-import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.Helper.removeFormatting
+import net.sbo.mod.utils.TextUtil.removeFormatting
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.waypoint.WaypointManager
+import net.sbo.mod.utils.time.TimeUtil
 
 /** Tracks rare-mob combat time separately from the cocoon hatch animation. */
 object RareMobKillTime {
@@ -107,8 +107,8 @@ object RareMobKillTime {
         val elapsedNs = System.nanoTime() - timer.startNs
         if (!nearby || !RareMobs.sendKillTimeMessage || elapsedNs <= 0L) return
 
-        val elapsed = Helper.formatTime(elapsedNs / 1_000_000L, decimalSeconds = true)
-        val hatch = timer.hatchMs?.let { " (cocoon hatch: ${Helper.formatTime(it, decimalSeconds = true)})" }
+        val elapsed = TimeUtil.formatTime(elapsedNs / 1_000_000L, decimalSeconds = true)
+        val hatch = timer.hatchMs?.let { " (cocoon hatch: ${TimeUtil.formatTime(it, decimalSeconds = true)})" }
             ?: if (timer.cocoon) " (cocoon hatch time unavailable)" else ""
         Chat.chat("§6[SBO] §eTook §6$elapsed §eto kill the $mob!$hatch")
         val shareType = when (mob) {

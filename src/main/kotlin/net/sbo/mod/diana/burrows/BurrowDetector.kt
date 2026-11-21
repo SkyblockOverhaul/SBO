@@ -5,7 +5,6 @@ import net.sbo.mod.diana.guesses.ArrowGuessBurrow
 import net.sbo.mod.diana.guesses.SpadeGuessOptimizer
 import net.sbo.mod.settings.categories.Burrows
 import net.sbo.mod.settings.categories.Debug
-import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.DianaEvents
@@ -21,6 +20,7 @@ import java.util.*
 import java.util.regex.Pattern
 import java.util.concurrent.TimeUnit
 import net.minecraft.core.particles.ParticleTypes as MCParticleTypes
+import net.sbo.mod.diana.DianaState
 
 object BurrowDetector {
     internal val burrows = mutableMapOf<String, Burrow>()
@@ -161,7 +161,7 @@ object BurrowDetector {
                     pendingUseSpadeTitle = null
                     return@let
                 }
-                Helper.showTitle(it, "", 0, 1, 0)
+                Chat.showTitle(it, "", 0, 1, 0)
             }
         }
     }
@@ -241,7 +241,7 @@ object BurrowDetector {
         return "Mob" // assume mob if not a known treasure drop
     }
 
-    private fun canShowUseSpade() = Burrows.spadeGuess && Helper.hasSpade && World.isInHub()
+    private fun canShowUseSpade() = Burrows.spadeGuess && DianaState.hasSpade && World.isInHub()
 
     fun requestSpade(reason: String) {
         if (!canShowUseSpade()) return

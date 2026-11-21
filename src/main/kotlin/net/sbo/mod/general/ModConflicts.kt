@@ -13,7 +13,6 @@ import net.sbo.mod.SBOKotlin
 import net.sbo.mod.customizer.SboCustomizer
 import net.sbo.mod.mixinbase.MixinHealth
 import net.sbo.mod.settings.Settings
-import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.DataManager
@@ -25,6 +24,7 @@ import net.sbo.mod.utils.http.SboApi
 import org.spongepowered.asm.mixin.transformer.meta.MixinMerged
 import java.io.File
 import java.nio.file.Files
+import net.sbo.mod.utils.events.TickScheduler
 
 /**
  * The info report: mod conflicts, i.e. SBO hooks another mod broke (see [MixinHealth]) and the mods that change the same
@@ -82,7 +82,7 @@ object ModConflicts {
         val built = runCatching(::build).onFailure { SBOKotlin.logger.warn("[ModConflicts] could not check for mod conflicts", it) }.getOrNull() ?: return
         report = built
         save(built)
-        if (built.failed.isNotEmpty()) Helper.sleep(NOTICE_DELAY_MS) { show(byHand = false) }
+        if (built.failed.isNotEmpty()) TickScheduler.sleep(NOTICE_DELAY_MS) { show(byHand = false) }
     }
 
     private fun build(): Report {

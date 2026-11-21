@@ -5,7 +5,7 @@ import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.guis.ConfirmGui
-import net.sbo.mod.utils.Helper.fastForEach
+import net.sbo.mod.utils.collection.fastForEach
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.guis.GuiMouseClickAfter

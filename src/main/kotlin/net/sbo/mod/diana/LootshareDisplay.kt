@@ -12,9 +12,8 @@ import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.partyfinder.PartyFinderManager
 import net.sbo.mod.settings.categories.RareMobs
 import net.sbo.mod.settings.categories.Debug
-import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.Helper.isValidEntityInHub
-import net.sbo.mod.utils.Helper.removeFormatting
+import net.sbo.mod.utils.game.World.isValidEntityInHub
+import net.sbo.mod.utils.TextUtil.removeFormatting
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.events.Register
@@ -24,6 +23,7 @@ import net.sbo.mod.utils.events.impl.entity.EntityLoadEvent
 import net.sbo.mod.utils.events.impl.entity.EntityUnloadEvent
 import net.sbo.mod.utils.render.RenderUtils3D
 import java.util.concurrent.TimeUnit
+import net.sbo.mod.utils.TextUtil
 
 /**
  * Shows "Lootshared" above rare Diana mobs while in a party: gray and struck through until you dealt
@@ -249,7 +249,7 @@ object LootshareDisplay : LevelRenderEvents.CollectSubmits {
         if (announced || !isLabeled || !isLootshared || !isShown()) return
         announced = true
         if (!RareMobs.lootshareMessage) return
-        val text = Helper.joinLines(RareMobs.lootshareText).ifEmpty { DEFAULT_TEXT }.replace("{mob}", type.display).replace('&', '§')
+        val text = TextUtil.joinLines(RareMobs.lootshareText).ifEmpty { DEFAULT_TEXT }.replace("{mob}", type.display).replace('&', '§')
         // The debug test mode only tells you, it does not message the party
         if (Debug.lootshareDisplayTest) Chat.chat("§6[SBO] §b$text §7$MARKER")
         else if (PartyFinderManager.isInParty) Chat.pc("${text.removeFormatting()} $MARKER")

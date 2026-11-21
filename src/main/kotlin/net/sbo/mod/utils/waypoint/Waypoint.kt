@@ -10,7 +10,6 @@ import net.sbo.mod.diana.guesses.SpadeGuessOptimizer
 import net.sbo.mod.settings.categories.Burrows
 import net.sbo.mod.settings.categories.Warps
 import net.sbo.mod.settings.categories.Waypoints
-import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.math.SboVec
@@ -19,6 +18,8 @@ import java.awt.Color
 import java.time.Duration
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
+import net.sbo.mod.diana.DianaState
+import net.sbo.mod.utils.chat.Chat
 
 private const val MIN_OPACITY = 0.2f
 private const val MAX_OPACITY = 1.0f
@@ -208,7 +209,7 @@ class Waypoint(
             } ?: "${this.text}$waypointDistanceText$chainStepText$timesDugText"
 
             val title = Warps.showTitleWhenWarpAvailable
-            if (title && closest != null && World.isInHub() && Helper.hasSpade) {
+            if (title && closest != null && World.isInHub() && DianaState.hasSpade) {
                 val warpName = closest.replaceFirstChar(Char::titlecase)
 
                 val text = "§" + (if (this.type == "rareMob") "d" else "b") + "Warp §e$warpName${if (Waypoints.lookAlike) " §b[${distanceRaw.roundToInt()}m]" else distanceText}"
@@ -227,7 +228,7 @@ class Waypoint(
                 val titleBusy = mc.gui.title != null && mc.gui.titleTime > 0 && !isEmpty && !isOurs
 
                 if (!titleBusy) {
-                    Helper.showTitle(title, subtitle, 0, 1, 0) // 1 tick because next tick this will be called again
+                    Chat.showTitle(title, subtitle, 0, 1, 0) // 1 tick because next tick this will be called again
                     lastWarpTitle = title
                     lastWarpSubtitle = subtitle
                 }

@@ -5,7 +5,7 @@ import net.minecraft.world.scores.PlayerScoreEntry
 import net.minecraft.world.scores.PlayerTeam
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.utils.events.Register
-import net.sbo.mod.utils.Helper.removeFormatting
+import net.sbo.mod.utils.TextUtil.removeFormatting
 import java.lang.String.CASE_INSENSITIVE_ORDER
 
 object ScoreBoard {
@@ -80,5 +80,18 @@ object ScoreBoard {
         val objective = scoreboard.getDisplayObjective(DisplaySlot.SIDEBAR) ?: return "No Objective"
 
         return objective.displayName.string
+    }
+
+    fun getPurse(): Long {
+        val lines = ScoreBoard.getLines()
+        if (lines.isEmpty()) return 0L
+        val purseLine = lines.find { it.contains("Purse: ") }
+        return if (purseLine != null) {
+            val purseValue = purseLine.substringAfter("Purse: ")
+            val numericValue = purseValue.split(" ")[0]
+            numericValue.replace(",", "").toLongOrNull() ?: 0L
+        } else {
+            0L
+        }
     }
 }

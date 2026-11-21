@@ -20,9 +20,8 @@ import net.sbo.mod.settings.categories.Warps
 import net.sbo.mod.settings.categories.Waypoints
 import net.sbo.mod.settings.categories.Waypoints.hideOwnWaypoints
 import net.sbo.mod.settings.categories.Waypoints.patcherWaypoints
-import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.Helper.removeFormatting
-import net.sbo.mod.utils.Helper.sleep
+import net.sbo.mod.utils.TextUtil.removeFormatting
+import net.sbo.mod.utils.events.TickScheduler.sleep
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.SoundHandler.playCustomSound
 import net.sbo.mod.utils.chat.Chat
@@ -36,6 +35,7 @@ import java.awt.Color
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
+import net.sbo.mod.diana.DianaState
 
 private const val RARE_MOB_STALE_TICKS = 20
 private const val RARE_MOB_VALIDATION_DISTANCE = 25.0
@@ -127,7 +127,7 @@ object WaypointManager {
 
         Register.onTick(1) { _ ->
             val inHub = World.isInHub()
-            val hasSpade = Helper.hasSpade
+            val hasSpade = DianaState.hasSpade
 
             if (inHub && hasSpade && RareMobs.receiveRareMob) {
                 updateRareMobWaypoints()
@@ -379,7 +379,7 @@ object WaypointManager {
             // For other's mobs, the title and sound does not play unless the mob was selected in "Mobs to Receive".
             if (!fromSelfSpawnMessage && mobType !in RareMobs.ReceiveMobs) return mobData.mobName
 
-            Helper.showTitle(
+            Chat.showTitle(
                 mobData.title,
                 player.ifEmpty { null },
                 RareMobs.rareMobTitleFadeInTime,
@@ -623,7 +623,7 @@ object WaypointManager {
      * @param context The world render context.
      */
     fun renderAllWaypoints(context: LevelRenderContext) {
-        if (!World.isInHub() || !Helper.hasSpade) {
+        if (!World.isInHub() || !DianaState.hasSpade) {
             getWaypointsOfType("world").forEach { waypoint -> waypoint.render(context) }
             getWaypointsOfType("debug").forEach { waypoint -> waypoint.render(context) }
             return
@@ -1074,7 +1074,7 @@ object WaypointManager {
     private var tryWarp: Boolean = false
 
     private fun executeWarpCommand(warp: String) {
-        if (!World.isInHub() || !Helper.hasSpade) return
+        if (!World.isInHub() || !DianaState.hasSpade) return
         if (warp.isNotEmpty() && !tryWarp) {
             tryWarp = true
             Chat.command("warp $warp")

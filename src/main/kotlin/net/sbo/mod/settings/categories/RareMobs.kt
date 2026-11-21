@@ -3,9 +3,9 @@ package net.sbo.mod.settings.categories
 import net.sbo.mod.config.Category
 import net.sbo.mod.diana.LootshareDisplay
 import net.sbo.mod.diana.RareMob
-import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.chat.Chat
 import java.awt.Color
+import net.sbo.mod.diana.DropMessages
 
 object RareMobs : Category("Rare Mobs") {
     override val description = "Inquisitor, Manticore, King Minos and Sphinx: sharing, highlights, lootshare, alerts and spawn messages."
@@ -219,10 +219,10 @@ object RareMobs : Category("Rare Mobs") {
             text = "Send Test"
             description = "Sends all test messages for the Rare Mob spawn message."
             onClick {
-                Chat.chat("Inq Message: " + Helper.getSpawnMessage(announceInqText[0], "inq"))
-                Chat.chat("Sphinx Message: " + Helper.getSpawnMessage(announceSphinxText[0], "sphinx"))
-                Chat.chat("Manti Message: " + Helper.getSpawnMessage(announceMantiText[0], "manti"))
-                Chat.chat("King Message: " + Helper.getSpawnMessage(announceKingText[0], "king"))
+                Chat.chat("Inq Message: " + DropMessages.getSpawnMessage(announceInqText[0], "inq"))
+                Chat.chat("Sphinx Message: " + DropMessages.getSpawnMessage(announceSphinxText[0], "sphinx"))
+                Chat.chat("Manti Message: " + DropMessages.getSpawnMessage(announceMantiText[0], "manti"))
+                Chat.chat("King Message: " + DropMessages.getSpawnMessage(announceKingText[0], "king"))
             }
         }
     }

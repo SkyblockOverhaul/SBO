@@ -4,7 +4,6 @@ import net.minecraft.network.chat.HoverEvent
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.tracker.Tracker
 import net.sbo.mod.settings.categories.General
-import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.data.Item
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
@@ -15,6 +14,9 @@ import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.overlay.*
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
+import net.sbo.mod.diana.DianaState
+import net.sbo.mod.utils.game.InventoryUtils
+import net.sbo.mod.utils.game.ScoreBoard
 
 object Pickuplog {
     private val OVERLAY_LINE_LIFETIME_NANOS = TimeUnit.SECONDS.toNanos(6)
@@ -79,7 +81,7 @@ object Pickuplog {
     }
 
     // Hilt of Revelations & Crown of Greed (Before MF Rework), Enchanted Ancient Claw & Ancient Claw and Enchanted Gold (When not having relevant sacks) needs it, so still track if has a diana spade and is in the hub, even if the pickup log feature itself is disabled.
-    private fun shouldTrackInventoryChanges(): Boolean = General.pickuplogOverlay || Helper.hasSpade && World.isInHub()
+    private fun shouldTrackInventoryChanges(): Boolean = General.pickuplogOverlay || DianaState.hasSpade && World.isInHub()
 
     private fun updateInventorySnapshot() {
         if (mc.player == null || !World.isInSkyblock() || World.isNone() || !shouldTrackInventoryChanges()) {
@@ -87,8 +89,8 @@ object Pickuplog {
             return
         }
 
-        newInventory = Helper.readPlayerInv()
-        newPurse = Helper.getPurse()
+        newInventory = InventoryUtils.readPlayerInv()
+        newPurse = ScoreBoard.getPurse()
         if (oldInventory.isEmpty()) {
             oldInventory = newInventory
             oldPurse = newPurse

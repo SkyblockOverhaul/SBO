@@ -261,4 +261,23 @@ object Chat {
         val repeatCount = chatWidth / separatorWidth
         return color + separator.repeat(repeatCount)
     }
+
+    fun showTitle(title: String?, subtitle: String?, fadeIn: Int, time: Int, fadeOut: Int, overwrite: Boolean = true) {
+        val currentDurationTicks = mc.gui.titleTime
+        // A title whose time ran out is not drawn anymore, even if Minecraft did not clear it (a times packet can set its time to 0)
+        val currentTitle = if (currentDurationTicks > 0) mc.gui.title?.string else null
+        val currentSubtitle = if (currentDurationTicks > 0) mc.gui.subtitle?.string else null
+
+        if (overwrite || time >= currentDurationTicks) {
+            mc.gui.setTimes(fadeIn, time, fadeOut)
+        }
+
+        if (title != null && (overwrite || currentTitle.isNullOrEmpty())) {
+            mc.gui.setTitle(Component.nullToEmpty(title))
+        }
+
+        if (subtitle != null && (overwrite || currentSubtitle.isNullOrEmpty())) {
+            mc.gui.setSubtitle(Component.nullToEmpty(subtitle))
+        }
+    }
 }

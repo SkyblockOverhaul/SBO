@@ -9,9 +9,8 @@ import net.minecraft.ChatFormatting.*
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.mod.config.nextOption
 import net.sbo.mod.settings.categories.Trackers
-import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.Helper.calcPercentOne
-import net.sbo.mod.utils.Helper.removeFormatting
+import net.sbo.mod.diana.DianaRates.calcPercentOne
+import net.sbo.mod.utils.TextUtil.removeFormatting
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.configs.diana.DianaMobsData
 import net.sbo.mod.utils.data.configs.diana.DianaTracker
@@ -23,6 +22,8 @@ import net.sbo.mod.utils.overlay.*
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.concurrent.TimeUnit
+import net.sbo.mod.utils.TextUtil
+import net.sbo.mod.utils.math.NumberUtil
 
 object DianaMobs : DianaOverlay<DianaMobs.View>("Diana Mobs", Trackers.TrackerLook.MOBS, { Trackers.mobTracker != Trackers.TrackerMode.OFF }) {
     private val changeView: OverlayTextLine = OverlayTextLine("${YELLOW}Change View")
@@ -161,21 +162,21 @@ object DianaMobs : DianaOverlay<DianaMobs.View>("Diana Mobs", Trackers.TrackerLo
             // Hidden lines only show (crossed out) in the inventory, to unhide them
             val isHidden = mob.key in hidden
             if (isHidden && !inventory) return@mapNotNull null
-            val ls = if (lsKills != null && !Trackers.hideLsStats) "  LS ${Helper.formatNumber(lsKills, withCommas = true)}" else ""
+            val ls = if (lsKills != null && !Trackers.hideLsStats) "  LS ${NumberUtil.formatNumber(lsKills, withCommas = true)}" else ""
             Row(
                 id = mob.key,
                 name = mob.name,
                 color = mob.color,
-                value = Helper.formatNumber(kills, withCommas = true),
+                value = NumberUtil.formatNumber(kills, withCommas = true),
                 extra = "${calcPercentOne(kills, mobs.TOTAL_MOBS)}%$ls",
                 hidden = isHidden
             )
         }
         return View(
-            mode = Helper.toTitleCase("$type"),
+            mode = TextUtil.toTitleCase("$type"),
             sort = sort,
             rows = rows,
-            total = Helper.formatNumber(mobs.TOTAL_MOBS, withCommas = true),
+            total = NumberUtil.formatNumber(mobs.TOTAL_MOBS, withCommas = true),
             perHour = "${mobsPerHour(tracker)}/h",
             inventory = inventory,
             reorder = reorder
@@ -207,13 +208,13 @@ object DianaMobs : DianaOverlay<DianaMobs.View>("Diana Mobs", Trackers.TrackerLo
             val kills = mob.kills(mobs)
             val lsKills = mob.lsKills?.invoke(mobs)?.takeIf { it > 0 && !Trackers.hideLsStats }
             if (kills + (lsKills ?: 0) <= 0 && Trackers.hideUnobtainedItems) return@mapNotNull null
-            val ls = lsKills?.let { "+${Helper.formatNumber(it, withCommas = true)}" }.orEmpty()
-            Entry(short, mob.color, Helper.formatNumber(kills, withCommas = true) + ls)
+            val ls = lsKills?.let { "+${NumberUtil.formatNumber(it, withCommas = true)}" }.orEmpty()
+            Entry(short, mob.color, NumberUtil.formatNumber(kills, withCommas = true) + ls)
         }.toMutableList()
         // The common mobs in one entry
         val others = shown.filter { it.short == null }.sumOf { it.kills(mobs) }
-        if (others > 0 || !Trackers.hideUnobtainedItems) entries += Entry("Other", GREEN, Helper.formatNumber(others, withCommas = true))
-        val head = CompactLine("Mobs", listOf(Entry(null, null, Helper.formatNumber(mobs.TOTAL_MOBS, withCommas = true)), Entry(null, null, "${mobsPerHour(tracker)}/h")))
+        if (others > 0 || !Trackers.hideUnobtainedItems) entries += Entry("Other", GREEN, NumberUtil.formatNumber(others, withCommas = true))
+        val head = CompactLine("Mobs", listOf(Entry(null, null, NumberUtil.formatNumber(mobs.TOTAL_MOBS, withCommas = true)), Entry(null, null, "${mobsPerHour(tracker)}/h")))
         return listOf(head) + packed(entries)
     }
 
@@ -257,7 +258,7 @@ object DianaMobs : DianaOverlay<DianaMobs.View>("Diana Mobs", Trackers.TrackerLo
             lines.add(changeSort)
         }
 
-        lines.add(OverlayTextLine("$YELLOW${BOLD}Diana Mobs $GRAY($YELLOW${Helper.toTitleCase("$type")}$GRAY)"))
+        lines.add(OverlayTextLine("$YELLOW${BOLD}Diana Mobs $GRAY($YELLOW${TextUtil.toTitleCase("$type")}$GRAY)"))
 
         val hideLs = Trackers.hideLsStats
 
@@ -265,65 +266,65 @@ object DianaMobs : DianaOverlay<DianaMobs.View>("Diana Mobs", Trackers.TrackerLo
         val mobLines = listOf(
             createLine(
                 "KING_MINOS",
-                "$GRAY - ${RED}King Minos: $AQUA${Helper.formatNumber(tracker.mobs.KING_MINOS, withCommas = true)} $GRAY($AQUA$kingPercent%$GRAY)" +
-                    if (hideLs) "" else " [${AQUA}LS$GRAY:$AQUA${Helper.formatNumber(tracker.mobs.KING_MINOS_LS,
+                "$GRAY - ${RED}King Minos: $AQUA${NumberUtil.formatNumber(tracker.mobs.KING_MINOS, withCommas = true)} $GRAY($AQUA$kingPercent%$GRAY)" +
+                    if (hideLs) "" else " [${AQUA}LS$GRAY:$AQUA${NumberUtil.formatNumber(tracker.mobs.KING_MINOS_LS,
                         withCommas = true
                     )}$GRAY]",
                 tracker.mobs.KING_MINOS + tracker.mobs.KING_MINOS_LS
             ),
             createLine(
                 "MANTICORE",
-                "$GRAY - ${RED}Manticore: $AQUA${Helper.formatNumber(tracker.mobs.MANTICORE, withCommas = true)} $GRAY($AQUA$manticorePercent%$GRAY)" +
-                    if (hideLs) "" else " [${AQUA}LS$GRAY:$AQUA${Helper.formatNumber(tracker.mobs.MANTICORE_LS,
+                "$GRAY - ${RED}Manticore: $AQUA${NumberUtil.formatNumber(tracker.mobs.MANTICORE, withCommas = true)} $GRAY($AQUA$manticorePercent%$GRAY)" +
+                    if (hideLs) "" else " [${AQUA}LS$GRAY:$AQUA${NumberUtil.formatNumber(tracker.mobs.MANTICORE_LS,
                         withCommas = true
                     )}$GRAY]",
                 tracker.mobs.MANTICORE + tracker.mobs.MANTICORE_LS
             ),
             createLine(
                 "INQUISITOR",
-                "$GRAY - ${LIGHT_PURPLE}Inquisitor: $AQUA${Helper.formatNumber(tracker.mobs.MINOS_INQUISITOR,
+                "$GRAY - ${LIGHT_PURPLE}Inquisitor: $AQUA${NumberUtil.formatNumber(tracker.mobs.MINOS_INQUISITOR,
                     withCommas = true
                 )} $GRAY($AQUA$inqPercent%$GRAY)" +
-                    if (hideLs) "" else " [${AQUA}LS$GRAY:$AQUA${Helper.formatNumber(tracker.mobs.MINOS_INQUISITOR_LS,
+                    if (hideLs) "" else " [${AQUA}LS$GRAY:$AQUA${NumberUtil.formatNumber(tracker.mobs.MINOS_INQUISITOR_LS,
                         withCommas = true
                     )}$GRAY]",
                 tracker.mobs.MINOS_INQUISITOR + tracker.mobs.MINOS_INQUISITOR_LS
             ),
             createLine(
                 "SPHINX",
-                "$GRAY - ${LIGHT_PURPLE}Sphinx: $AQUA${Helper.formatNumber(tracker.mobs.SPHINX, withCommas = true)} $GRAY($AQUA$sphinxPercent%$GRAY)" +
-                    if (hideLs) "" else " [${AQUA}LS$GRAY:$AQUA${Helper.formatNumber(tracker.mobs.SPHINX_LS,
+                "$GRAY - ${LIGHT_PURPLE}Sphinx: $AQUA${NumberUtil.formatNumber(tracker.mobs.SPHINX, withCommas = true)} $GRAY($AQUA$sphinxPercent%$GRAY)" +
+                    if (hideLs) "" else " [${AQUA}LS$GRAY:$AQUA${NumberUtil.formatNumber(tracker.mobs.SPHINX_LS,
                         withCommas = true
                     )}$GRAY]",
                 tracker.mobs.SPHINX + tracker.mobs.SPHINX_LS
             ),
-            createLine("CHAMPION", "$GRAY - ${DARK_PURPLE}Champion: $AQUA${Helper.formatNumber(tracker.mobs.MINOS_CHAMPION,
+            createLine("CHAMPION", "$GRAY - ${DARK_PURPLE}Champion: $AQUA${NumberUtil.formatNumber(tracker.mobs.MINOS_CHAMPION,
                 withCommas = true
             )} $GRAY($AQUA$champPercent%$GRAY)", tracker.mobs.MINOS_CHAMPION),
-            createLine("MINOTAUR", "$GRAY - ${GOLD}Minotaur: $AQUA${Helper.formatNumber(tracker.mobs.MINOTAUR,
+            createLine("MINOTAUR", "$GRAY - ${GOLD}Minotaur: $AQUA${NumberUtil.formatNumber(tracker.mobs.MINOTAUR,
                 withCommas = true
             )} $GRAY($AQUA$minotaurPercent%$GRAY)", tracker.mobs.MINOTAUR),
-            createLine("GAIA_CONSTRUCT", "$GRAY - ${GREEN}Gaia Construct: $AQUA${Helper.formatNumber(tracker.mobs.GAIA_CONSTRUCT,
+            createLine("GAIA_CONSTRUCT", "$GRAY - ${GREEN}Gaia Construct: $AQUA${NumberUtil.formatNumber(tracker.mobs.GAIA_CONSTRUCT,
                 withCommas = true
             )} $GRAY($AQUA$gaiaPercent%$GRAY)", tracker.mobs.GAIA_CONSTRUCT),
-            createLine("HARPY", "$GRAY - ${GREEN}Harpy: $AQUA${Helper.formatNumber(tracker.mobs.HARPY,
+            createLine("HARPY", "$GRAY - ${GREEN}Harpy: $AQUA${NumberUtil.formatNumber(tracker.mobs.HARPY,
                 withCommas = true
             )} $GRAY($AQUA$harpyPercent%$GRAY)", tracker.mobs.HARPY),
-            createLine("CRETAN_BULL", "$GRAY - ${GREEN}Cretan Bull: $AQUA${Helper.formatNumber(tracker.mobs.CRETAN_BULL,
+            createLine("CRETAN_BULL", "$GRAY - ${GREEN}Cretan Bull: $AQUA${NumberUtil.formatNumber(tracker.mobs.CRETAN_BULL,
                 withCommas = true
             )} $GRAY($AQUA$cretanPercent%$GRAY)", tracker.mobs.CRETAN_BULL),
-            createLine("STRANDED_NYMPH", "$GRAY - ${GREEN}Stranded Nymph: $AQUA${Helper.formatNumber(tracker.mobs.STRANDED_NYMPH,
+            createLine("STRANDED_NYMPH", "$GRAY - ${GREEN}Stranded Nymph: $AQUA${NumberUtil.formatNumber(tracker.mobs.STRANDED_NYMPH,
                 withCommas = true
             )} $GRAY($AQUA$nymphPercent%$GRAY)", tracker.mobs.STRANDED_NYMPH),
-            createLine("SIAMESE_LYNXES", "$GRAY - ${GREEN}Siamese Lynxes: $AQUA${Helper.formatNumber(tracker.mobs.SIAMESE_LYNXES,
+            createLine("SIAMESE_LYNXES", "$GRAY - ${GREEN}Siamese Lynxes: $AQUA${NumberUtil.formatNumber(tracker.mobs.SIAMESE_LYNXES,
                 withCommas = true
             )} $GRAY($AQUA$lynxPercent%$GRAY)", tracker.mobs.SIAMESE_LYNXES),
-            createLine("MINOS_HUNTER", "$GRAY - ${GREEN}Minos Hunter: $AQUA${Helper.formatNumber(tracker.mobs.MINOS_HUNTER,
+            createLine("MINOS_HUNTER", "$GRAY - ${GREEN}Minos Hunter: $AQUA${NumberUtil.formatNumber(tracker.mobs.MINOS_HUNTER,
                 withCommas = true
             )} $GRAY($AQUA$hunterPercent%$GRAY)", tracker.mobs.MINOS_HUNTER)
         )
         sortedMobs(tracker.mobs).mapTo(lines) { mobLines[MOBS.indexOf(it)] }
-        lines.add(OverlayTextLine("$GRAY - ${GRAY}Total Mobs: $AQUA${Helper.formatNumber(tracker.mobs.TOTAL_MOBS,
+        lines.add(OverlayTextLine("$GRAY - ${GRAY}Total Mobs: $AQUA${NumberUtil.formatNumber(tracker.mobs.TOTAL_MOBS,
             withCommas = true
         )} $GRAY[$AQUA$mobsPerHr$GRAY/${AQUA}hr$GRAY]"))
 

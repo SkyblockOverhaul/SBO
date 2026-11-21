@@ -6,7 +6,6 @@ import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.diana.burrows.BurrowParticleClock
 import net.sbo.mod.settings.categories.Burrows
-import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.WorldChangeEvent
@@ -21,6 +20,7 @@ import java.util.zip.GZIPInputStream
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.sqrt
+import net.sbo.mod.diana.DianaState
 
 /**
  * The Spade Guess Optimizer: places to stand and use the spade to find a new chain.
@@ -266,7 +266,7 @@ object SpadeGuessOptimizer {
             return
         }
         // The picked spots stay, the place shows again when you're back with a spade while Diana is on
-        if (!World.isInHub() || !Helper.hasSpade || !Mayor.dianaActive) {
+        if (!World.isInHub() || !DianaState.hasSpade || !Mayor.dianaActive) {
             if (shown != null) show(null)
             return
         }
@@ -443,7 +443,7 @@ object SpadeGuessOptimizer {
      * till its guess settled. Only in the Hub with a spade while Diana is on, like the place itself.
      */
     fun hidesBurrows(): Boolean =
-        (shown != null || hiddenForUse) && isActive() && World.isInHub() && Helper.hasSpade && Mayor.dianaActive
+        (shown != null || hiddenForUse) && isActive() && World.isInHub() && DianaState.hasSpade && Mayor.dianaActive
 
     /** Whether [waypoint] is a place the optimizer picked near a finished chain, those are close enough to never warp to. */
     fun isNearChainEnd(waypoint: Waypoint): Boolean = !startup && waypoint in waypoints

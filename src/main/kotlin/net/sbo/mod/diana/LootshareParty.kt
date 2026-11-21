@@ -11,8 +11,7 @@ import net.sbo.mod.partyfinder.PartyFinderManager
 import net.sbo.mod.settings.categories.RareMobs
 import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.settings.categories.Debug
-import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.Helper.removeFormatting
+import net.sbo.mod.utils.TextUtil.removeFormatting
 import net.sbo.mod.utils.HypixelModApi
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.events.Register
@@ -22,6 +21,7 @@ import net.sbo.mod.utils.overlay.OverlayExamples
 import net.sbo.mod.utils.overlay.OverlayTextLine
 import java.util.UUID
 import java.util.concurrent.TimeUnit
+import net.sbo.mod.utils.TextUtil
 
 /**
  * While a rare mob is around, lists the party with who lootshared it: red until they sent the
@@ -65,7 +65,7 @@ object LootshareParty : DianaOverlay<LootshareParty.View>("lootshareParty", Trac
         HypixelModApi.onPartyInfo { _, _, members -> memberUuids = members }
 
         Register.onChatMessage(partyChatRegex) { _, match ->
-            val sender = Helper.getPlayerName(match.groupValues[1]).lowercase()
+            val sender = TextUtil.getPlayerName(match.groupValues[1]).lowercase()
             val text = match.groupValues[2].removeFormatting().trim()
             val now = System.nanoTime()
             when {

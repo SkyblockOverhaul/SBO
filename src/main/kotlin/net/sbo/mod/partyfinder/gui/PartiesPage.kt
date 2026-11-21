@@ -47,12 +47,12 @@ import net.sbo.mod.partyfinder.api.ReportReason
 import net.sbo.mod.partyfinder.api.Problem
 import net.sbo.mod.partyfinder.api.ReqDef
 import net.sbo.mod.partyfinder.gui.PartyFinderGui.message
-import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.HypixelModApi
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.configs.partyfinder.PartyListFilter
 import java.util.UUID
+import net.sbo.mod.utils.TextUtil
 
 internal data class PartiesProps(
     val target: PartyTarget,
@@ -786,7 +786,7 @@ private fun NodeBuilder.memberRow(
         else if (me && member.uuid == party.id && target.roles.isNotEmpty()) item("Change my role…") { onChangeRole(member) }
         else if (me && member.uuid != party.id && party.roles.wanted.isNotEmpty()) item("Change my role…") { onChangeRole(member) }
         // The name ends up in /p commands
-        if (manage && Helper.isPlayerName(name)) {
+        if (manage && TextUtil.isPlayerName(name)) {
             separator()
             item("Make party leader") { partyCommand("p transfer $name", "Making $name the party leader...") }
             // Promoting a moderator would make them the leader, so promote only known plain members

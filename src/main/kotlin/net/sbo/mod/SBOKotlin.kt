@@ -14,6 +14,7 @@ import net.minecraft.util.Util
 //#endif
 import net.sbo.mod.compat.IrisCompatibility
 import net.sbo.mod.diana.DianaMobDetect
+import net.sbo.mod.diana.DianaState
 import net.sbo.mod.diana.tracker.MayorReset
 import net.sbo.mod.diana.tracker.Tracker
 import net.sbo.mod.diana.LootshareDisplay
@@ -59,9 +60,11 @@ import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.events.*
 import net.sbo.mod.utils.game.InventoryUtils
+import net.sbo.mod.utils.game.ItemPrices
 import net.sbo.mod.utils.game.Mayor
 import net.sbo.mod.utils.game.TabList
 import net.sbo.mod.utils.game.World
+import net.sbo.mod.utils.http.ActiveUsers
 import net.sbo.mod.utils.input.KeybindConflicts
 import net.sbo.mod.utils.time.TimeUtil
 import net.sbo.mod.utils.overlay.OverlayManager
@@ -206,7 +209,9 @@ object SBOKotlin : ClientModInitializer {
 		Pickuplog.init()
 		OverlayManager.init()
 		SboTimerManager.init()
-		Helper.init()
+		DianaState.init()
+		ItemPrices.init()
+		ActiveUsers.init()
 		Bobber.init()
 		Legion.init()
 		DianaStats.init()

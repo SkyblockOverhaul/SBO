@@ -5,13 +5,13 @@ import net.minecraft.ChatFormatting.*
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.mod.config.nextOption
 import net.sbo.mod.settings.categories.Trackers
-import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.Helper.removeFormatting
+import net.sbo.mod.utils.TextUtil.removeFormatting
 import net.sbo.mod.utils.data.DataManager.sboData
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.guis.GuiCloseEvent
 import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
 import net.sbo.mod.utils.overlay.*
+import net.sbo.mod.utils.math.NumberUtil
 
 object DianaStats : DianaOverlay<DianaStats.View>("Diana Stats", Trackers.TrackerLook.STATS, { Trackers.statsTracker }) {
     fun init() {
@@ -92,8 +92,8 @@ object DianaStats : DianaOverlay<DianaStats.View>("Diana Stats", Trackers.Tracke
                 id = stat.key,
                 name = stat.name,
                 color = stat.color,
-                value = Helper.formatNumber(stat.count(), withCommas = true),
-                extra = stat.lsCount?.takeIf { !Trackers.hideLsStats }?.let { "LS ${Helper.formatNumber(it(), withCommas = true)}" },
+                value = NumberUtil.formatNumber(stat.count(), withCommas = true),
+                extra = stat.lsCount?.takeIf { !Trackers.hideLsStats }?.let { "LS ${NumberUtil.formatNumber(it(), withCommas = true)}" },
                 hidden = isHidden
             )
         }
@@ -115,8 +115,8 @@ object DianaStats : DianaOverlay<DianaStats.View>("Diana Stats", Trackers.Tracke
         if (!Trackers.isCompact(Trackers.CompactTracker.STATS)) return null
         val hidden = sboData.hideTrackerLines
         val entries = sortedStats().filter { it.key !in hidden }.map { stat ->
-            val ls = stat.lsCount?.takeIf { !Trackers.hideLsStats }?.let { "/${Helper.formatNumber(it(), withCommas = true)}" }.orEmpty()
-            Entry(stat.short, stat.color, Helper.formatNumber(stat.count(), withCommas = true) + ls)
+            val ls = stat.lsCount?.takeIf { !Trackers.hideLsStats }?.let { "/${NumberUtil.formatNumber(it(), withCommas = true)}" }.orEmpty()
+            Entry(stat.short, stat.color, NumberUtil.formatNumber(stat.count(), withCommas = true) + ls)
         }
         val lines = packed(entries)
         return if (lines.isEmpty()) lines else listOf(lines.first().copy(title = "Since")) + lines.drop(1)
@@ -152,10 +152,10 @@ object DianaStats : DianaOverlay<DianaStats.View>("Diana Stats", Trackers.Tracke
             createStatLine("STATS_MOBS_SINCE_SPHINX", "$GRAY - ${LIGHT_PURPLE}Mobs since Sphinx: $AQUA${sboData.mobsSinceSphinx}"),
             createStatLine("STATS_SPHINXES_SINCE_FOOD", if (hideLs) "$GRAY - ${DARK_PURPLE}Sphinxes since Food: $AQUA${sboData.sphinxSinceFood}" else "$GRAY - ${DARK_PURPLE}Sphinxes since Food: $AQUA${sboData.sphinxSinceFood}$GRAY, ${DARK_PURPLE}since §7[§bLS§7]: $AQUA${sboData.sphinxSinceLsFood}"),
             createStatLine("STATS_SPHINXES_SINCE_LOOTING", if (hideLs) "$GRAY - ${LIGHT_PURPLE}Sphinxes since Looting 7: $AQUA${sboData.sphinxSinceLooting}" else "$GRAY - ${LIGHT_PURPLE}Sphinxes since Looting 7: $AQUA${sboData.sphinxSinceLooting}$GRAY, ${LIGHT_PURPLE}since §7[§bLS§7]: $AQUA${sboData.sphinxSinceLsLooting}"),
-            createStatLine("STATS_CHAMPS_SINCE_RELIC", "$GRAY - ${DARK_PURPLE}Champs since Relic: $AQUA${Helper.formatNumber(sboData.champsSinceRelic,
+            createStatLine("STATS_CHAMPS_SINCE_RELIC", "$GRAY - ${DARK_PURPLE}Champs since Relic: $AQUA${NumberUtil.formatNumber(sboData.champsSinceRelic,
                 withCommas = true
             )}"),
-            createStatLine("STATS_MINOTAURS_SINCE_STICK", "$GRAY - ${GOLD}Minotaurs since Stick: $AQUA${Helper.formatNumber(sboData.minotaursSinceStick,
+            createStatLine("STATS_MINOTAURS_SINCE_STICK", "$GRAY - ${GOLD}Minotaurs since Stick: $AQUA${NumberUtil.formatNumber(sboData.minotaursSinceStick,
                 withCommas = true
             )}"),
         )

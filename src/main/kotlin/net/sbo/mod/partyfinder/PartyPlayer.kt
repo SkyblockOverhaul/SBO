@@ -4,7 +4,7 @@ import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.diana.achievements.AchievementManager.trackWithCheckPlayer
 import net.sbo.mod.partyfinder.api.PfError
 import net.sbo.mod.partyfinder.api.PlayerStats
-import net.sbo.mod.utils.Helper.sleep
+import net.sbo.mod.utils.events.TickScheduler.sleep
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.AchievementStats

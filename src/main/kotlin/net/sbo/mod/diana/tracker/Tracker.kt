@@ -11,12 +11,11 @@ import net.sbo.mod.settings.categories.Drops
 import net.sbo.mod.settings.categories.General
 import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.settings.categories.Debug
-import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.Helper.allowSackTracking
-import net.sbo.mod.utils.Helper.dianaMobDiedRecently
-import net.sbo.mod.utils.Helper.gotLootShareRecently
-import net.sbo.mod.utils.Helper.removeFormatting
-import net.sbo.mod.utils.Helper.sleep
+import net.sbo.mod.diana.DianaState.allowSackTracking
+import net.sbo.mod.diana.DianaState.dianaMobDiedRecently
+import net.sbo.mod.diana.DianaState.gotLootShareRecently
+import net.sbo.mod.utils.TextUtil.removeFormatting
+import net.sbo.mod.utils.events.TickScheduler.sleep
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.SboTimerManager
 import net.sbo.mod.utils.chat.Chat
@@ -34,6 +33,7 @@ import net.sbo.mod.utils.game.World.isInSkyblock
 import net.sbo.mod.utils.http.Http
 import net.sbo.mod.utils.time.TimeUtil
 import java.util.regex.Pattern
+import net.sbo.mod.utils.TextUtil
 
 /** The Diana tracker: reads the chat, pickup log and sacks and counts into the mayor, session and total tracker. */
 object Tracker {
@@ -87,7 +87,7 @@ object Tracker {
             if (!player.contains(Player.getName().orEmpty().lowercase())) return@onChatMessageCancelable true
             if (General.phoenixAnnouncer) {
                 Chat.chat("§6[SBO] §cGG §eFound a §cPhoenix §epet!")
-                Helper.showTitle("§c§lPhoenix Pet!", "", 0, 25, 35)
+                Chat.showTitle("§c§lPhoenix Pet!", "", 0, 25, 35)
             }
             sleep(1000) {
                 if (isInSkyblock() && dianaMobDiedRecently(3)) unlockAchievement(77) // phoenix pet
@@ -168,7 +168,7 @@ object Tracker {
 
     fun trackWithPickuplog(item: Item) {
         val createdAt = item.creation
-        val secondsPassedSinceCreation = Helper.getSecondsPassed(createdAt)
+        val secondsPassedSinceCreation = TimeUtil.getSecondsPassed(createdAt)
 
         if (secondsPassedSinceCreation <= 6) {
             trackWithPickuplog(item.itemId)
@@ -265,7 +265,7 @@ object Tracker {
         isItemOnCooldown[itemId] = true
 
         MayorReset.check()
-        val itemName = Helper.toUpperSnakeCase(item)
+        val itemName = TextUtil.toUpperSnakeCase(item)
         when (itemName) {
             "MINOS_INQUISITOR_LS" -> sboData.inqsSinceLsChim += 1
             "KING_MINOS_LS" -> sboData.kingSinceLsWool += 1

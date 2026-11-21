@@ -2,9 +2,8 @@ package net.sbo.mod.diana.tracker
 
 import net.sbo.mod.diana.achievements.AchievementManager.unlockAchievement
 import net.sbo.mod.settings.categories.Drops
-import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.Helper.gotLootShareRecently
-import net.sbo.mod.utils.Helper.sleep
+import net.sbo.mod.diana.DianaState.gotLootShareRecently
+import net.sbo.mod.utils.events.TickScheduler.sleep
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.DataManager.dianaTrackerMayorData
@@ -14,6 +13,8 @@ import net.sbo.mod.utils.data.configs.sound.SoundSettingsData
 import net.sbo.mod.utils.medal.MedalIntegration
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty1
+import net.sbo.mod.diana.DianaRates
+import net.sbo.mod.diana.DropMessages
 
 /** The drops from the RARE DROP messages and digging, with their since counters, b2b streaks and clips. */
 internal object RareDrops {
@@ -73,7 +74,7 @@ internal object RareDrops {
     /** The drop from a "RARE DROP!" message. */
     fun onChatDrop(drop: String) {
         val isLootShare = gotLootShareRecently()
-        val magicFind = Helper.getMagicFind(drop)
+        val magicFind = DianaRates.getMagicFind(drop)
         val rareDrop = rareDrops.firstOrNull { rare -> rare.match.containsMatchIn(drop) }
         val miscDrop = miscDrops.firstOrNull { drop.contains(it.first) }
 
@@ -86,7 +87,7 @@ internal object RareDrops {
                 DropAnnouncer.playSound(SoundSettingsData::stickSound, SoundSettingsData::stickVolume)
                 MedalIntegration.saveDaedalusStickClip()
                 DropAnnouncer.onRareDrop("Daedalus Stick", showMessageOrTitle = true, trackLootshare = false, magicFind = magicFind)
-                val customMsg = Helper.checkCustomDropMessage("Daedalus Stick", magicFind, false)
+                val customMsg = DropMessages.checkCustomDropMessage("Daedalus Stick", magicFind, false)
 
                 if (Drops.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.minotaursSinceStick} §eMinotaurs to get a Daedalus Stick!")
                 RareMobs.announceB2b("Daedalus Stick", sboData.minotaursSinceStick, SboData::b2bStick, b2bAch = 3, b2b2bAch = 4)
@@ -99,7 +100,7 @@ internal object RareDrops {
                 MedalIntegration.saveMinosRelicClip()
                 DropAnnouncer.playSound(SoundSettingsData::relicSound, SoundSettingsData::relicVolume)
                 DropAnnouncer.onRareDrop("Minos Relic", showMessageOrTitle = true, trackLootshare = false, magicFind = magicFind)
-                val customMsg = Helper.checkCustomDropMessage("Minos Relic", magicFind, isLootShare)
+                val customMsg = DropMessages.checkCustomDropMessage("Minos Relic", magicFind, isLootShare)
 
                 if (Drops.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${sboData.champsSinceRelic} §eChampions to get a Minos Relic!")
                 if (sboData.champsSinceRelic == 1) {
@@ -138,7 +139,7 @@ internal object RareDrops {
             enforceCooldown = drop.name != "Chimera"
         )
 
-        val customMsg = Helper.checkCustomDropMessage(drop.customKey, magicFind, isLootShare)
+        val customMsg = DropMessages.checkCustomDropMessage(drop.customKey, magicFind, isLootShare)
 
         if (!isLootShare) {
             if (Drops.sendSinceMessage) Chat.chat("§6[SBO] §eTook §c${drop.since.value} §e${drop.droppedBy} to get ${drop.sinceText}!")

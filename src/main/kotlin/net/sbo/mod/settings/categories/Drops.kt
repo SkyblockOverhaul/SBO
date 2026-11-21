@@ -2,8 +2,8 @@ package net.sbo.mod.settings.categories
 
 import net.sbo.mod.config.Category
 import net.sbo.mod.config.Option
-import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.chat.Chat
+import net.sbo.mod.diana.DropMessages
 
 object Drops : Category("Drops") {
     override val description = "What happens when you drop something: chat and screen announcements, the drop messages and Medal clips."
@@ -115,7 +115,7 @@ object Drops : Category("Drops") {
             text = "Send Test"
             description = "Sends a test message for all rare drop messages."
             onClick {
-                if (Helper.checkCustomDropMessage("Chimera", 400, false).first) {
+                if (DropMessages.checkCustomDropMessage("Chimera", 400, false).first) {
                     val drops = mutableListOf<String>()
                     if (customChimeraMessage.isNotEmpty()) drops.add("Chimera")
                     if (customBrainFoodMessage.isNotEmpty()) drops.add("Brain Food")
@@ -126,7 +126,7 @@ object Drops : Category("Drops") {
 
                     for (drop: String in drops) {
                         Chat.chat(
-                            Helper.checkCustomDropMessage(drop, 400, false).second
+                            DropMessages.checkCustomDropMessage(drop, 400, false).second
                         )
                     }
                 }

@@ -2,7 +2,6 @@ package net.sbo.mod.diana
 
 import net.sbo.mod.overlays.DianaLoot
 import net.sbo.mod.settings.categories.Trackers
-import net.sbo.mod.utils.Helper
 import net.sbo.mod.utils.SboTimerManager
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.configs.diana.DianaTracker
@@ -11,6 +10,8 @@ import net.sbo.mod.utils.events.Register
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
+import net.sbo.mod.utils.math.NumberUtil
+import net.sbo.mod.utils.time.TimeUtil
 
 // TODO Once majority of people are on 0.7.2 or above, change the party message to send with [SBO] prefix in front.
 internal object DianaStats {
@@ -114,33 +115,33 @@ internal object DianaStats {
         val playtime = tracker.items.TIME
         val playTimeHrs = playtime.toDouble() / TimeUnit.HOURS.toMillis(1)
 
-        val burrowsPerHour = Helper.getBurrowsPerHr(tracker, timer)
+        val burrowsPerHour = DianaRates.getBurrowsPerHr(tracker, timer)
         val mobsPerHour = if (playTimeHrs > 0) tracker.mobs.TOTAL_MOBS.toDouble() / playTimeHrs else 0.0
 
         val totalValue = DianaLoot.totalProfit(tracker)
         val profit = listOf(
-            Helper.formatNumber(totalValue),
+            NumberUtil.formatNumber(totalValue),
             Trackers.bazaarSettingDiana.name,
-            Helper.formatNumber(totalValue / playTimeHrs)
+            NumberUtil.formatNumber(totalValue / playTimeHrs)
         )
         return PlayerStats(
-            playtime = Helper.formatTime(playtime),
+            playtime = TimeUtil.formatTime(playtime),
             profit = profit,
-            burrows = Helper.formatNumber(tracker.items.TOTAL_BURROWS),
+            burrows = NumberUtil.formatNumber(tracker.items.TOTAL_BURROWS),
             burrowsPerHour = "%.2f".format(Locale.US, burrowsPerHour),
             totalMobs = tracker.mobs.TOTAL_MOBS,
             mobsPerHour = "%.2f".format(Locale.US, mobsPerHour),
             inquisitors = tracker.mobs.MINOS_INQUISITOR,
-            inqPercentage = "${Helper.calcPercentOne(tracker.mobs.MINOS_INQUISITOR, tracker.mobs.TOTAL_MOBS)}%",
+            inqPercentage = "${DianaRates.calcPercentOne(tracker.mobs.MINOS_INQUISITOR, tracker.mobs.TOTAL_MOBS)}%",
             lsInqs = tracker.mobs.MINOS_INQUISITOR_LS,
             sphinx = tracker.mobs.SPHINX,
-            sphinxPercentage = "${Helper.calcPercentOne(tracker.mobs.SPHINX, tracker.mobs.TOTAL_MOBS)}%",
+            sphinxPercentage = "${DianaRates.calcPercentOne(tracker.mobs.SPHINX, tracker.mobs.TOTAL_MOBS)}%",
             mantis = tracker.mobs.MANTICORE,
-            mantisPercentage = "${Helper.calcPercentOne(tracker.mobs.MANTICORE, tracker.mobs.TOTAL_MOBS)}%",
+            mantisPercentage = "${DianaRates.calcPercentOne(tracker.mobs.MANTICORE, tracker.mobs.TOTAL_MOBS)}%",
             kings = tracker.mobs.KING_MINOS,
-            kingPercentage = "${Helper.calcPercentOne(tracker.mobs.KING_MINOS, tracker.mobs.TOTAL_MOBS)}%",
+            kingPercentage = "${DianaRates.calcPercentOne(tracker.mobs.KING_MINOS, tracker.mobs.TOTAL_MOBS)}%",
             chimeraDrops = tracker.items.CHIMERA,
-            chimeraDropRate = "${Helper.calcPercentOne(
+            chimeraDropRate = "${DianaRates.calcPercentOne(
                 tracker.items.CHIMERA,
                 tracker.mobs.MINOS_INQUISITOR
             )}%",
@@ -152,27 +153,27 @@ internal object DianaStats {
                 )
             }%",
             sticksDropped = tracker.items.DAEDALUS_STICK,
-            stickDropRate = "${Helper.calcPercentOne(
+            stickDropRate = "${DianaRates.calcPercentOne(
                 tracker.items.DAEDALUS_STICK,
                 tracker.mobs.MINOTAUR
             )}%",
             relicsDropped = tracker.items.MINOS_RELIC,
-            relicDropRate = "${Helper.calcPercentOne(
+            relicDropRate = "${DianaRates.calcPercentOne(
                 tracker.items.MINOS_RELIC,
                 tracker.mobs.MINOS_CHAMPION
             )}%",
             coresDropped = tracker.items.MANTI_CORE,
-            coreDropRate = "${Helper.calcPercentOne(
+            coreDropRate = "${DianaRates.calcPercentOne(
                 tracker.items.MANTI_CORE,
                 tracker.mobs.MANTICORE
             )}%",
             woolsDropped = tracker.items.SHIMMERING_WOOL,
-            woolDropRate = "${Helper.calcPercentOne(
+            woolDropRate = "${DianaRates.calcPercentOne(
                 tracker.items.SHIMMERING_WOOL,
                 tracker.mobs.KING_MINOS
             )}%",
             dyesDropped = tracker.items.MYTHOLOGICAL_DYE,
-            dyeDropRate = "${Helper.calcPercentOne(
+            dyeDropRate = "${DianaRates.calcPercentOne(
                 tracker.items.MYTHOLOGICAL_DYE,
                 tracker.mobs.TOTAL_MOBS
             )}%"

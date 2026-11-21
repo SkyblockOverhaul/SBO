@@ -10,11 +10,10 @@ import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.diana.tracker.Tracker
 import net.sbo.mod.settings.categories.RareMobs
-import net.sbo.mod.utils.Helper
-import net.sbo.mod.utils.Helper.isValidEntityInHub
-import net.sbo.mod.utils.Helper.removeFormatting
-import net.sbo.mod.utils.Helper.showTitle
-import net.sbo.mod.utils.Helper.sleep
+import net.sbo.mod.utils.game.World.isValidEntityInHub
+import net.sbo.mod.utils.TextUtil.removeFormatting
+import net.sbo.mod.utils.chat.Chat.showTitle
+import net.sbo.mod.utils.events.TickScheduler.sleep
 import net.sbo.mod.utils.SoundHandler.playCustomSound
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.chat.Chat
@@ -33,6 +32,7 @@ import net.sbo.mod.utils.waypoint.WaypointManager
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 import net.sbo.mod.utils.Player as SboPlayer
+import net.sbo.mod.utils.TextUtil
 
 object DianaMobDetect {
     private const val MYTHO_MOB_TYPE_CHAR = ""
@@ -499,9 +499,9 @@ object DianaMobDetect {
 
     // All lines go out as one message, empty means off
     private fun announceSpawn(lines: Array<String>, mob: String) {
-        val text = Helper.joinLines(lines)
+        val text = TextUtil.joinLines(lines)
         if (text.isEmpty()) return
-        val message = Helper.getSpawnMessage(text, mob)
+        val message = DropMessages.getSpawnMessage(text, mob)
         sleep(ANNOUNCE_DELAY_MS) { Chat.pc(message) }
     }
 

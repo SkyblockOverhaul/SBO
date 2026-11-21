@@ -7,7 +7,7 @@ import net.minecraft.client.player.RemotePlayer
 import net.minecraft.world.entity.decoration.Mannequin
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.settings.categories.RareMobs
-import net.sbo.mod.utils.Helper.isValidEntityInHub
+import net.sbo.mod.utils.game.World.isValidEntityInHub
 import net.sbo.mod.utils.accessors.isSboGlowing
 //#if MC < 26.2
 import net.sbo.mod.utils.accessors.setSboGlowColor
