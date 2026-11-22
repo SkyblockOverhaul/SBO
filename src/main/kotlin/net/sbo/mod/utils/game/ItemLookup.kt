@@ -9,6 +9,9 @@ import net.sbo.mod.utils.TextUtil.removeFormatting
 
 private val SENTINEL = Any()
 private const val LONG_SENTINEL = Long.MIN_VALUE + 31L
+private const val T3_SPADE = "DEIFIC_SPADE"
+private const val T2_SPADE = "ARCHAIC_SPADE"
+private const val T1_SPADE = "ANCESTRAL_SPADE"
 
 class ItemLookup(private val stack: ItemStack) {
     private var customDataCached: Any? = SENTINEL
@@ -53,4 +56,22 @@ class ItemLookup(private val stack: ItemStack) {
     val cleanLoreList: List<String>
         get() = cleanLoreListCached ?: stack[DataComponents.LORE]?.lines?.map { it.string.removeFormatting() }
             .orEmpty().also { cleanLoreListCached = it }
+}
+
+fun ItemLookup.isCrownOfAvarice(): Boolean {
+    val sbId = this.sbId
+
+    return sbId == "CROWN_OF_AVARICE" || sbId == "CROWN_OF_AVARICE_CELEBRATION"
+}
+
+fun ItemStack?.isCrownOfAvarice(): Boolean {
+    if (this == null || this.isEmpty) return false
+
+    return ItemLookup(this).isCrownOfAvarice()
+}
+
+fun ItemLookup.isDianaSpade(): Boolean {
+    val sbId = this.sbId
+
+    return sbId == T3_SPADE || sbId == T2_SPADE || sbId == T1_SPADE
 }

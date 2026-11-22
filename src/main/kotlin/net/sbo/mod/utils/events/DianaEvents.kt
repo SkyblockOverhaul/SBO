@@ -4,12 +4,12 @@ import net.fabricmc.fabric.api.event.player.AttackBlockCallback
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.diana.guesses.ArrowGuessBurrow
-import net.sbo.mod.diana.isDianaSpade
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.diana.BurrowDugEvent
 import net.sbo.mod.utils.events.impl.game.PlayerInteractEvent
 import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.utils.game.World
+import net.sbo.mod.utils.game.isDianaSpade
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.waypoint.WaypointManager
 import net.minecraft.world.InteractionResult

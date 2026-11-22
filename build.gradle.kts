@@ -452,7 +452,8 @@ runDirectory.mkdirs()
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
-    maxParallelForks = Runtime.getRuntime().availableProcessors()
+    // JUnit already runs tests concurrently within the worker JVM.
+    maxParallelForks = 1
     failFast = true
     testLogging {
         showStackTraces = true

@@ -98,20 +98,20 @@ public final class SBOMixinPlugin implements IMixinConfigPlugin {
         LOGGER.info("Trying to discover mixins");
         final var discoveredMixins = new ArrayList<String>();
         final var classUrl = SBOMixinPlugin.class.getProtectionDomain().getCodeSource().getLocation();
-        LOGGER.info("Found classes at " + classUrl);
+        LOGGER.info("Found classes at {}", classUrl);
         final Path file;
         try {
             file = Paths.get(SBOMixinPlugin.baseUrl(classUrl).toURI());
         } catch (final URISyntaxException e) {
             throw new RuntimeException(e);
         }
-        LOGGER.info("Base directory found at " + file);
+        LOGGER.info("Base directory found at {}", file);
         if (Files.isDirectory(file)) {
             SBOMixinPlugin.walkDir(file, discoveredMixins);
         } else {
             SBOMixinPlugin.walkJar(file, discoveredMixins);
         }
-        LOGGER.info("Found mixins (" + discoveredMixins.size() + "): " + discoveredMixins);
+        LOGGER.info("Found mixins ({}): {}", discoveredMixins.size(), discoveredMixins);
 
         return List.copyOf(discoveredMixins);
     }
@@ -127,7 +127,7 @@ public final class SBOMixinPlugin implements IMixinConfigPlugin {
         try {
             MixinHealth.check(targetClassName, targetClass, mixinClassName);
         } catch (final Throwable t) {
-            LOGGER.error("[SBO] Could not check mixin " + mixinClassName + ": " + t);
+            LOGGER.error("Could not check mixin {}", mixinClassName, t);
         }
     }
 }

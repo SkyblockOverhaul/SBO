@@ -13,7 +13,6 @@ import net.sbo.mod.guis.ConfirmGui
 import net.sbo.mod.overlays.CrownOfAvarice
 import net.sbo.mod.overlays.DianaLoot.totalProfit
 import net.sbo.mod.settings.categories.Trackers
-import net.sbo.mod.diana.isCrownOfAvarice
 import net.sbo.mod.utils.TextUtil.removeFormatting
 import net.sbo.mod.utils.HypixelModApi.isOnHypixel
 import net.sbo.mod.utils.game.World
@@ -31,6 +30,7 @@ import net.sbo.mod.utils.events.impl.entity.EntityHitEvent
 import net.sbo.mod.utils.events.impl.game.WorldChangeEvent
 import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
 import net.sbo.mod.utils.game.ItemLookup
+import net.sbo.mod.utils.game.isCrownOfAvarice
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

@@ -10,7 +10,6 @@ import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.config.nextOption
 import net.sbo.mod.guis.ConfirmGui
 import net.sbo.mod.settings.categories.Trackers
-import net.sbo.mod.diana.isCrownOfAvarice
 import net.sbo.mod.utils.overlay.CHAT_SCREEN_FILTER
 import net.sbo.mod.utils.overlay.CRAFTING_PLAYER_INVENTORY_FILTER
 import net.sbo.mod.utils.overlay.GuiLibOverlay
@@ -28,6 +27,7 @@ import net.sbo.mod.utils.events.impl.guis.GuiCloseEvent
 import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
 import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.utils.game.World
+import net.sbo.mod.utils.game.isCrownOfAvarice
 import net.sbo.mod.utils.overlay.isCraftingScreenOpen
 import net.sbo.mod.utils.render.RenderUtils2D
 import net.sbo.mod.diana.DianaState

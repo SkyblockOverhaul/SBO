@@ -2,9 +2,7 @@ package net.sbo.mod.diana
 
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
-import net.minecraft.world.item.ItemStack
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.diana.tracker.Tracker
 import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.utils.chat.Chat
@@ -14,42 +12,10 @@ import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.entity.DianaMobDeathEvent
 import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
 import net.sbo.mod.utils.game.InventoryUtils.playerHasItem
+import net.sbo.mod.utils.game.isDianaSpade
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.math.SboVec.Companion.toSboVec
 import net.sbo.mod.utils.waypoint.WaypointManager.removeNearbyRareMobWaypointAt
-
-private const val T3_SPADE = "DEIFIC_SPADE"
-private const val T2_SPADE = "ARCHAIC_SPADE"
-private const val T1_SPADE = "ANCESTRAL_SPADE"
-
-fun ItemLookup.isCrownOfAvarice(): Boolean {
-    val sbId = this.sbId
-
-    return sbId == "CROWN_OF_AVARICE" || sbId == "CROWN_OF_AVARICE_CELEBRATION"
-}
-
-fun ItemStack?.isCrownOfAvarice(): Boolean {
-    if (this == null || this.isEmpty()) return false
-
-    return ItemLookup(this).isCrownOfAvarice()
-}
-
-fun ItemLookup.isDianaSpade(): Boolean {
-    val sbId = this.sbId
-
-    return sbId == T3_SPADE || sbId == T2_SPADE || sbId == T1_SPADE
-}
-
-/**
- * Helper#hasSpade checks if player has (anywhere in the inventory) or held spade in the last 20 ticks.
- * This checks if player is holding spade in main hand, right now.
- */
-fun isHoldingSpadeRightNow(): Boolean {
-    val item = mc.player?.mainHandItem ?: return false
-    if (item.isEmpty) return false
-
-    return ItemLookup(item).isDianaSpade()
-}
 
 /** Diana state while hunting: the spade in the inventory, lootshares, recent mob deaths and sack tracking. */
 object DianaState {
@@ -84,7 +50,7 @@ object DianaState {
         }
 
         Register.onTick(20) { // maybe better way to register this
-            hasSpade = playerHasItem(T3_SPADE) || playerHasItem(T2_SPADE) || playerHasItem(T1_SPADE)
+            hasSpade = playerHasItem { it.isDianaSpade() }
         }
 
         /*Register.command("sbotestlschimdrop") {

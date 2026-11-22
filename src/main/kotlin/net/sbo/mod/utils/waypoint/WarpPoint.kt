@@ -40,8 +40,8 @@ val additionalHubWarps: Map<String, WarpPoint> =
  *
  * See the logic at WaypointManager.kt, in getClosestWarp function.
  */
-enum class AdditionalHubWarps(override val label: String, val priority: Int, val pos: SboVec, val setting: String, val preferWarpAgainstCompetitiveName: String? = null, val extraBlocks: Int = 0) : Option {
-    CASTLE("Castle", 1, SboVec(-250.00, 130.00, 45.00), "castleWarp", preferWarpAgainstCompetitiveName = "CRYPT"),
+enum class AdditionalHubWarps(override val label: String, val priority: Int, val pos: SboVec, val setting: String, val extraBlocks: Int = 0) : Option {
+    CASTLE("Castle", 1, SboVec(-250.00, 130.00, 45.00), "castleWarp"),
     WIZARD("Wizard", 2, SboVec(44.50, 119.00, 93.50), "wizardWarp"),
     DA("Dark Auction", 3, SboVec(91.50, 75.00, 173.50), "darkAuctionWarp"),
     STONKS("Stonks", 4, SboVec(-36.50, 70.00, -81.50), "stonksWarp"),
@@ -52,7 +52,10 @@ enum class AdditionalHubWarps(override val label: String, val priority: Int, val
     val lowercaseName: String = name.lowercase()
 
     val preferWarpAgainstCompetitive: AdditionalHubWarps?
-        get() = preferWarpAgainstCompetitiveName?.let(::valueOf)
+        get() = when (this) {
+            CASTLE -> CRYPT
+            else -> null
+        }
 
     val warpPoint: WarpPoint by lazy {
         WarpPoint(

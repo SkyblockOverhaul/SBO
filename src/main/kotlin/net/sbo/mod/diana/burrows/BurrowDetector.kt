@@ -89,14 +89,14 @@ object BurrowDetector {
         }
 
         Register.command("sboinvalidcachesize") {
-            Chat.chat("The following information is only meant for debugging purposes by developers; you can freely ignore it if you do not understand what it means.")
-            Chat.chat("Arrow Guess invalid cache size: ${ArrowGuessBurrow.invalidCacheSize()}")
-            Chat.chat("Est. memory occupied by invalid cache: ${ArrowGuessBurrow.estimatedInvalidCacheMemoryBytes() / (1024.0 * 1024.0)} MiB")
+            Chat.chat("§6[SBO] §eThe following information is only meant for debugging purposes by developers; you can freely ignore it if you do not understand what it means.")
+            Chat.chat("§6[SBO] §eArrow Guess invalid cache size: ${ArrowGuessBurrow.invalidCacheSize()}")
+            Chat.chat("§6[SBO] §eEst. memory occupied by invalid cache: ${ArrowGuessBurrow.estimatedInvalidCacheMemoryBytes() / (1024.0 * 1024.0)} MiB")
         }
 
         Register.command("sboclearinvalidcache") {
             ArrowGuessBurrow.clearInvalidCache()
-            Chat.chat("Arrow Guess invalid cache pruned successfully.")
+            Chat.chat("§6[SBO] §aArrow Guess invalid cache cleared.")
         }
 
         Register.command("sboaddtestwaypoint") {

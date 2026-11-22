@@ -16,6 +16,7 @@ import net.sbo.mod.utils.data.Item
 object InventoryUtils {
     private var currentItemId: String = "AIR"
     private var currentItemStartTime: Long = System.nanoTime()
+    private var currentItemIsDianaSpade = false
     private val heldHistory = mutableListOf<Triple<String, Long, Long>>() // durationNs, stoppedAtNs
 
     private val MIN_HOLD_NS = TimeUnit.MILLISECONDS.toNanos(50L)
@@ -33,8 +34,9 @@ object InventoryUtils {
 
     private fun trackHeldItemDuration(client: Minecraft) {
         val stack = client.player?.mainHandItem ?: ItemStack.EMPTY
-
-        val newItemId = getInternalName(stack)
+        val lookup = if (stack.isEmpty) null else ItemLookup(stack)
+        val newItemId = lookup?.sbId?.takeIf { it.isNotEmpty() }
+            ?: if (lookup == null) "AIR" else BuiltInRegistries.ITEM.getKey(stack.item).toString()
         val now = System.nanoTime()
 
         if (newItemId != currentItemId) {
@@ -45,30 +47,12 @@ object InventoryUtils {
             heldHistory.removeAll { (_, _, timestampStopped) -> now - timestampStopped > HISTORY_RETENTION_NS }
             currentItemId = newItemId
             currentItemStartTime = now
+            currentItemIsDianaSpade = lookup?.isDianaSpade() == true
         }
     }
 
-    /**
-     * returns the SkyBlock ID (e.g. "HYPERION") if present,
-     * otherwise returns vanilla ID (e.g. "minecraft:iron_sword")
-     */
-    private fun getInternalName(stack: ItemStack): String {
-        if (stack.isEmpty) return "AIR"
-
-        val lookup = ItemLookup(stack)
-        val sbId = lookup.sbId
-
-        if (sbId.isNotEmpty()) return sbId
-
-        return BuiltInRegistries.ITEM.getKey(stack.item).toString()
-    }
-
-    /**
-     * When the held item was taken out.
-     * @param itemId Part of the held item's ID (e.g. "SPADE")
-     * @return The System.nanoTime() it was taken out at, null when another item is held
-     */
-    fun heldSince(itemId: String): Long? = if (itemId in currentItemId) currentItemStartTime else null
+    /** The [System.nanoTime] timestamp when the current Diana spade was taken out, or null if none is held. */
+    fun dianaSpadeHeldSince(): Long? = if (currentItemIsDianaSpade) currentItemStartTime else null
 
     /**
      * Checks if an item is currently held OR was recently held.
@@ -155,9 +139,11 @@ object InventoryUtils {
         return invItems
     }
 
-    fun playerHasItem(sbId: String): Boolean {
+    fun playerHasItem(sbId: String): Boolean = playerHasItem { it.sbId == sbId }
+
+    inline fun playerHasItem(predicate: (ItemLookup) -> Boolean): Boolean {
         val inventory = Player.getPlayerInventory() ?: return false
-        return inventory.getNonEquipmentItems().any { stack -> !stack.isEmpty && ItemLookup(stack).sbId == sbId }
+        return inventory.getNonEquipmentItems().any { stack -> !stack.isEmpty && predicate(ItemLookup(stack)) }
     }
 
     fun getKillsFromLore(stack: ItemStack?): Int {
