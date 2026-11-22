@@ -13,7 +13,7 @@ import net.sbo.mod.guis.ConfirmGui
 import net.sbo.mod.overlays.CrownOfAvarice
 import net.sbo.mod.overlays.DianaLoot.totalProfit
 import net.sbo.mod.settings.categories.Trackers
-import net.sbo.mod.utils.isCrownOfAvarice
+import net.sbo.mod.diana.isCrownOfAvarice
 import net.sbo.mod.utils.TextUtil.removeFormatting
 import net.sbo.mod.utils.HypixelModApi.isOnHypixel
 import net.sbo.mod.utils.game.World
