@@ -82,14 +82,23 @@ object ItemPrices {
             else -> sbId
         }
 
-        val bzProduct = priceDataBazaar?.products?.get(id)
+        val products = priceDataBazaar?.products
+        // Hypixel moved Looting 7 to ENCHANTMENT_LOOTING_NEW_7, the old id is a leftover without orders.
+        // Kept as fallback in case they rename the new one back.
+        val bzProduct = if (sbId == "LOOTING_7") {
+            listOf("ENCHANTMENT_LOOTING_NEW_7", id).mapNotNull { products?.get(it) }
+                .firstOrNull { it.quick_status.buyPrice > 0 || it.quick_status.sellPrice > 0 }
+        } else {
+            products?.get(id)
+        }
         val bazaarPrice = if (Trackers.bazaarSettingDiana == Trackers.BazaarPrice.INSTASELL) {
             bzProduct?.quick_status?.sellPrice ?: 0.0
         } else {
             bzProduct?.quick_status?.buyPrice ?: 0.0
         }
 
-        val ahPrice = priceDataAh[id]?.toDouble() ?: 0.0
+        // Looting 7 is bazaar only, its /ahItems entry is just for older mod versions and would override the bazaar setting
+        val ahPrice = if (sbId == "LOOTING_7") 0.0 else priceDataAh[id]?.toDouble() ?: 0.0
         val npcPrice = npcSellValueMap[id]?.toDouble() ?: 0.0
 
         val preferNpc =
