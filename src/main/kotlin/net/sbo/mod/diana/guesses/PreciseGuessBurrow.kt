@@ -6,7 +6,7 @@ import net.sbo.mod.diana.burrows.BurrowDetector
 import net.sbo.mod.diana.burrows.BurrowParticleClock
 import net.sbo.mod.diana.burrows.ChainTracker
 import net.sbo.mod.settings.categories.Burrows
-import net.sbo.mod.utils.isDianaSpade
+import net.sbo.mod.diana.isDianaSpade
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.PlaySoundEvent
