@@ -2,7 +2,9 @@ package net.sbo.mod.diana
 
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
+import net.minecraft.world.item.ItemStack
 import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.diana.tracker.Tracker
 import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.utils.chat.Chat

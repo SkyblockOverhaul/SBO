@@ -10,7 +10,7 @@ import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.config.nextOption
 import net.sbo.mod.guis.ConfirmGui
 import net.sbo.mod.settings.categories.Trackers
-import net.sbo.mod.utils.isCrownOfAvarice
+import net.sbo.mod.diana.isCrownOfAvarice
 import net.sbo.mod.utils.overlay.CHAT_SCREEN_FILTER
 import net.sbo.mod.utils.overlay.CRAFTING_PLAYER_INVENTORY_FILTER
 import net.sbo.mod.utils.overlay.GuiLibOverlay
