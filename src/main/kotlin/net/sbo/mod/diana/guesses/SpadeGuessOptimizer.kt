@@ -9,7 +9,6 @@ import net.sbo.mod.settings.categories.Burrows
 import net.sbo.mod.utils.events.Register
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.WorldChangeEvent
-import net.sbo.mod.utils.game.Mayor
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.waypoint.Waypoint
@@ -265,8 +264,8 @@ object SpadeGuessOptimizer {
             if (shown != null) show(null)
             return
         }
-        // The picked spots stay, the place shows again when you're back with a spade while Diana is on
-        if (!World.isInHub() || !DianaState.hasSpade || !Mayor.dianaActive) {
+        // The picked spots stay, the place shows again when you're back in the Hub with a spade
+        if (!World.isInHub() || !DianaState.hasSpade) {
             if (shown != null) show(null)
             return
         }
@@ -440,10 +439,10 @@ object SpadeGuessOptimizer {
 
     /**
      * Whether nothing but the place to use the spade is led to (line, warp): while it is shown, and after a spade use there
-     * till its guess settled. Only in the Hub with a spade while Diana is on, like the place itself.
+     * till its guess settled. Only in the Hub with a spade, like the place itself.
      */
     fun hidesBurrows(): Boolean =
-        (shown != null || hiddenForUse) && isActive() && World.isInHub() && DianaState.hasSpade && Mayor.dianaActive
+        (shown != null || hiddenForUse) && isActive() && World.isInHub() && DianaState.hasSpade
 
     /** Whether [waypoint] is a place the optimizer picked near a finished chain, those are close enough to never warp to. */
     fun isNearChainEnd(waypoint: Waypoint): Boolean = !startup && waypoint in waypoints
