@@ -43,6 +43,8 @@ import net.sbo.mod.guis.SoundsGui
 import net.sbo.mod.guis.HubGui
 import net.sbo.mod.overlays.*
 import net.sbo.mod.settings.categories.Debug
+import net.sbo.mod.partyfinder.HypixelPartyFinder
+import net.sbo.mod.partyfinder.PartyEventHints
 import net.sbo.mod.partyfinder.PartyFinderManager
 import net.sbo.mod.partyfinder.PartyFinderSocket
 import net.sbo.mod.partyfinder.OwnStats
@@ -195,6 +197,8 @@ object SBOKotlin : ClientModInitializer {
 		WaypointManager.init()
 		HypixelModApi.init()
 		PartyFinderManager.init()
+		HypixelPartyFinder.init()
+		PartyEventHints.init()
 		PartyFinderSocket.init()
 		OwnStats.init()
 		StatReporter.init()

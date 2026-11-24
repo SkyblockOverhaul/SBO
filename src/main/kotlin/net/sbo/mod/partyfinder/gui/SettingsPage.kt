@@ -51,6 +51,15 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
     val section = props.section
     var autoInvite by useState(config.autoInvite)
     var autoRequeue by useState(config.autoRequeue)
+    var autoKick by useState(config.autoKick)
+    var hypixelOffer by useState(config.hypixelOffer)
+    var hypixelAutoDelist by useState(config.hypixelAutoDelist)
+    var hypixelDelistQuestion by useState(config.hypixelDelistQuestion)
+    var eventHints by useState(config.eventHints)
+    var dragonHints by useState(config.dragonHints)
+    var safariHints by useState(config.safariHints)
+    var scathaHints by useState(config.scathaHints)
+    var menuButtons by useState(config.menuButtons)
     var startWithFavorites by useState(config.startWithFavorites)
     var autoRefresh by useState(config.autoRefreshSeconds)
     var blocked by useState(BlockedPlayers.list())
@@ -164,11 +173,51 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
                 }
                 settingRow(
                     "Auto requeue",
-                    "When a player leaves your party, SBO lists the party again by itself."
+                    "When a player leaves your party, SBO queues the party again by itself."
                 ) {
                     switch(checked = autoRequeue, onChange = { e ->
                         autoRequeue = e.checked
                         config.autoRequeue = e.checked
+                        config.save()
+                    })
+                }
+                settingRow(
+                    "Auto kick",
+                    "While your Kuudra party is queued on SBO, kicks Hypixel joins who don't meet the requirements."
+                ) {
+                    switch(checked = autoKick, onChange = { e ->
+                        autoKick = e.checked
+                        config.autoKick = e.checked
+                        config.save()
+                    })
+                }
+                settingRow(
+                    "Ask to queue on SBO too",
+                    "After you queue for Kuudra on Hypixel, asks to queue on SBO too."
+                ) {
+                    switch(checked = hypixelOffer, onChange = { e ->
+                        hypixelOffer = e.checked
+                        config.hypixelOffer = e.checked
+                        config.save()
+                    })
+                }
+                settingRow(
+                    "Auto remove from SBO queue",
+                    "Removes your Kuudra party from the SBO queue when you remove it on Hypixel."
+                ) {
+                    switch(checked = hypixelAutoDelist, onChange = { e ->
+                        hypixelAutoDelist = e.checked
+                        config.hypixelAutoDelist = e.checked
+                        config.save()
+                    })
+                }
+                settingRow(
+                    "Ask to remove from SBO queue",
+                    "After you remove your party on Hypixel, asks to remove it from the SBO queue too."
+                ) {
+                    switch(checked = hypixelDelistQuestion, onChange = { e ->
+                        hypixelDelistQuestion = e.checked
+                        config.hypixelDelistQuestion = e.checked
                         config.save()
                     })
                 }
@@ -190,6 +239,56 @@ internal val SettingsPage = component<SettingsProps>("SettingsPage") { props ->
                 }
 
                 h3(className = "pf-section") { +"Party list" }
+                settingRow(
+                    "Event reminders",
+                    "Chat hint when a fishing event runs."
+                ) {
+                    switch(checked = eventHints, onChange = { e ->
+                        eventHints = e.checked
+                        config.eventHints = e.checked
+                        config.save()
+                    })
+                }
+                settingRow(
+                    "Dragon reminders",
+                    "Chat hint when you place a Summoning Eye alone."
+                ) {
+                    switch(checked = dragonHints, onChange = { e ->
+                        dragonHints = e.checked
+                        config.dragonHints = e.checked
+                        config.save()
+                    })
+                }
+                settingRow(
+                    "Safari reminders",
+                    "Chat hint when you go on a Safari alone."
+                ) {
+                    switch(checked = safariHints, onChange = { e ->
+                        safariHints = e.checked
+                        config.safariHints = e.checked
+                        config.save()
+                    })
+                }
+                settingRow(
+                    "Scatha reminders",
+                    "Chat hint when a Worm or Scatha spawns for you alone."
+                ) {
+                    switch(checked = scathaHints, onChange = { e ->
+                        scathaHints = e.checked
+                        config.scathaHints = e.checked
+                        config.save()
+                    })
+                }
+                settingRow(
+                    "Buttons in Hypixel menus",
+                    "SBO Party Finder button in Hypixel's Kuudra and Safari menus."
+                ) {
+                    switch(checked = menuButtons, onChange = { e ->
+                        menuButtons = e.checked
+                        config.menuButtons = e.checked
+                        config.save()
+                    })
+                }
                 settingRow(
                     "Refresh automatically",
                     "How often the party list loads new parties by itself. You can always refresh with the button or F5."

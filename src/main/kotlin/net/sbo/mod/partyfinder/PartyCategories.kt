@@ -16,6 +16,7 @@ import net.sbo.mod.partyfinder.api.SubcategoryDef
 object PartyCategories {
     // Event subcategories open and close, so the definitions are not kept forever
     private const val MAX_AGE_MS = 10 * 60 * 1000L
+    private const val FAILED_RECENTLY_MS = 60 * 1000L
 
     @Volatile
     var data: CategoriesData? = null
@@ -24,6 +25,12 @@ object PartyCategories {
     private var loadedAt = 0L
     private var loading = false
     private val waiting = mutableListOf<(CategoriesData?) -> Unit>()
+
+    @Volatile
+    private var failedAt = 0L
+
+    /** Automatic checks skip loading after a recent failure, the window and creating a party always try again. */
+    val failedRecently: Boolean get() = System.currentTimeMillis() - failedAt < FAILED_RECENTLY_MS
 
     val version: String? get() = data?.version
 
@@ -42,6 +49,7 @@ object PartyCategories {
         PartyFinderApi.categories(
             onError = { error ->
                 logger.warn("[SBO] Party categories not loaded: ${error.code} ${error.message}")
+                failedAt = System.currentTimeMillis()
                 finish(data)
             },
             onSuccess = { loaded ->
@@ -63,6 +71,7 @@ object PartyCategories {
         synchronized(this) {
             data = loaded
             loadedAt = System.currentTimeMillis()
+            failedAt = 0L
         }
     }
 
@@ -121,6 +130,19 @@ data class PartyTarget(val category: CategoryDef, val sub: SubcategoryDef?, val 
     val display: List<String> = (category.display + sub?.display.orEmpty()).distinct()
     val roles: List<RoleDef> get() = sub?.roles ?: category.roles
     val roleLimit: Int? get() = sub?.roleLimit ?: category.roleLimit
+    val roleWeightLimit: Int? get() = sub?.roleWeightLimit
+
+    fun roleWeight(id: String?): Int = roles.firstOrNull { it.id == id }?.weight ?: 0
+
+    /** The wanted places that fit the weight limit next to the leader's own role. */
+    fun fittingRoles(own: String?, wanted: List<String>): List<String> {
+        val limit = roleWeightLimit ?: return wanted
+        var left = limit - roleWeight(own)
+        return wanted.filter { role ->
+            val weight = roleWeight(role)
+            (weight <= left).also { fits -> if (fits) left -= weight }
+        }
+    }
 
     fun roleLabel(id: String): String = roles.firstOrNull { it.id == id }?.label ?: id
 

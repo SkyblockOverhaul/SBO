@@ -33,9 +33,9 @@ object ProblemText {
         return "From the Hypixel API. Wrong or old? The player has to turn on $where and type $RELOAD."
     }
 
-    /** E.g. "Tracking: needs at least 50, has 42". */
+    /** E.g. "Tracking: needs 50, has 42". */
     fun describe(problem: Problem, target: PartyTarget?): String = when (problem.stat) {
-        "ironman" -> if (problem.need.text() == "only") "this party is only for Ironman players" else "this party is not for Ironman players"
+        "ironman" -> if (problem.need.text() == "only") "only for Ironman players" else "not for Ironman players"
         "role" -> {
             val labels = (problem.need as? JsonArray).orEmpty().asSequence().mapNotNull { it.text() }
                 .map { id -> target?.roleLabel(id) ?: id }
@@ -49,19 +49,75 @@ object ProblemText {
             }
         }
         else -> {
-            val stat = PartyCategories.stat(problem.stat)
-            val label = stat?.label ?: problem.stat
+            val label = label(problem)
             val def = target?.req(problem.stat)
             when (def?.type) {
-                "flag" -> "$label: needed, but missing"
+                "flag" -> "$label: missing"
                 "rarity" -> "$label: needs ${rarityNeed(problem.need.text())}, has ${value(problem.stat, problem.have)}"
                 "anyOf" -> if (ReqMatcher.matchesAll(problem.need)) {
-                    "$label: needs all of ${picks(problem.need, def.choices)}, is missing some"
+                    "$label: needs all of ${picks(problem.need, def.choices)}"
                 } else {
-                    "$label: needs one of ${picks(problem.need, def.choices)}, has none of them"
+                    "$label: needs one of ${picks(problem.need, def.choices)}"
                 }
-                else -> "$label: needs at least ${value(problem.stat, problem.need)}, has ${value(problem.stat, problem.have)}"
+                else -> "$label: needs ${value(problem.stat, problem.need)}, has ${value(problem.stat, problem.have)}"
             }
+        }
+    }
+
+    /** The name of the requirement alone, e.g. "Magical Power". */
+    fun label(problem: Problem): String = when (problem.stat) {
+        "ironman" -> "Ironman"
+        "role" -> "Role"
+        else -> PartyCategories.stat(problem.stat)?.label ?: problem.stat
+    }
+
+    /** One line per player with the requirements they miss, e.g. "SupeerShoup: SkyBlock Level, Magical Power". */
+    fun labelsByPlayer(problems: List<Problem>): List<String> =
+        problems.groupBy { it.name }.map { (name, own) -> "$name: ${own.joinToString(", ") { label(it) }}" }
+
+    /** Short enough for one chat message, e.g. "SkyBlock Level 466/470" or "Terminator: missing". */
+    fun short(problem: Problem, target: PartyTarget?): String {
+        if (problem.stat == "ironman") return if (problem.need.text() == "only") "Ironman only" else "no Ironman"
+        if (problem.stat == "role") {
+            return when {
+                (problem.need as? JsonArray).isNullOrEmpty() -> "all roles taken"
+                problem.have.text() != null -> "role taken"
+                else -> "no role picked"
+            }
+        }
+        val label = label(problem)
+        if (problem.have is JsonNull) return "$label: no data"
+        return when (target?.req(problem.stat)?.type) {
+            "flag", "anyOf" -> "$label: missing"
+            "rarity" -> "$label ${value(problem.stat, problem.have)}/${title(problem.need.text() ?: "")}"
+            else -> "$label ${value(problem.stat, problem.have)}/${value(problem.stat, problem.need)}"
+        }
+    }
+
+    /** The first problem and how many more there are, chat messages keep the rest for their hover. */
+    fun compact(problems: List<Problem>, target: PartyTarget?): String {
+        val first = problems.firstOrNull() ?: return ""
+        val more = if (problems.size > 1) " +${problems.size - 1} more" else ""
+        return short(first, target) + more
+    }
+
+    /** Every problem on a line of its own, for hovers. */
+    fun details(problems: List<Problem>, target: PartyTarget?): String =
+        problems.joinToString("\n") { if (it.name.isEmpty()) describe(it, target) else "${it.name}: ${describe(it, target)}" }
+
+    /** What the kicked player reads in party chat. */
+    fun kickReason(playerName: String, problems: List<Problem>, target: PartyTarget?): String =
+        "[SBO] Kicking $playerName for not meeting the requirements: ${compact(problems, target)}"
+
+    /** A requirement as it gets listed, e.g. "Magical Power: 1,800". */
+    fun requirement(stat: String, need: JsonElement, target: PartyTarget?): String {
+        val label = PartyCategories.stat(stat)?.label ?: stat
+        val def = target?.req(stat)
+        return when (def?.type) {
+            "flag" -> label
+            "rarity" -> "$label: ${rarityNeed(need.text())}"
+            "anyOf" -> "$label: ${if (ReqMatcher.matchesAll(need)) "all of" else "one of"} ${picks(need, def.choices)}"
+            else -> "$label: ${value(stat, need)}"
         }
     }
 
@@ -69,7 +125,7 @@ object ProblemText {
         PfError.REQS_NOT_MET -> "Not everyone meets the requirements."
         PfError.PARTY_FULL -> "The party is already full."
         PfError.PARTY_NOT_FOUND -> "The party does not exist anymore."
-        PfError.PARTY_TOO_OLD -> "The party was listed for over an hour and got removed."
+        PfError.PARTY_TOO_OLD -> "The party was queued for over an hour."
         PfError.CATEGORY_CLOSED -> "This party type is only open while its event is running."
         // The backend says "Key is banned" or "Key is banned until <date> UTC"
         PfError.INVALID_KEY -> if (error.message.startsWith("Key is banned")) "Your SBO key is banned${error.message.removePrefix("Key is banned")}."

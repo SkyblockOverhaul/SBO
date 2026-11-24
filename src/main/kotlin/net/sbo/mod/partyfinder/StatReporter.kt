@@ -62,6 +62,6 @@ internal object StatReporter {
     private fun showOutdated() {
         if (outdatedShown) return
         outdatedShown = true
-        Chat.chat("§6[SBO] §eYour burrows per hour no longer count for party finder requirements with this SBO version. Update SBO to keep them counting.")
+        Chat.chat("§6[SBO] §eYour burrows per hour no longer count for requirements with this SBO version. Please update SBO.")
     }
 }

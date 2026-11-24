@@ -4,15 +4,11 @@ import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.diana.achievements.AchievementManager.trackWithCheckPlayer
 import net.sbo.mod.partyfinder.api.PfError
 import net.sbo.mod.partyfinder.api.PlayerStats
-import net.sbo.mod.utils.events.TickScheduler.sleep
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.chat.Chat
 import net.sbo.mod.utils.data.AchievementStats
 import net.sbo.mod.utils.data.AchievementStatsResponse
-import net.sbo.mod.utils.data.DataManager
-import net.sbo.mod.utils.data.DataManager.sboData
 import net.sbo.mod.utils.events.Register
-import net.sbo.mod.utils.game.TabList
 import net.sbo.mod.utils.http.SboApi
 import java.util.concurrent.TimeUnit
 
@@ -23,24 +19,10 @@ object PartyPlayer {
 
     private val CACHE_BYPASS_COOLDOWN = TimeUnit.SECONDS.toNanos(20)
 
-    private fun currentProfile(): String? = TabList.findInfo("Profile: ")?.trim()?.takeIf { it.isNotEmpty() }
-
     private fun nameOutdated(info: AchievementStats?): Boolean {
         val returned = info?.name?.takeIf { it.isNotEmpty() } ?: return false
         val current = Player.getName()?.takeIf { it.isNotEmpty() } ?: return false
         return !current.equals(returned, ignoreCase = true)
-    }
-
-    private fun profileChanged(profile: String?): Boolean {
-        val cached = sboData.lastStatsProfile.takeIf { it.isNotEmpty() } ?: return false
-        if (profile == null) return false
-        return !profile.equals(cached, ignoreCase = true)
-    }
-
-    private fun rememberProfile(profile: String?) {
-        if (profile == null || profile.equals(sboData.lastStatsProfile, ignoreCase = true)) return
-        sboData.lastStatsProfile = profile
-        DataManager.save(DataManager::sboData)
     }
 
     private fun cacheBypassReadyIn(): Long =
@@ -54,23 +36,13 @@ object PartyPlayer {
                 else Chat.chat("§6[SBO] §aPlayer stats reloaded: ${stats.name} (SB Level: ${stats.general?.sbLevel ?: 0})")
             }
         }
-
-        Register.onChatMessage(
-            Regex("^Your profile was changed to: (\\S+)"),
-            noFormatting = true
-        ) { _, match ->
-            val profile = match.groupValues[1]
-            sleep(2000) {
-                load(profile)
-            }
-        }
     }
 
-    fun load(profile: String? = currentProfile()) {
+    /** SBO knows about profile switches from OwnStats, so the cached stats are already the new profile's. */
+    fun load() {
         if (refreshing) return
         fetch(
-            readCache = !(profileChanged(profile) && cacheBypassReadyIn() == 0L),
-            profile = profile,
+            readCache = true,
             onError = { error -> logger.warn("[SBO] Player stats not loaded: ${error.message}") }
         ) { stats ->
             logger.info("[SBO] Player stats loaded: ${stats.name} (SB Level: ${stats.sbLvl})")
@@ -95,7 +67,6 @@ object PartyPlayer {
 
     private fun fetch(
         readCache: Boolean,
-        profile: String?,
         onError: ((Exception) -> Unit)? = null,
         callback: (AchievementStats) -> Unit
     ) {
@@ -118,11 +89,10 @@ object PartyPlayer {
                 refreshing = false
                 if (response.success) {
                     if (readCache && nameOutdated(response.stats) && cacheBypassReadyIn() == 0L) {
-                        fetch(readCache = false, profile = profile, onError = onError, callback = callback)
+                        fetch(readCache = false, onError = onError, callback = callback)
                         return@toJson
                     }
                     stats = response.stats ?: AchievementStats()
-                    rememberProfile(profile)
                     if (stats.sbLvl == -1) {
                         Chat.chat("§6[SBO] §cYour stats are not available, please try again later.")
                     } else {

@@ -193,6 +193,10 @@ Place in `config/sbo/sounds/`:
 |---------|-------------|
 | **Auto Invite** | Auto-invite players meeting your requirements |
 | **Auto Requeue** | Auto-requeue after a member leaves |
+| **Auto Kick** | While your Kuudra party is queued on SBO, kick players who join through Hypixel's party finder without meeting your requirements (off by default) |
+| **Hypixel Party Finder Offer** | After queueing a Kuudra party on Hypixel, queue it on SBO in one click or add requirements first, with the same tier, note and combat level |
+| **Buttons in Hypixel Menus** | An SBO Party Finder button above Hypixel's Kuudra party finder, its Select Tier menu and the Critter Safari entry, right click it to hide these buttons |
+| **Party Reminders** | Chat messages for fishing events, dragons, Safari and Scatha when you seem to want a party, at most every 2 days per kind, every kind can be turned off on its own |
 | **Customizable UI** | Scale text and icons |
 
 ---

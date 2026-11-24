@@ -34,7 +34,8 @@ import java.util.WeakHashMap
 internal object CustomizerChat {
     /** The sender stands before the first ": " of a chat line: "[296] [MVP+] Name: hi", "Party > Name: hi", "From Name: hi". */
     private const val MAX_SENDER_LENGTH = 80
-    private val WORD = Regex("[A-Za-z0-9_]{1,16}")
+    // The name right before the colon, so a sentence such as "[SBO] Name doesn't meet the requirements: ..." has no sender.
+    private val SENDER = Regex("(?<![A-Za-z0-9_])([A-Za-z0-9_]{1,16})\\s*$")
     /** A whole word, so the end of a longer word never reads as a name. */
     private val MENTION = Regex("[A-Za-z0-9_]+")
 
@@ -127,7 +128,7 @@ internal object CustomizerChat {
         val plain = ChatFormatting.stripFormatting(line.string) ?: return line
         if (LOGO in plain) return line
         val colon = plain.indexOf(": ").takeIf { it in 1..MAX_SENDER_LENGTH }
-        val sender = colon?.let { end -> WORD.findAll(plain.take(end)).map { it.value }.firstOrNull(::shownInChat) }
+        val sender = colon?.let { end -> senderOf(plain.take(end)) }
         val wanted = wantedNames()
         var out = line
         if (wanted != null) {
@@ -137,6 +138,9 @@ internal object CustomizerChat {
         if (sender != null) out = decorateChatName(out, sender, animate = animate)
         return out
     }
+
+    private fun senderOf(beforeColon: String): String? =
+        SENDER.find(beforeColon)?.groupValues?.get(1)?.takeIf(::shownInChat)
 
     /** Which names inside a message get their look, null while names in messages are off. */
     private fun wantedNames(): ((String) -> Boolean)? = when (DataManager.sboData.customizerNamesInChat) {
@@ -212,7 +216,7 @@ internal object CustomizerChat {
         }
         runStyle?.let { runs += run.toString() to it }
 
-        var out: Component = Component.empty().also { line -> runs.forEach { (s, style) -> line.append(Component.literal(s).withStyle(style)) } }
+        var out: Component = Component.empty().also { line -> runs.forEach { [s, style] -> line.append(Component.literal(s).withStyle(style)) } }
         for (name in found.asReversed()) {
             out = recolor(
                 out, name.name, list[name.name.lowercase()], TeamTagPlace.CHAT,
