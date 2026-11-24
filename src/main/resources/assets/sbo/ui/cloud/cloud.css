@@ -230,6 +230,13 @@ body {
 .cs-value { color: var(--subtle); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cs-pick .guilib-segment { max-width: 110px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cs-more { padding: 2px 6px 3px 6px; }
+.cs-perfield .cs-field { grid-template-columns: minmax(0, 1fr) auto auto; }
+.cs-tag { color: var(--title); font-size: 7px; white-space: nowrap; }
+.cs-tag-both { color: var(--toast-warning); }
+.cs-subhead { padding: 3px 6px 1px 6px; border-top: 1px solid var(--border); color: var(--text-strong); font-size: 7px; }
+.cs-filled { margin: 0 2px 4px 2px; }
+.cs-auto-merge { margin-bottom: 4px; }
+.cs-auto-merge .guilib-tooltip-anchor { align-self: flex-start; }
 
 .cs-backups-hint { margin: 0 2px 6px 2px; }
 .cs-empty { padding: 12px 0; }

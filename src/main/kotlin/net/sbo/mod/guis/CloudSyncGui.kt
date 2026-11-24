@@ -27,6 +27,7 @@ import net.sbo.guilib.fabric.GuiLib
 import net.sbo.mod.utils.data.Backups
 import net.sbo.mod.utils.data.DataManager
 import net.sbo.mod.utils.data.cloud.CloudArea
+import net.sbo.mod.utils.data.cloud.CloudDiff
 import net.sbo.mod.utils.data.cloud.CloudSide
 import net.sbo.mod.utils.data.cloud.CloudSync
 import net.sbo.mod.utils.data.cloud.CloudSync.CompareResult
@@ -225,8 +226,14 @@ object CloudSyncGui {
     private val ComparePage = component<CompareProps>("CloudSyncCompare") { (size, onBack) ->
         var result by useState<CompareResult?>(null)
         var choices by useState(emptyMap<String, CloudSide>())
+        var autoMerge by useState(CloudSync.autoMerge)
 
-        useEffect { CloudSync.compare { result = it } }
+        useEffect {
+            CloudSync.compare {
+                result = it
+                if (it is CompareResult.Ready) choices = CloudDiff.suggested(it.comparison.areas)
+            }
+        }
 
         fun side(id: String): CloudSide = choices[id] ?: CloudSide.PC
         fun pick(id: String, side: CloudSide) {
@@ -241,26 +248,55 @@ object CloudSyncGui {
                     div(className = "cs-error") { +r.message }
                 }
                 is CompareResult.Ready -> {
-                    val count = r.areas.sumOf { it.fields.size + it.hidden }
+                    val areas = r.comparison.areas
+                    val decided = r.comparison.auto.size
+                    val count = areas.sumOf { it.fields.size }
+                    val decidedText = "$decided ${if (decided == 1) "difference was" else "differences were"} decided automatically."
                     scroll(className = "cs-body guilib-autohide") {
-                        if (r.areas.isEmpty()) {
+                        div(className = "cs-setting cs-auto-merge") {
+                            div(className = "cs-setting-text") {
+                                tooltip(content = {
+                                    div { +"When this PC and your cloud save both changed, SBO combines them on its own instead of asking." }
+                                    div(className = "cs-tip-line") { +"Changes made on only one side are kept, also a tracker you reset. Drops and mobs counted on both PCs are added up, each one counted once. If both changed the same setting, the one changed last wins." }
+                                    div(className = "cs-tip-line") { +"If SBO cannot decide something, it asks you here like before. A backup is made first." }
+                                    div(className = "cs-tip-line") { +"Saved in your cloud save, so your other PCs use it too after their next sync." }
+                                }) {
+                                    span(className = "cs-setting-title") {
+                                        +"Auto Merge"
+                                        img("sbo:ui/partyfinder/info.svg", className = "cs-info-icon")
+                                    }
+                                }
+                                div(className = "cs-hint") { +"Combines both sides for you when SBO can decide." }
+                            }
+                            switch(checked = autoMerge, onChange = {
+                                autoMerge = it.checked
+                                CloudSync.autoMerge = it.checked
+                            })
+                        }
+                        if (areas.isEmpty() && decided == 0) {
                             div(className = "cs-center") { +"No differences. This PC and your cloud save are the same." }
+                        } else if (areas.isEmpty()) {
+                            div(className = "cs-center") { +"Nothing to pick. $decidedText" }
                         } else {
                             div(className = "cs-compare-head") {
                                 span(className = "cs-count") { +"$count ${if (count == 1) "difference" else "differences"}" }
                                 div(className = "cs-spacer")
-                                span(className = "cs-hint") { +"Left is this PC, right is the cloud. Click what to keep." }
+                                span(className = "cs-hint") { +"Left is this PC, right is the cloud. Newer is marked." }
                             }
+                            if (decided > 0) div(className = "cs-hint cs-filled") { +decidedText }
                             if (r.unsigned) div(className = "cs-warning") {
                                 +"This cloud save has no sign key, so SBO cannot check that it really comes from you."
                             }
-                            r.areas.forEach { area -> areaBlock(area, ::side, ::pick) }
+                            areas.forEach { area -> areaBlock(area, ::side, ::pick) }
                         }
                     }
-                    if (r.areas.isNotEmpty()) {
+                    if (areas.isNotEmpty() || decided > 0) {
                         div(className = "cs-footer") {
-                            button(title = "Keep everything from this PC", onClick = { choices = emptyMap() }) { +"All from PC" }
-                            button(title = "Take everything from the cloud save", onClick = { choices = allIds(r.areas).associateWith { CloudSide.CLOUD } }) { +"All from Cloud" }
+                            if (areas.isNotEmpty()) {
+                                button(title = "Picks the newer side wherever SBO can tell, this PC everywhere else", onClick = { choices = CloudDiff.suggested(areas) }) { +"Use newer" }
+                                button(title = "Keep everything from this PC", onClick = { choices = emptyMap() }) { +"All from PC" }
+                                button(title = "Take everything from the cloud save", onClick = { choices = allIds(areas).associateWith { CloudSide.CLOUD } }) { +"All from Cloud" }
+                            }
                             div(className = "cs-spacer")
                             button(
                                 className = "cs-primary",
@@ -337,25 +373,44 @@ object CloudSyncGui {
     }
 
     private fun allIds(areas: List<CloudArea>): List<String> =
-        areas.flatMap { area -> if (area.perField) area.fields.map { it.id } else listOf(area.file) }
+        areas.flatMap { area -> if (area.perField) area.fields.map { it.id } else listOf(area.id) }
+
+    // "PC newer", "Cloud newer", "Both changed", empty if SBO cannot tell
+    private fun newerText(newer: CloudSide?, bothChanged: Boolean): String = when {
+        bothChanged -> "Both changed"
+        newer == CloudSide.PC -> "PC newer"
+        newer == CloudSide.CLOUD -> "Cloud newer"
+        else -> ""
+    }
+
+    private fun NodeBuilder.newerTag(newer: CloudSide?, bothChanged: Boolean) {
+        val text = newerText(newer, bothChanged)
+        val hint = when {
+            bothChanged -> "Changed on this PC and in the cloud since the last sync"
+            text.isEmpty() -> null
+            else -> "Changed there since the last sync, or looks newer"
+        }
+        span(className = classNames("cs-tag", "cs-tag-both" to bothChanged), title = hint) { +text }
+    }
 
     private fun NodeBuilder.areaBlock(area: CloudArea, side: (String) -> CloudSide, pick: (String, CloudSide) -> Unit) {
-        val total = area.fields.size + area.hidden
-        val fromCloud = if (area.perField) area.fields.count { side(it.id) == CloudSide.CLOUD } else if (side(area.file) == CloudSide.CLOUD) total else 0
+        val total = area.fields.size
+        val fromCloud = if (area.perField) area.fields.count { side(it.id) == CloudSide.CLOUD } else if (side(area.id) == CloudSide.CLOUD) total else 0
         details(
             summary = {
                 span(className = "cs-area-title") { +area.label }
                 span(className = "cs-area-count") { +"$total" }
+                if (!area.perField) newerTag(area.newer, area.bothChanged)
                 div(className = "cs-spacer")
                 if (fromCloud > 0) span(className = "cs-area-cloud") { +if (area.perField) "$fromCloud from cloud" else "from cloud" }
             },
             className = classNames("cs-area", "cs-perfield" to area.perField),
-            key = area.file
+            key = area.id
         ) {
             if (!area.perField) {
                 div(className = "cs-field cs-whole") {
                     span(className = "cs-field-label") { +"Keep" }
-                    segmented(value = side(area.file).name, onChange = { pick(area.file, CloudSide.valueOf(it)) }, className = "cs-pick") {
+                    segmented(value = side(area.id).name, onChange = { pick(area.id, CloudSide.valueOf(it)) }, className = "cs-pick") {
                         option(CloudSide.PC.name, "This PC")
                         option(CloudSide.CLOUD.name, "Cloud")
                     }
@@ -366,10 +421,16 @@ object CloudSyncGui {
                     span { +"Cloud" }
                 }
             }
-            area.fields.forEach { field ->
+            var group: String? = null
+            area.shown.forEach { field ->
+                if (field.group != null && field.group != group) {
+                    group = field.group
+                    div(className = "cs-subhead", key = "group:${field.group}") { +field.group }
+                }
                 div(className = "cs-field", key = field.id) {
                     span(className = "cs-field-label", title = field.label) { +field.label }
                     if (area.perField) {
+                        newerTag(field.newer, field.bothChanged)
                         segmented(value = side(field.id).name, onChange = { pick(field.id, CloudSide.valueOf(it)) }, className = "cs-pick") {
                             option(CloudSide.PC.name, field.pc ?: "(not set)", title = "This PC")
                             option(CloudSide.CLOUD.name, field.cloud ?: "(not set)", title = "Cloud")
@@ -406,7 +467,7 @@ object CloudSyncGui {
     }
 
     private fun NodeBuilder.statusCard(status: CloudSync.Status?, busy: String?, refreshWait: Long, refreshing: Boolean, onRefresh: () -> Unit) {
-        val (tone, text) = when (status?.state) {
+        val [tone, text] = when (status?.state) {
             null -> "idle" to "Checking..."
             SyncState.NO_SAVE -> "warn" to "No cloud save yet. Click Upload."
             SyncState.NOT_USED_HERE -> "warn" to "Not loaded on this PC yet. Click Download."

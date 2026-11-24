@@ -115,6 +115,8 @@ data class SboData(
     @SerializedName("customizerAccess", alternate = ["badgeAccess"]) var customizerAccess: MutableMap<String, Boolean> = mutableMapOf(),
     var collapsedSettings: MutableSet<String> = mutableSetOf(), // collapsed subs in the settings, "Diana/Waypoints"
     var currentCoaUuid: String = "",
+    // Cloud Sync combines both sides on its own when they both changed. It is uploaded, so it is the same on every PC
+    var cloudAutoMerge: Boolean = true,
 ) {
     fun save() = DataManager.save(DataManager::sboData)
 }

@@ -59,6 +59,10 @@ object CloudSync {
     // Refresh button: at most one request in this time
     private const val REFRESH_COOLDOWN_MS = 30 * 1000L
     private const val AUTO_UPLOAD_MINUTES = 30
+    // How often SBO looks for changed settings and data, for Auto Merge
+    private const val TRACK_MINUTES = 2
+    // Older compares fetch the cloud save again before saving
+    private const val FRESH_COMPARE_MS = 60_000L
 
     private val json = Json { ignoreUnknownKeys = true }
     private val gson = Gson()
@@ -82,12 +86,17 @@ object CloudSync {
 
     sealed interface CompareResult {
         data class Ready(
-            val areas: List<CloudArea>,
+            val comparison: CloudComparison,
             val pc: Map<String, String>,
             val cloud: Map<String, String>,
             val cloudVersion: Int,
             val cloudCounter: Long,
             val unsigned: Boolean,
+            // Files of the last sync on this PC, null if unknown
+            val base: Map<String, String>?,
+            // When values last changed on both sides
+            val times: CloudTimes,
+            val fetchedAt: Long = System.currentTimeMillis(),
         ) : CompareResult
 
         data class Failed(val message: String) : CompareResult
@@ -139,11 +148,20 @@ object CloudSync {
     private fun changed() = listeners.forEach { it() }
 
     var autoSync: Boolean
-        get() = state().autoSync ?: legacyAutoSync == true
+        get() = (state().autoSync ?: legacyAutoSync) == true
         set(value) {
             state().autoSync = value
             DataManager.sboData.save()
             if (value) autoPaused = false
+            changed()
+        }
+
+    // Both sides changed: SBO combines them on its own when it can decide everything. Part of the cloud save.
+    var autoMerge: Boolean
+        get() = DataManager.sboData.cloudAutoMerge
+        set(value) {
+            DataManager.sboData.cloudAutoMerge = value
+            DataManager.sboData.save()
             changed()
         }
 
@@ -158,9 +176,15 @@ object CloudSync {
     fun init() {
         Register.onTick(20 * 60 * AUTO_UPLOAD_MINUTES) { _ ->
             if (SBOKotlin.mc.level == null || !autoActive()) return@onTick
-            if (uploadInFlight?.count ?: 0L > 0L) return@onTick
+            if ((uploadInFlight?.count ?: 0L) > 0L) return@onTick
             SBOKotlin.logger.info("[CloudSync] periodic auto upload")
             upload(auto = true)
+        }
+
+        Register.onTick(20 * 60 * TRACK_MINUTES) { _ ->
+            if (state().version == 0 || DataManager.alphaActive || SboKey.get().isBlank()) return@onTick
+            val uuid = Player.accountUuid()
+            worker.execute { collectOrNull()?.let { trackChanges(uuid, it) } }
         }
 
         Register.command(COMMAND) {
@@ -309,8 +333,8 @@ object CloudSync {
     private fun autoActive(): Boolean = autoSync && !autoPaused && SboKey.get().isNotBlank()
 
     // Players without supporter status only hear about it in the window
-    private fun pauseQuietly(reason: String) {
-        SBOKotlin.logger.info("[CloudSync] auto sync paused quietly: $reason")
+    private fun pauseQuietly() {
+        SBOKotlin.logger.info("[CloudSync] auto sync paused quietly: not a supporter")
         autoPaused = true
         changed()
     }
@@ -330,7 +354,7 @@ object CloudSync {
         SboApi.cloudStatus()
             .toJson<CloudStatusResponse>(ignoreUnknownKeys = true) { response ->
                 if (!response.success) {
-                    if (notSupporter(response.code, response.error)) pauseQuietly("not a supporter")
+                    if (notSupporter(response.code, response.error)) pauseQuietly()
                     else pauseAuto(friendly(response.error))
                     return@toJson
                 }
@@ -353,10 +377,27 @@ object CloudSync {
                 autoPaused = true
                 askWhichToKeep("You already have a cloud save from another PC. Load it here? Your current data is backed up first.")
             }
+            autoMerge -> autoMergeOrAsk(auto = true)
             else -> {
                 autoPaused = true
-                askWhichToKeep("Your cloud save and this PC both have changes the other one does not have. Compare them or pick one.")
+                askWhichToKeep(BOTH_CHANGED_TEXT)
             }
+        }
+    }
+
+    private const val BOTH_CHANGED_TEXT = "Your cloud save and this PC both have changes the other one does not have. Compare them or pick one."
+
+    // Both sides changed: merges on its own if SBO can decide everything, otherwise asks like before
+    private fun autoMergeOrAsk(auto: Boolean) {
+        // Loading data while the game shuts down could get lost half way
+        if (closing) return SBOKotlin.logger.info("[CloudSync] no auto merge while the game closes")
+        compare { result ->
+            val ready = result as? CompareResult.Ready
+            // A cloud save without the sign key is never merged on its own
+            if (ready != null && !ready.unsigned && ready.comparison.areas.isEmpty()) return@compare merge(ready, emptyMap(), byAutoMerge = true, auto = auto)
+            SBOKotlin.logger.info("[CloudSync] auto merge needs a choice: ${(result as? CompareResult.Failed)?.message ?: "${ready?.comparison?.areas?.size} areas"}")
+            if (auto) autoPaused = true
+            askWhichToKeep(if (ready != null) "Your cloud save and this PC both changed and Auto Merge needs your choice for some of it. Compare them or pick one." else BOTH_CHANGED_TEXT)
         }
     }
 
@@ -366,8 +407,11 @@ object CloudSync {
         if (autoActive()) SBOKotlin.mc.schedule { upload(auto = true) }
     }
 
+    @Volatile private var closing = false
+
     @SboEvent
     fun onGameClose(event: GameCloseEvent) {
+        closing = true
         SBOKotlin.logger.info("[CloudSync] game close, auto=${autoActive()} paused=$autoPaused")
         if (!autoActive()) return
         val deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(CLOSE_WAIT_MS)
@@ -416,6 +460,35 @@ object CloudSync {
         val files = trees.mapValues { (_, tree) -> tree.toString() }.toMutableMap()
         files[CloudDiff.CONFIG] = SBOKotlin.settings.toJsonc()
         return files
+    }
+
+    // For the change times only, a failure just skips one check
+    private fun collectOrNull(): Map<String, String>? =
+        runCatching { collectFiles() }
+            .onFailure { SBOKotlin.logger.warn("[CloudSync] could not read the data to check for changes: ${it.message}") }
+            .getOrNull()
+
+    private fun trackChanges(uuid: String, files: Map<String, String>) {
+        runCatching { CloudChanges.track(uuid, files) }
+            .onFailure { SBOKotlin.logger.warn("[CloudSync] could not check for changes: ${it.message}") }
+    }
+
+    // The uploaded SBO Data also says when each value last changed, older SBO versions ignore it
+    private fun withTimes(files: Map<String, String>, times: Map<String, Long>): Map<String, String> {
+        val raw = files[SBO_DATA_FILE] ?: return files
+        if (times.isEmpty()) return files
+        val sbo = JsonParser.parseString(raw).asJsonObject
+        sbo.add(CloudDiff.TIMES_KEY, gson.toJsonTree(times))
+        return files + (SBO_DATA_FILE to sbo.toString())
+    }
+
+    // Takes the change times out of a cloud save's SBO Data
+    private fun splitTimes(files: Map<String, String>): Pair<Map<String, String>, Map<String, Long>> {
+        val raw = files[SBO_DATA_FILE] ?: return files to emptyMap()
+        val sbo = runCatching { JsonParser.parseString(raw).asJsonObject }.getOrNull() ?: return files to emptyMap()
+        val element = sbo.remove(CloudDiff.TIMES_KEY) ?: return files to emptyMap()
+        val times = runCatching { element.asJsonObject.entrySet().associate { it.key to it.value.asLong } }.getOrDefault(emptyMap())
+        return (files + (SBO_DATA_FILE to sbo.toString())) to times
     }
 
     private fun withLocalFields(files: Map<String, String>): Map<String, String> {
@@ -511,6 +584,8 @@ object CloudSync {
                 notify("error", "Could not read your SBO settings and data: ${it.message}")
                 return@execute finish()
             }
+            val uuid = Player.accountUuid()
+            trackChanges(uuid, files)
             val hash = hashOf(files)
             val state = state()
             if (auto && hash == state.hash) {
@@ -520,9 +595,9 @@ object CloudSync {
             }
 
             val counter = maxOf(System.currentTimeMillis(), state.counter + 1)
-            val uuid = Player.accountUuid()
-            val signature = CloudSyncKeys.key(uuid)?.let { CloudSyncKeys.sign(it, signedBytes(uuid, counter, files)) }
-            val envelope = json.encodeToString(CloudEnvelope(counter = counter, files = files, sig = signature))
+            val sent = withTimes(files, CloudChanges.times(uuid))
+            val signature = CloudSyncKeys.key(uuid)?.let { CloudSyncKeys.sign(it, signedBytes(uuid, counter, sent)) }
+            val envelope = json.encodeToString(CloudEnvelope(counter = counter, files = sent, sig = signature))
 
             SboApi.cloudUpload(SLOT, CloudUploadRequest(envelope, state.version, force))
                 .toJson<CloudUploadResponse>(ignoreUnknownKeys = true) { response ->
@@ -533,6 +608,7 @@ object CloudSync {
                                 state.counter = counter
                                 state.hash = hash
                                 DataManager.sboData.save()
+                                CloudBase.save(uuid, response.version, files)
                                 remember(CloudSlotMeta(SLOT, response.version, envelope.toByteArray(Charsets.UTF_8).size, System.currentTimeMillis()))
                                 question = null
                                 SBOKotlin.logger.info("[CloudSync] uploaded version ${response.version} (auto=$auto)")
@@ -542,11 +618,15 @@ object CloudSync {
                                 }
                             }
                             response.conflict -> {
-                                if (auto) autoPaused = true
                                 cloudInfo = null
-                                askWhichToKeep("Your cloud save was changed on another PC. Compare them or pick one.")
+                                if (autoMerge) {
+                                    autoMergeOrAsk(auto)
+                                } else {
+                                    if (auto) autoPaused = true
+                                    askWhichToKeep("Your cloud save was changed on another PC. Compare them or pick one.")
+                                }
                             }
-                            auto && notSupporter(response.code, response.error) -> pauseQuietly("not a supporter")
+                            auto && notSupporter(response.code, response.error) -> pauseQuietly()
                             auto -> pauseAuto("upload failed: ${friendly(response.error)}")
                             else -> notify("error", "Upload failed: ${friendly(response.error)}")
                         }
@@ -671,17 +751,22 @@ object CloudSync {
     }
 
     private fun apply(envelope: CloudEnvelope, version: Int, auto: Boolean) {
-        if (!applyFiles(envelope.files)) {
+        val [files, times] = splitTimes(envelope.files)
+        if (!applyFiles(files)) {
             if (auto) autoPaused = true
             return
         }
+        val uuid = Player.accountUuid()
         state().version = version
         state().counter = maxOf(state().counter, envelope.counter)
+        CloudBase.save(uuid, version, files)
         question = null
-        // Hash of the loaded data, read on the worker like every other hash
+        // Hash of the loaded data, read on the worker like every other hash. Its values changed when they did in the cloud.
         worker.execute {
-            state().hash = runCatching { hashOf(collectFiles()) }.getOrDefault("")
+            val loaded = runCatching { collectFiles() }.getOrNull()
+            state().hash = loaded?.let(::hashOf) ?: ""
             DataManager.sboData.save()
+            loaded?.let { CloudChanges.reset(uuid, it, times) }
         }
         if (auto) {
             notify("success", "Auto Sync loaded your newer settings and data from your other PC.")
@@ -702,9 +787,16 @@ object CloudSync {
                 if (check is Check.Problem) return@toJson SBOKotlin.mc.schedule { callback(CompareResult.Failed(check.question.text)) }
                 check as Check.Ok
                 worker.execute {
-                    val cloud = check.envelope.files
+                    val uuid = Player.accountUuid()
+                    val [cloud, cloudTimes] = splitTimes(check.envelope.files)
+                    val base = CloudBase.load(uuid, state().version)
                     val result = runCatching { collectFiles() }.fold(
-                        onSuccess = { pc -> CompareResult.Ready(CloudDiff.compare(pc, cloud), pc, cloud, response.version, check.envelope.counter, check.unsigned) },
+                        onSuccess = { pc ->
+                            trackChanges(uuid, pc)
+                            val times = CloudTimes(CloudChanges.times(uuid), cloudTimes)
+                            val compared = CloudDiff.compare(pc, cloud, base, times)
+                            CompareResult.Ready(compared, pc, cloud, response.version, check.envelope.counter, check.unsigned, base, times)
+                        },
                         onFailure = { CompareResult.Failed("Could not read your SBO settings and data: ${it.message}") }
                     )
                     SBOKotlin.mc.schedule { callback(result) }
@@ -714,28 +806,63 @@ object CloudSync {
     }
 
     // Applies the picked values on this PC, then uploads the result. Reads on the worker, applies on the client thread.
+    // A compare left open for a while fetches the cloud save again first, it may have changed since
     fun merge(compared: CompareResult.Ready, choices: Map<String, CloudSide>) {
+        if (System.currentTimeMillis() - compared.fetchedAt < FRESH_COMPARE_MS) return merge(compared, choices, byAutoMerge = false, auto = false)
+        compare { again ->
+            when {
+                again is CompareResult.Failed -> notify("error", again.message)
+                again !is CompareResult.Ready -> {}
+                again.cloudVersion != compared.cloudVersion || openIds(again.comparison) != openIds(compared.comparison) ->
+                    notify("warning", "Your cloud save or data changed while comparing. Compare again.")
+                else -> merge(again, choices, byAutoMerge = false, auto = false)
+            }
+        }
+    }
+
+    private fun merge(compared: CompareResult.Ready, choices: Map<String, CloudSide>, byAutoMerge: Boolean, auto: Boolean) {
         worker.execute {
             val pcNow = runCatching { collectFiles() }.getOrElse {
                 notify("error", "Could not read your SBO settings and data: ${it.message}")
                 return@execute
             }
+            val uuid = Player.accountUuid()
+            trackChanges(uuid, pcNow)
+            var ready = compared.copy(times = compared.times.copy(pc = CloudChanges.times(uuid)))
             if (hashOf(pcNow) != hashOf(compared.pc)) {
-                notify("warning", "Your data changed while comparing. Compare again.")
-                return@execute
+                // Changed while comparing (playing goes on, or a switch in this window): compare the newest data once more
+                val again = CloudDiff.compare(pcNow, compared.cloud, compared.base, ready.times)
+                // The picks only fit if the same things are still open
+                if (openIds(again) != openIds(compared.comparison)) {
+                    if (!byAutoMerge) return@execute notify("warning", "Your data changed while comparing. Compare again.")
+                    if (auto) autoPaused = true
+                    return@execute askWhichToKeep(BOTH_CHANGED_TEXT)
+                }
+                ready = ready.copy(comparison = again, pc = pcNow)
             }
-            val merged = CloudDiff.merge(compared.pc, compared.cloud, compared.areas, choices)
+            val merged = CloudDiff.merge(ready.pc, ready.cloud, ready.comparison, choices)
             SBOKotlin.mc.schedule {
-                if (merged != compared.pc && !applyFiles(merged)) return@schedule
+                if (closing) return@schedule
+                if (merged != ready.pc && !applyFiles(merged)) return@schedule
                 question = null
-                // This PC now contains the cloud save, the upload builds on it
-                state().version = compared.cloudVersion
-                state().counter = maxOf(state().counter, compared.cloudCounter)
+                // This PC now contains the cloud save, the upload builds on it and always runs
+                state().version = ready.cloudVersion
+                state().counter = maxOf(state().counter, ready.cloudCounter)
+                state().hash = ""
                 DataManager.sboData.save()
-                upload()
+                // Also right if the upload fails: this PC now builds on that cloud version
+                CloudBase.save(uuid, ready.cloudVersion, ready.cloud)
+                // Merged values count as changed when they were changed on either side, not now
+                val times = CloudChanges.latest(ready.times.pc, ready.times.cloud)
+                worker.execute { collectOrNull()?.let { CloudChanges.reset(uuid, it, times) } }
+                if (byAutoMerge) notify("success", "Auto Merge combined the changes from this PC and your cloud save.")
+                upload(auto = auto)
             }
         }
     }
+
+    private fun openIds(comparison: CloudComparison): Set<String> =
+        comparison.areas.flatMap { area -> area.fields.map { it.id } }.toSet()
 
     fun delete() {
         SboApi.cloudDelete(SLOT)
@@ -744,6 +871,7 @@ object CloudSync {
                     state().version = 0
                     state().hash = ""
                     DataManager.sboData.save()
+                    CloudBase.clear(Player.accountUuid())
                     remember(null)
                     question = null
                     if (autoSync) notify("success", "Cloud save deleted. Auto Sync is on and will upload this PC's data again soon.")
