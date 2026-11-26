@@ -34,6 +34,7 @@ object Keybinds : Category("Keybinds") {
     var sphinxSolverKey by keybind {
         this.name = literal("Sphinx Answer ⚠")
         this.description = literal("Clicks the correct sphinx answer. §c⚠ USE AT YOUR OWN RISK ⚠")
+        this.warning = "The key clicks the sphinx answer for you. Hypixel could see that as a macro."
     }
 
     var clearRareMobWorldWaypointsKey by keybind {

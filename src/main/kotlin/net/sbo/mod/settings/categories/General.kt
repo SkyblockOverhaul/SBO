@@ -91,7 +91,8 @@ object General : Category("General") {
     var fastAotv by boolean(false) {
         this.name = literal("Fast AOTV")
         this.since = "0.8.0"
-        this.description = literal("Holding right click with an Aspect of the Void uses it as fast as spam clicking instead of Minecraft's default of every 4 ticks. Easier on your hand. Idea from Nopo Mod. §c⚠ USE AT YOUR OWN RISK ⚠")
+        this.description = literal("While you hold right click with an Aspect of the Void, it is used every few ticks (set below) instead of Minecraft's default of every 4 ticks. Never faster than spam clicking and it stops when you let go. Easier on your hand. Idea from Nopo Mod. §c⚠ USE AT YOUR OWN RISK ⚠")
+        this.warning = "Each use is sent to Hypixel like a right click, up to 10 a second. Hypixel could see that as an autoclicker."
     }
 
     // Never faster than 10 uses a second, what spam clicking reaches
@@ -102,6 +103,13 @@ object General : Category("General") {
         this.since = "0.8.0"
         depends(::fastAotv)
         this.description = literal("Ticks between uses while holding right click (20 ticks = 1 second): 2 is 10 uses a second, about spam clicking, 4 is Minecraft's default.")
+    }
+
+    var fastAotvJitter by boolean(false) {
+        this.name = literal("Tick Jitter")
+        this.since = "0.8.1-beta1"
+        depends(::fastAotv)
+        this.description = literal("Now and then a use takes a tick more or less than the delay above, so the pace isn't perfectly even. 2 ticks then is about 9-10 uses a second, 3 about 6-7. Never faster than 2 ticks. Does nothing on 4 ticks, Minecraft's default.")
     }
 
     init {

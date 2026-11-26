@@ -118,6 +118,10 @@ sealed class ConfigEntry<T>(
     var since: ModVersion? = null
         internal set
 
+    /** From `warning` in its builder, the settings screen asks with it before turning the setting on or binding its key. */
+    var warning: String? = null
+        internal set
+
     /** From `depends(...)`, `dependsOff(...)` and `dependsAny(...)` in the entry's builder. */
     var requirements: List<Requirement> = emptyList()
         internal set

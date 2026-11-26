@@ -307,6 +307,14 @@ body {
 .cfg-editor-done { padding: 1px 8px; }
 .cfg-editor-text { flex-grow: 1; min-height: 0; }
 
+/* Asked before a use at your own risk setting is turned on */
+.cfg-warning { width: min(90vw, 260px); padding: 8px; background-color: var(--bg); border: 1px solid var(--bad-border); border-radius: 6px; }
+.cfg-warning-title { font-weight: bold; color: var(--bad); margin-bottom: 4px; }
+.cfg-warning-text { color: var(--subtle); margin-bottom: 6px; }
+.cfg-warning-buttons { display: flex; gap: 4px; justify-content: flex-end; margin-top: 2px; }
+.cfg-warning-accept { color: var(--text-strong); background-color: var(--danger); border-color: var(--danger); }
+.cfg-warning-accept:hover { background-color: var(--bad); border-color: var(--bad); }
+
 .cfg-new-actions { display: flex; gap: 4px; margin: 4px 0 6px 0; }
 .cfg-results-info { margin: 4px 0; color: var(--muted); font-size: 7px; }
 .cfg-result-group { margin-bottom: 6px; }

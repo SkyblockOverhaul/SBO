@@ -13,6 +13,7 @@ import net.sbo.guilib.core.dsl.h2
 import net.sbo.guilib.core.dsl.header
 import net.sbo.guilib.core.dsl.img
 import net.sbo.guilib.core.dsl.input
+import net.sbo.guilib.core.dsl.modal
 import net.sbo.guilib.core.dsl.multiSelect
 import net.sbo.guilib.core.dsl.numberInput
 import net.sbo.guilib.core.dsl.scroll
@@ -64,7 +65,11 @@ private class Ui(
     val toggle: (String) -> Unit,
     /** Opens [StringsEntry] in the big editor. */
     val edit: (StringsEntry) -> Unit,
+    /** Runs the action right away, or after the player accepted the [ConfigEntry.warning] when there is one. */
+    val confirm: (ConfigEntry<*>, () -> Unit) -> Unit,
 )
+
+private class PendingWarning(val entry: ConfigEntry<*>, val accept: () -> Unit)
 
 private val UiContext = createContext<Ui?>(null, "ConfigUi")
 
@@ -85,6 +90,7 @@ private val App = component<AppProps>("ConfigApp") { (config, onBack, whatsNew, 
     var query by useState(startQuery)
     var target by useState<ConfigElement?>(null)
     var editing by useState<StringsEntry?>(null)
+    var warning by useState<PendingWarning?>(null)
     var collapsed by useState<Set<String>>(DataManager.sboData.collapsedSettings.toSet())
     val revision = useState(0)
     val body = useElementRef()
@@ -124,6 +130,7 @@ private val App = component<AppProps>("ConfigApp") { (config, onBack, whatsNew, 
             collapsed = collapsed,
             toggle = { key -> setCollapsed(if (key in collapsed) collapsed - key else collapsed + key) },
             edit = { editing = it },
+            confirm = { entry, action -> if (entry.warning == null) action() else warning = PendingWarning(entry, action) },
         )
     }
     val hits = useMemo(query, revision.value) { search(config, query) }
@@ -227,6 +234,22 @@ private val App = component<AppProps>("ConfigApp") { (config, onBack, whatsNew, 
                     ui.changed()
                 })
             }
+
+            val pending = warning
+            modal(open = pending != null, onClose = { warning = null }, className = "cfg-warning") {
+                if (pending != null) {
+                    div(className = "cfg-warning-title") { +"⚠ Use at your own risk" }
+                    description(pending.entry.warning.orEmpty(), "cfg-warning-text")
+                    div(className = "cfg-warning-text") { +"SBO does not guarantee that you won't get banned for using ${pending.entry.name}." }
+                    div(className = "cfg-warning-buttons") {
+                        button(className = "cfg-button", onClick = { warning = null }) { +"Cancel" }
+                        button(className = "cfg-button cfg-warning-accept", onClick = {
+                            warning = null
+                            pending.accept()
+                        }) { +"I understand" }
+                    }
+                }
+            }
         }
     }
 }
@@ -260,7 +283,8 @@ private fun NodeBuilder.whatsNewPage(whatsNew: WhatsNew, revision: Int, ui: Ui) 
     if (toggles.isNotEmpty()) {
         div(className = "cfg-new-actions") {
             button(className = "cfg-button", title = "Turn every new feature below on", onClick = {
-                toggles.forEach { switchTo(it, true) }
+                // Settings with a warning are only turned on one at a time, after their popup
+                toggles.forEach { if (it.warning == null) switchTo(it, true) }
                 ui.changed()
             }) { +"Enable all" }
             button(className = "cfg-button", title = "Turn every new feature below off", onClick = {
@@ -486,8 +510,12 @@ private fun rowDescription(element: ConfigElement) = when (element) {
 private fun NodeBuilder.control(entry: ConfigEntry<*>, ui: Ui, refresh: () -> Unit, locked: Boolean) {
     when (entry) {
         is BooleanEntry -> switch(checked = entry.value, disabled = locked, onChange = {
-            entry.set(it.checked)
-            ui.changed()
+            val on = it.checked
+            fun apply() {
+                entry.set(on)
+                ui.changed()
+            }
+            if (on) ui.confirm(entry, ::apply) else apply()
         })
         is NumberEntry<*> -> number(entry, ui, refresh)
         is ColorEntry -> colorInput(value = entry.value, alpha = entry.allowAlpha, onChange = {
@@ -499,7 +527,7 @@ private fun NodeBuilder.control(entry: ConfigEntry<*>, ui: Ui, refresh: () -> Un
             refresh()
         })
         is StringsEntry -> strings(entry, ui, refresh)
-        is KeybindEntry -> KeybindControl(KeybindProps(entry, entry.value, entry.conflicts(), locked, ui.changed))
+        is KeybindEntry -> KeybindControl(KeybindProps(entry, entry.value, entry.conflicts(), locked, ui.changed, ui.confirm))
         is ChoiceEntry -> {
             val options = entry.options()
             select(value = entry.value, className = "cfg-select", onChange = { event ->
@@ -617,18 +645,23 @@ private data class KeybindProps(
     val conflicts: List<String>,
     val locked: Boolean,
     val changed: () -> Unit,
+    val confirm: (ConfigEntry<*>, () -> Unit) -> Unit,
 )
 
 /** The key of a [KeybindEntry]: click it, then press a key or click it again with a mouse button. Escape unbinds. */
-private val KeybindControl = component<KeybindProps>("ConfigKeybind") { (entry, value, conflicts, locked, changed) ->
+private val KeybindControl = component<KeybindProps>("ConfigKeybind") { (entry, value, conflicts, locked, changed, confirm) ->
     var listening by useState(false)
     // The click after binding the left button must not start listening again
     val boundByClick = useRef(false)
 
     fun bind(key: InputConstants.Key) {
         listening = false
-        entry.set(key.name)
-        changed()
+        fun apply() {
+            entry.set(key.name)
+            changed()
+        }
+        // Only binding an unbound key asks, changing or unbinding it doesn't
+        if (key != InputConstants.UNKNOWN && value == KeybindEntry.UNBOUND) confirm(entry, ::apply) else apply()
     }
 
     div(className = "cfg-keybind") {
