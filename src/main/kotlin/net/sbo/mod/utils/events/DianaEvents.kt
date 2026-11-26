@@ -9,6 +9,7 @@ import net.sbo.mod.utils.events.impl.diana.BurrowDugEvent
 import net.sbo.mod.utils.events.impl.game.PlayerInteractEvent
 import net.sbo.mod.utils.game.ItemLookup
 import net.sbo.mod.utils.game.World
+import net.sbo.mod.utils.game.isDianaSpade
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.waypoint.WaypointManager
 import net.minecraft.world.InteractionResult
@@ -41,8 +42,8 @@ object DianaEvents {
         if (!World.isInHub()) return
         val item = event.player.mainHandItem
         if (item.isEmpty) return
-        val sbId = ItemLookup(item).sbId
-        if (sbId != "DEIFIC_SPADE" && sbId != "ARCHAIC_SPADE" && sbId != "ANCESTRAL_SPADE") return
+        val lookup = ItemLookup(item)
+        if (!lookup.isDianaSpade()) return
         if (event.pos ==  null) return
 
         processBlockInteraction(event.pos.toSboVec())

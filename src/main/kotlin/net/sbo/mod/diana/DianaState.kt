@@ -12,6 +12,7 @@ import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.entity.DianaMobDeathEvent
 import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
 import net.sbo.mod.utils.game.InventoryUtils.playerHasItem
+import net.sbo.mod.utils.game.isDianaSpade
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.math.SboVec.Companion.toSboVec
 import net.sbo.mod.utils.waypoint.WaypointManager.removeNearbyRareMobWaypointAt
@@ -49,7 +50,7 @@ object DianaState {
         }
 
         Register.onTick(20) { // maybe better way to register this
-            hasSpade = playerHasItem("DEIFIC_SPADE") || playerHasItem("ARCHAIC_SPADE") || playerHasItem("ANCESTRAL_SPADE")
+            hasSpade = playerHasItem { it.isDianaSpade() }
         }
 
         /*Register.command("sbotestlschimdrop") {

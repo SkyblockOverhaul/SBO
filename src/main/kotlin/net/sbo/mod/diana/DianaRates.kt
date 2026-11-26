@@ -117,9 +117,9 @@ object DianaRates {
 
     /** Drop chances in percent without Magic Find, by griffin rarity and drop. */
     private val BASE_CHANCES_PERCENT = mapOf(
-        "epic" to mapOf("stick" to 0.05, "relic" to 0.05),
-        "legendary" to mapOf("chim" to 2.0, "stick" to 0.1, "relic" to 0.1, "food" to 0.5),
-        "mythic" to mapOf("chim" to 2.5, "stick" to 0.15, "relic" to 0.15, "food" to 1.0, "wool" to 1.0, "core" to 1.0, "stinger" to 1.5)
+        "epic" to mapOf("stick" to 0.3, "relic" to 0.05),
+        "legendary" to mapOf("chim" to 2.0, "stick" to 0.35, "relic" to 0.1, "food" to 0.5),
+        "mythic" to mapOf("chim" to 2.5, "stick" to 0.4, "relic" to 0.15, "food" to 1.0, "wool" to 0.75, "core" to 0.75, "stinger" to 1.5)
     )
 
     /**

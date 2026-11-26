@@ -65,7 +65,8 @@ class Waypoint(
     var hidden: Boolean = false
     val creationNs: Long = System.nanoTime()
     private var formatted: Boolean = false
-    private var distanceRaw: Double = 0.0
+    var distanceToPlayer: Double = 0.0
+        private set
     private var distanceText: String = ""
     private var component: Component = EMPTY_COMPONENT
     private var formattedText: String = ""
@@ -122,17 +123,17 @@ class Waypoint(
         }
     }
 
-    fun distanceToPlayer(): Double {
+    private fun computeDistanceToPlayer() {
         val playerPos = Player.getLastPosition()
         val dx = playerPos.x - this.pos.x
         val dy = playerPos.y - this.pos.y
         val dz = playerPos.z - this.pos.z
 
-        return sqrt(dx * dx + dy * dy + dz * dz)
+        this.distanceToPlayer = sqrt(dx * dx + dy * dy + dz * dz)
     }
 
     private fun setDistanceText() {
-        val dist = distanceRaw.roundToInt()
+        val dist = distanceToPlayer.roundToInt()
         val showDistance = Waypoints.showDistanceCutoff <= 0 || dist > Waypoints.showDistanceCutoff
 
         distanceText = if (showDistance) {
@@ -188,7 +189,7 @@ class Waypoint(
     private fun setWarpText() {
         val showTimesDug = Waypoints.showTimesDug && this.type == "burrow" && this.text != "Start" && this.text != "Guess"
         val timesDug = this.timesDug
-        val dist = Waypoints.showDistanceCutoff == 0 || this.distanceToPlayer() < Waypoints.showDistanceCutoff
+        val dist = Waypoints.showDistanceCutoff == 0 || distanceToPlayer < Waypoints.showDistanceCutoff
         // A treasure burrow that ends its chain is dug out with one click
         val digsNeeded = if (this.text == "Treasure" && ChainTracker.isChainEnd(pos, this.type)) 1 else 2
         val timesDugText = if (showTimesDug && dist) " §7[§" + (if (timesDug >= 1) "6" else "e") + timesDug + "§7/§a$digsNeeded§7]" else ""
@@ -196,7 +197,7 @@ class Waypoint(
         val waypointDistanceText = getWaypointDistanceText()
         val chainStepText = getChainStepText()
 
-        if (isClosest) {
+        if (isClosest && !hidden) {
             val closest = when {
                 this.type == "rareMob" -> WaypointManager.getFinalClosestWarpToFixedTarget(this.pos)
                 // The warp key doesn't warp to a place near the chain you just finished
@@ -212,7 +213,7 @@ class Waypoint(
             if (title && closest != null && World.isInHub() && DianaState.hasSpade) {
                 val warpName = closest.replaceFirstChar(Char::titlecase)
 
-                val text = "§" + (if (this.type == "rareMob") "d" else "b") + "Warp §e$warpName${if (Waypoints.lookAlike) " §b[${distanceRaw.roundToInt()}m]" else distanceText}"
+                val text = "§" + (if (this.type == "rareMob") "d" else "b") + "Warp §e$warpName${if (Waypoints.lookAlike) " §b[${distanceToPlayer.roundToInt()}m]" else distanceText}"
                 val asSubtitle = Warps.warpTitleAsSubtitle
                 val title = if (asSubtitle) "" else text
                 val subtitle = if (asSubtitle) text else ""
@@ -246,7 +247,7 @@ class Waypoint(
     }
 
     private fun updateDynamicOpacity(): Float =
-        calculateDynamicOpacity(distanceRaw)
+        calculateDynamicOpacity(distanceToPlayer)
 
     private fun getColor(): Color {
         if (Burrows.highlightChainEnds && (this.type == "guess" || this.type == "arrow" || this.type == "burrow") && ChainTracker.isChainEnd(this.pos, this.type)) {
@@ -302,7 +303,8 @@ class Waypoint(
     }
 
     fun format(rareMobWaypoints: List<Waypoint>) {
-        this.distanceRaw = distanceToPlayer()
+        computeDistanceToPlayer()
+
         this.dynamicOpacity = if (Waypoints.dynamicWaypointOpacity) updateDynamicOpacity() else (Waypoints.waypointOpacity / 100.0).toFloat().coerceIn(0.2f, 1.0f)
 
         setDistanceText()
@@ -319,7 +321,7 @@ class Waypoint(
                 val newest = rareMobWaypoints.last() == this
 
                 if (newest) isClosest = true
-                this.line = newest && Waypoints.inqLine && this.distanceRaw >= 8.0
+                this.line = newest && Waypoints.inqLine && this.distanceToPlayer >= 8.0
 
                 if (newest) {
                     setWarpText()

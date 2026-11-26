@@ -25,7 +25,7 @@ final class FastAotvMixin {
 
     @Inject(method = "startUseItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isHandsBusy()Z", shift = At.Shift.BEFORE))
     private final void sbo$fastAotv(@NonNull final CallbackInfo ci) {
-        final int delay = FastAotv.delay(this.player);
+        final var delay = FastAotv.delay(this.player);
         if (delay > 0) this.rightClickDelay = delay;
     }
 }

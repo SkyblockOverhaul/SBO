@@ -14,6 +14,7 @@ import net.sbo.mod.utils.events.impl.game.WorldChangeEvent
 import net.sbo.mod.utils.events.impl.packets.ParticleReceiveEvent
 import net.sbo.mod.utils.game.World
 import net.sbo.mod.utils.game.ItemLookup
+import net.sbo.mod.utils.game.isDianaSpade
 import net.sbo.mod.utils.math.PolynomialFitter
 import net.sbo.mod.utils.math.SboVec
 import net.sbo.mod.utils.math.SboVec.Companion.toSboVec
@@ -196,8 +197,7 @@ object PreciseGuessBurrow {
         if (item?.isEmpty == true) return
         if (item == null) return
         val lookup = ItemLookup(item)
-        val sbId = lookup.sbId
-        if (sbId != "DEIFIC_SPADE" && sbId != "ARCHAIC_SPADE" && sbId != "ANCESTRAL_SPADE") return
+        if (!lookup.isDianaSpade()) return
         val now = System.nanoTime()
         if (now - this.lastLavaParticle < TimeUnit.MILLISECONDS.toNanos(200L)) {
             event.isCanceled = true

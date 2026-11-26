@@ -101,7 +101,7 @@ object BurrowParticleClock {
         val now = System.nanoTime()
         val quiet = now - lastParticle > QUIET_NANOS
         lastParticle = now
-        val spadeOut = InventoryUtils.heldSince("SPADE") ?: return
+        val spadeOut = InventoryUtils.dianaSpadeHeldSince() ?: return
         if (firstShown < spadeOut) firstShown = now
         if (!quiet) return
         // Only a start right after taking out the spade is on the clock, a later one is from walking into range
@@ -154,7 +154,7 @@ object BurrowParticleClock {
      * showed: every burrow within [SHOWN_RANGE] of it has shown by now. Null when there is no such place.
      */
     fun shownFrom(): SboVec? {
-        val spadeOut = InventoryUtils.heldSince("SPADE") ?: return null
+        val spadeOut = InventoryUtils.dianaSpadeHeldSince() ?: return null
         val clockStart = clockStart(spadeOut)
         val now = System.nanoTime()
         if (now < dueTime(spadeOut, clockStart)) return null

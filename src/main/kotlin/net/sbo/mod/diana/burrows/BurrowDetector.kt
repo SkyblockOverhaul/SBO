@@ -88,6 +88,17 @@ object BurrowDetector {
             Chat.chat("§6[SBO] §4Burrow Waypoints Cleared!")
         }
 
+        Register.command("sboinvalidcachesize") {
+            Chat.chat("§6[SBO] §eThe following information is only meant for debugging purposes by developers; you can freely ignore it if you do not understand what it means.")
+            Chat.chat("§6[SBO] §eArrow Guess invalid cache size: ${ArrowGuessBurrow.invalidCacheSize()}")
+            Chat.chat("§6[SBO] §eEst. memory occupied by invalid cache: ${ArrowGuessBurrow.estimatedInvalidCacheMemoryBytes() / (1024.0 * 1024.0)} MiB")
+        }
+
+        Register.command("sboclearinvalidcache") {
+            ArrowGuessBurrow.clearInvalidCache()
+            Chat.chat("§6[SBO] §aArrow Guess invalid cache cleared.")
+        }
+
         Register.command("sboaddtestwaypoint") {
             val pos = Player.getLastPosition()
             val wayp = Waypoint("Test", pos.x, pos.y, pos.z, type = "debug", ttl = 30)
@@ -132,7 +143,7 @@ object BurrowDetector {
             lastDugOutBurrowPos = DianaEvents.lastWaypointClicked ?: SboVec.ZERO
             refreshBurrows(deathOriginating = false, expectedTimesDug = 2)
 
-            val anyClose = WaypointManager.getAllGuessesAndBurrows().any { it.distanceToPlayer() < Burrows.chainEndTitleDistance }
+            val anyClose = WaypointManager.getAllGuessesAndBurrows().any { it.distanceToPlayer < Burrows.chainEndTitleDistance }
             // With the optimizer the spade is used here first, the place to use it is only shown if that finds nothing new
             if (Burrows.showTitleWhenChainEnds && (Burrows.spadeGuessOptimizer || !anyClose)) requestSpade("chain")
             true

@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /** A key in Minecraft's Key Binds is marked red like a double key when an SBO key has it too. */
 @Mixin(targets = "net.minecraft.client.gui.screens.options.controls.KeyBindsList$KeyEntry")
-abstract class KeyBindsListMixin {
+final class KeyBindsListMixin {
     @Shadow
     @Final
     private KeyMapping key;
@@ -26,7 +26,7 @@ abstract class KeyBindsListMixin {
     private boolean hasCollision;
 
     @Inject(method = "refreshEntry", at = @At("TAIL"))
-    private void sbo$markSboKeys(@NonNull final CallbackInfo ci) {
+    private final void sbo$markSboKeys(@NonNull final CallbackInfo ci) {
         if (KeybindConflicts.markMinecraftKey(this.key, this.changeButton)) this.hasCollision = true;
     }
 }

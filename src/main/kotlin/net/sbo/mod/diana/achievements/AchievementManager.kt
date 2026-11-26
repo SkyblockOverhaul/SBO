@@ -11,7 +11,6 @@ import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.SBOKotlin.mc
 import net.sbo.mod.guis.ConfirmGui
 import net.sbo.mod.overlays.CrownOfAvarice
-import net.sbo.mod.overlays.CrownOfAvarice.isCoA
 import net.sbo.mod.overlays.DianaLoot.totalProfit
 import net.sbo.mod.settings.categories.Trackers
 import net.sbo.mod.utils.TextUtil.removeFormatting
@@ -31,6 +30,7 @@ import net.sbo.mod.utils.events.impl.entity.EntityHitEvent
 import net.sbo.mod.utils.events.impl.game.WorldChangeEvent
 import net.sbo.mod.utils.events.impl.guis.GuiOpenEvent
 import net.sbo.mod.utils.game.ItemLookup
+import net.sbo.mod.utils.game.isCrownOfAvarice
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -409,10 +409,11 @@ object AchievementManager {
 
         val helmet = mc.player?.inventory?.getItem(39) ?: return
 
-        val lookup = ItemLookup(helmet)
-        val sbId = lookup.sbId
+        if (helmet.isEmpty()) return
 
-        if (sbId != "CROWN_OF_AVARICE" && sbId != "CROWN_OF_AVARICE_CELEBRATION") return
+        val lookup = ItemLookup(helmet)
+
+        if (!lookup.isCrownOfAvarice()) return
 
         unlockAchievement(121)
 
@@ -434,7 +435,7 @@ object AchievementManager {
         when (mf) {
             25.0 -> {
                 unlockAchievement(124)
-                if (CrownOfAvarice.helmet.isCoA() && CrownOfAvarice.helmet != null &&
+                if (CrownOfAvarice.helmet.isCrownOfAvarice() && CrownOfAvarice.helmet != null &&
                     lookup.uuid == CrownOfAvarice.primaryCoaUuid && Trackers.coaTracker != Trackers.TrackerMode.OFF)
                     Chat.chat("§6[SBO] §aYour CoA just reached 1B Coins! If you buy a new CoA, don't forget to do /sbosetprimarycoa on the new one to continue tracking your CoA stats.", true)
             }
