@@ -1,0 +1,243 @@
+{
+  "credit": {
+    "guide": "Diana Guide",
+    "author": "worldcraft_uwu",
+    "support": "Taz",
+    "url": "https://docs.google.com/document/d/1jDJSf15ULRwhiwHskECcqTa4DrEmPMHTMFk9kScxJ78/edit",
+    "discord": "https://discord.gg/QvM6b9jsJD",
+    "questions": "Questions or changes to the guide: DM worldcraft_uwu on Discord or ask in #diana-guide-questions on the"
+  },
+  "path": {
+    "steps": [
+      "1500 MP, Mythos, Crown of Greed",
+      "Level a plain Crown of Avarice",
+      "Infernal Crimson, 1800 MP",
+      "Minmax: stars, more MP"
+    ],
+    "goal": "Goal of the path: 2 hits on Minotaurs, 3 on Minos Champions."
+  },
+  "slots": [
+    {
+      "key": "helmet", "group": "Armor", "type": "Helmet", "name": "Crown of Avarice", "rarity": "legendary",
+      "ids": ["CROWN_OF_AVARICE", "CROWN_OF_AVARICE_CELEBRATION"], "icon": "CROWN_OF_AVARICE", "loreMagicFind": true,
+      "gains": ["+9 to 10 MF"],
+      "why": "Keep a plain, levelling crown. Scavenger coins from rare mobs beat the 1 to 2 MF a 1b crown adds.",
+      "enchants": [
+        { "id": "ultimate_wisdom", "name": "Wisdom", "level": 5, "ultimate": true },
+        { "id": "growth", "name": "Growth", "level": 6 },
+        { "id": "protection", "name": "Protection", "level": 6 },
+        { "id": "rejuvenate", "name": "Rejuvenate", "level": 5 },
+        { "id": "strong_vitality", "name": "Strong Vitality", "level": 5 },
+        { "id": "respiration", "name": "Respiration", "level": 4 },
+        { "id": "aqua_affinity", "name": "Aqua Affinity", "level": 1 }
+      ]
+    },
+    {
+      "key": "chestplate", "group": "Armor", "type": "Chestplate", "name": "Infernal Crimson Chestplate", "rarity": "legendary",
+      "ids": ["INFERNAL_CRIMSON_CHESTPLATE"], "icon": "INFERNAL_CRIMSON_CHESTPLATE",
+      "gains": ["~15 to 20% damage"],
+      "why": "0 star Infernal Crimson outdamages Mythos by about 15 to 20%. Get it after the crown, together with 1800 MP.",
+      "enchants": [
+        { "id": "ultimate_wisdom", "name": "Wisdom", "level": 5, "ultimate": true },
+        { "id": "growth", "name": "Growth", "level": 6 },
+        { "id": "protection", "name": "Protection", "level": 6 },
+        { "id": "rejuvenate", "name": "Rejuvenate", "level": 5 },
+        { "id": "strong_vitality", "name": "Strong Vitality", "level": 5 }
+      ]
+    },
+    {
+      "key": "leggings", "group": "Armor", "type": "Leggings", "name": "Infernal Crimson Leggings", "rarity": "legendary",
+      "ids": ["INFERNAL_CRIMSON_LEGGINGS"], "icon": "INFERNAL_CRIMSON_LEGGINGS",
+      "gains": ["~15 to 20% damage"],
+      "why": "Part of the 3 piece Infernal Crimson set the guide uses with the crown.",
+      "enchants": [
+        { "id": "ultimate_wisdom", "name": "Wisdom", "level": 5, "ultimate": true },
+        { "id": "growth", "name": "Growth", "level": 6 },
+        { "id": "protection", "name": "Protection", "level": 6 },
+        { "id": "rejuvenate", "name": "Rejuvenate", "level": 5 },
+        { "id": "smarty_pants", "name": "Smarty Pants", "level": 5 },
+        { "id": "strong_vitality", "name": "Strong Vitality", "level": 5 }
+      ]
+    },
+    {
+      "key": "boots", "group": "Armor", "type": "Boots", "name": "Infernal Crimson Boots", "rarity": "legendary",
+      "ids": ["INFERNAL_CRIMSON_BOOTS"], "icon": "INFERNAL_CRIMSON_BOOTS",
+      "gains": ["~15 to 20% damage"],
+      "why": "Part of the 3 piece Infernal Crimson set the guide uses with the crown.",
+      "enchants": [
+        { "id": "ultimate_wisdom", "name": "Wisdom", "level": 5, "ultimate": true },
+        { "id": "depth_strider", "name": "Depth Strider", "level": 3 },
+        { "id": "feather_falling", "name": "Feather Falling", "level": 10 },
+        { "id": "growth", "name": "Growth", "level": 6 },
+        { "id": "protection", "name": "Protection", "level": 6 },
+        { "id": "rejuvenate", "name": "Rejuvenate", "level": 5 },
+        { "id": "strong_vitality", "name": "Strong Vitality", "level": 5 },
+        { "id": "sugar_rush", "name": "Sugar Rush", "level": 3 }
+      ]
+    },
+    {
+      "key": "necklace", "group": "Equipment", "type": "Necklace", "name": "Mythos Necklace", "rarity": "legendary",
+      "ids": ["MYTHOS_NECKLACE"], "icon": "MYTHOS_NECKLACE",
+      "gains": ["2x stats at Diana"],
+      "why": "Mythos equipment doubles its stats in the Hub during Diana's Mythological Ritual."
+    },
+    {
+      "key": "cloak", "group": "Equipment", "type": "Cloak", "name": "Golden Fleece", "rarity": "legendary",
+      "ids": ["GOLDEN_FLEECE"], "icon": "GOLDEN_FLEECE",
+      "gains": ["+5 Mythological MF", "+15 Tracking"],
+      "why": "The cloak of the guide setup. Its MF only counts on Mythological mobs, so /stats does not show it."
+    },
+    {
+      "key": "belt", "group": "Equipment", "type": "Belt", "name": "Mythos Belt", "rarity": "legendary",
+      "ids": ["MYTHOS_BELT"], "icon": "MYTHOS_BELT",
+      "gains": ["2x stats at Diana"],
+      "why": "Mythos equipment doubles its stats during the ritual."
+    },
+    {
+      "key": "bracelet", "group": "Equipment", "type": "Bracelet", "name": "Mythos Bracelet", "rarity": "legendary",
+      "ids": ["MYTHOS_BRACELET"], "icon": "MYTHOS_BRACELET",
+      "gains": ["2x stats at Diana"],
+      "why": "Mythos equipment doubles its stats during the ritual."
+    },
+    {
+      "key": "petDig", "group": "Pets", "type": "Dig and kill pet", "name": "Griffin + Four-Eyed Fish", "rarity": "mythic",
+      "pet": { "type": "GRIFFIN", "tier": "MYTHIC", "heldItem": "FOUR_EYED_FISH" }, "icon": "PET_GRIFFIN", "badge": "FOUR_EYED_FISH", "price": "FOUR_EYED_FISH",
+      "gains": ["+10 MF (King of Kings)", "+5 MF fish"],
+      "why": "Swap to it on dig and on kill. Swapping on kill gives about 8 to 15% more coins."
+    },
+    {
+      "key": "petCombat", "group": "Pets", "type": "Combat pet", "name": "Griffin + Hephaestus Relic", "rarity": "mythic",
+      "pet": { "type": "GRIFFIN", "tier": "MYTHIC", "heldItem": "HEPHAESTUS" }, "icon": "PET_GRIFFIN", "badge": "HEPHAESTUS_RELIC",
+      "gains": ["DPS"],
+      "why": "Swap to it on enter combat. Relic or Remedies give the same stats; the relic balances strength and crit damage easier."
+    },
+    {
+      "key": "weapon", "group": "Hotbar", "type": "Weapon", "name": "Daedalus Blade", "rarity": "legendary",
+      "ids": ["DAEDALUS_AXE", "STARRED_DAEDALUS_AXE"], "icon": "DAEDALUS_AXE", "loreMagicFind": true,
+      "gains": ["+0.2 MF per Mythological bestiary tier", "Looting VII +25 MF"],
+      "why": "Withered beats Fabled near hit breakpoints. Prosecute beats Execute on normal mobs.",
+      "enchants": [
+        { "id": "looting", "name": "Looting", "level": 7 },
+        { "id": "scavenger", "name": "Scavenger", "level": 6 },
+        { "id": "venomous", "name": "Venomous", "level": 7 },
+        { "id": "fire_aspect", "name": "Fire Aspect", "level": 3 },
+        { "id": "prosecute", "name": "Prosecute", "level": 6 }
+      ]
+    },
+    {
+      "key": "travel", "group": "Hotbar", "type": "Travel", "name": "Aspect of the Void", "rarity": "epic",
+      "ids": ["ASPECT_OF_THE_VOID"], "icon": "ASPECT_OF_THE_VOID",
+      "gains": [],
+      "why": "For burrow to burrow teleporting."
+    },
+    {
+      "key": "spade", "group": "Hotbar", "type": "Spade", "name": "Erudite Deific Spade", "rarity": "legendary",
+      "ids": ["DEIFIC_SPADE"], "icon": "DEIFIC_SPADE",
+      "gains": ["10 burrows per chain"],
+      "why": "Each spade upgrade and the Erudite reforge add 2 burrows per chain."
+    },
+    {
+      "key": "shurikens", "group": "Hotbar", "type": "Utility", "name": "Shurikens", "rarity": "rare",
+      "ids": ["FAKE_SHURIKEN"], "icon": "FAKE_SHURIKEN",
+      "gains": ["+5 MF on the mob"],
+      "why": "A Gyrokinetic Wand helps land them when the mob can't be Fire Frozen, like the Manticore."
+    }
+  ],
+  "tracking": {
+    "sources": [
+      { "name": "Brain Food", "value": "5" },
+      { "name": "Celestial Mason Jar", "value": "5" },
+      { "name": "Enderman Slayer 9", "value": "5" },
+      { "name": "Attributes", "value": "13" },
+      { "name": "Diana's Bookshelf", "value": "1" },
+      { "name": "Future Calories Talisman", "value": "0.5" },
+      { "name": "Bestiary Talisman", "value": "2" },
+      { "name": "Golden Fleece", "value": "15" },
+      { "name": "Griffin Ancient Earth", "value": "2 to 10" },
+      { "name": "Carnival perk", "value": "5" },
+      { "name": "Beacon", "value": "3", "sometimes": true },
+      { "name": "Huntress' Intuition (mayor perk)", "value": "10", "sometimes": true },
+      { "name": "Century Cake", "value": "1", "sometimes": true }
+    ],
+    "scenarios": [
+      { "name": "Normal", "value": "57.5 to 65.5" },
+      { "name": "+ Huntress", "value": "67.5 to 75.5" },
+      { "name": "+ Huntress and Jerry", "value": "74.25 to 83.05" }
+    ]
+  },
+  "petRules": [
+    {
+      "title": "Two Griffins",
+      "rules": [
+        {
+          "when": "On dig burrow", "pet": "Four-Eyed Griffin", "rarity": "mythic", "icon": "PET_GRIFFIN", "badge": "FOUR_EYED_FISH",
+          "match": { "condition": "Griffin Burrow", "pet": "Griffin", "heldItem": "Four-Eyed Fish" }
+        },
+        {
+          "when": "On kill mythological mob", "pet": "Four-Eyed Griffin", "rarity": "mythic", "icon": "PET_GRIFFIN", "badge": "FOUR_EYED_FISH",
+          "why": "Swapping on kill gives about 8 to 15% more coins",
+          "match": { "condition": "Mythological Mob", "pet": "Griffin", "heldItem": "Four-Eyed Fish" }
+        },
+        {
+          "when": "On enter combat", "pet": "DPS Griffin", "rarity": "mythic", "icon": "PET_GRIFFIN", "badge": "HEPHAESTUS_RELIC",
+          "match": { "condition": "enter combat", "pet": "Griffin", "heldItem": "Hephaestus" }
+        }
+      ]
+    },
+    {
+      "title": "Rat cheese buff",
+      "hint": "party lootshare",
+      "rules": [
+        {
+          "when": "On throw rod", "unless": "Except if Griffin is equipped", "pet": "Griffin", "rarity": "mythic", "icon": "PET_GRIFFIN",
+          "match": { "condition": "fishing hook", "pet": "Griffin", "except": "Griffin" }
+        },
+        {
+          "when": "On throw rod", "unless": "Except if Rat is equipped", "pet": "Rat", "rarity": "legendary", "icon": "PET_RAT",
+          "why": "A buffed player's drop gives you a 20% chance at it too",
+          "match": { "condition": "fishing hook", "pet": "Rat", "except": "Rat" }
+        }
+      ]
+    }
+  ],
+  "technique": [
+    {
+      "title": "Mobs",
+      "parts": [
+        { "heading": "Dead mob hitbox", "text": "A dead Diana mob leaves a hitbox on the burrow that blocks your second dig. Dig the second time from another face of the block: if the mob came toward you, walk to the opposite side or to the left or right. You can also push Gaia Constructs off the burrow with your body while they're in their hit phase. Low effort, big speed gain." },
+        { "heading": "Shurikens", "text": "Some mobs are hard to hit with Shurikens. In a party, wait for Fire Freeze. Solo, or on a Manticore (it can't be frozen), use a Gyrokinetic Wand." },
+        { "heading": "Cats", "text": "Always kill the black cat first; it spawns on the west side of the block, toward the park. Crimson Swipe kills the second cat at the same time if you don't have Cleave." },
+        { "heading": "Kings", "text": "Duplex Terminator with bouncy arrows. Keep Twilight Arrow Poison in your inventory for 1.1x damage, about 4 to 8 per King.", "link": { "label": "Video by rat", "url": "https://youtu.be/w30XeImnLQw" } },
+        { "heading": "Lootshare", "text": "You only need 1% of the mob's HP for lootshare. Don't nuke it with your Daedalus Blade; one hit with Hyperion, Flay or AotV is often enough. With a Rat pet you can Cheese Buff the spawner: when they drop something, you have a 20% chance to get it too. The two rod rules are in Pet Rules." }
+      ]
+    },
+    {
+      "title": "Burrows",
+      "parts": [
+        { "text": "Every player has 7 burrow chains around the Hub. Each starts with a start burrow and is 4 long; each spade upgrade (Archaic, Deific) and the Erudite reforge add 2, up to 10. Mob burrows need two digs, a treasure at the end of a chain only one. At the end of a chain, right click your spade: arrow guesses don't find new start burrows, and SBO reminds you when it's time." },
+        { "heading": "Burrow to burrow teleporting", "text": "Don't warp blindly. Before a warp, check whether the destination has only one burrow, or whether a direct teleport of 30 to 50 blocks reaches an area with more guess burrows. Example: from the unincorporated area to a burrow just outside the castle wall, teleport straight there. Mana regen becomes the limit at high speed, so wisdom and mana regen matter more the faster you play.", "link": { "label": "Routing video", "url": "https://youtu.be/71Y-nKbEBa8" } },
+        { "heading": "Guessing", "bullets": [
+          "Track blocks relative to yourself, height included, and change where you stand so guesses don't skew.",
+          "No guess near the Rose Dragon area for a while? Check it for unclaimed start burrows. Same for old guesses you haven't visited.",
+          "Arrow guesses also fail for burrows very close to you."
+        ] }
+      ]
+    },
+    {
+      "title": "Solo vs. party",
+      "parts": [
+        { "text": "Solo beats a full party when you get over 500 BPH in party and over 700 BPH solo, and your solo BPH is at least 160 to 200 higher than in party." }
+      ]
+    },
+    {
+      "title": "FAQ",
+      "parts": [
+        { "heading": "Do the killer's stats matter for my lootshare?", "text": "No. Neither their Looting nor their Magic Find affects your lootshare." },
+        { "heading": "Does conditional Magic Find apply to lootshare?", "text": "Yes." },
+        { "heading": "Who owns a cocooned rare mob?", "text": "Whoever killed and cocooned the mob owns the one that spawns." },
+        { "heading": "Why do I sometimes get no coins from lootshare?", "text": "The killer or spawner is wearing a crown that isn't at 1b." },
+        { "heading": "Which enchants on my Daedalus Blade?", "text": "Venomous, Fire Aspect and Scavenger 6. Prosecute beats Execute on normal mobs." }
+      ]
+    }
+  ]
+}

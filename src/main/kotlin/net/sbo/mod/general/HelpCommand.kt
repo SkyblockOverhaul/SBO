@@ -37,6 +37,7 @@ object HelpCommand {
         mapOf("cmd" to "sboinforeport", "desc" to "Sends your SBO settings and mods that break SBO features to the SBO team"),
         mapOf("cmd" to "sbotestmedalclip [drop|all]", "desc" to "Test Medal clip saving"),
         mapOf("cmd" to "sbosounds", "desc" to "Opens custom sounds setting Gui"),
+        mapOf("cmd" to "sboguide", "desc" to "Opens the Diana guide with your gear, pet rules and tips"),
         mapOf("cmd" to "sbosetprimarycoa", "desc" to "Set your primary Crown of Avarice to the equipped helmet"),
         mapOf("cmd" to "sboresetcoasession", "desc" to "Resets only the CoA session tracker"),
         mapOf("cmd" to "sboresetcoaevent", "desc" to "Resets only the CoA event tracker")

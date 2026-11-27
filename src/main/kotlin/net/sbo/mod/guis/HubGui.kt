@@ -28,6 +28,7 @@ import net.sbo.mod.customizer.SboCustomizer
 import net.sbo.mod.utils.data.cloud.CloudSync
 import net.sbo.mod.general.HelpCommand
 import net.sbo.mod.customizer.gui.CustomizerGui
+import net.sbo.mod.diana.guide.DianaGuideGui
 import net.sbo.mod.guis.look.SboLook
 import net.sbo.mod.guis.look.useFitScale
 import net.sbo.mod.guis.look.useSboScale
@@ -119,6 +120,7 @@ object HubGui {
         Tile("Settings", "Every option, with a search over all of them", "/sbosettings", Items.COMPARATOR) { openSettings() },
         Tile("Party Finder", "Join a party or create your own", "/sbopf", Items.PLAYER_HEAD) { PartyFinderGui.open() },
         Tile("Events", "Your Diana events, trackers and comparisons", "/sboevents", Items.CLOCK) { EventsGui.open() },
+        Tile("Diana Guide", "Your gear next to the Diana guide, with tips", "/sboguide", Items.GOLDEN_SHOVEL) { DianaGuideGui.open() },
         Tile("Achievements", "Everything you unlocked and what is left", "/sboachievements", Items.NETHER_STAR) { AchievementsGui.open() },
         Tile("Sounds", "Your own sounds for spawns and drops", "/sbosounds", Items.JUKEBOX) { SoundsGui.open() },
         Tile("Move Overlays", "Place and resize the on-screen overlays", "/sboguis", Items.ITEM_FRAME) { mc.setScreen(OverlayEditScreen()) },
@@ -207,18 +209,19 @@ object HubGui {
                     }
 
                     val (supporterTiles, tiles) = TILES.partition { it.supporter != null }
+                    val halves = (tiles.size - 1) % 3 == 2
                     tiles.forEachIndexed { i, tile ->
                         val className = when {
                             i == 0 -> "hub-tile hub-featured"
                             tile.title == "Party Finder" -> "hub-tile hub-highlight"
-                            i == tiles.lastIndex -> "hub-tile hub-half"
+                            halves && i == tiles.lastIndex -> "hub-tile hub-half"
                             else -> "hub-tile"
                         }
                         val description = if (i == 0) "Search all $settingsCount settings at once" else tile.description
                         // Screens are switched after the click is handled, not in the middle of it
                         tileButton(tile, className, description) { mc.schedule { openFromHub(tile) } }
                     }
-                    tileButton(COMMANDS, "hub-tile hub-half", COMMANDS.description) { showCommands = true }
+                    tileButton(COMMANDS, if (halves) "hub-tile hub-half" else "hub-tile", COMMANDS.description) { showCommands = true }
                     supporterTiles.forEach { tile ->
                         tileButton(tile, "hub-tile hub-half hub-supporter", tile.description) { mc.schedule { openFromHub(tile) } }
                     }

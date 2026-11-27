@@ -22,7 +22,9 @@ object HypixelModApi {
     /** On the Alpha Network (or another non-production Hypixel server), where profiles are copies. */
     var isAlpha: Boolean = false
         private set
-    private var isOnSkyblock: Boolean = false
+    /** On a SkyBlock server. Comes from the Hypixel location packet so the scoreboard of a lobby can not make it wrong. */
+    var isOnSkyblock: Boolean = false
+        private set
     private var isLeader: Boolean = false
     private var isInParty: Boolean = false
     private var partyMembers: List<String> = emptyList()

@@ -205,8 +205,8 @@ object DisplayItemStacks {
         return BuiltItem(stack, item.itemModel?.let(Identifier::tryParse))
     }
 
-    /** A plain item like "minecraft:iron_sword", for icons. Needs a world. */
-    fun icon(item: String, texture: String? = null, model: String? = null, glint: Boolean = false): BuiltItem? {
+    /** A plain item like "minecraft:iron_sword" for icons. [color] dyes leather armor. Needs a world. */
+    fun icon(item: String, texture: String? = null, model: String? = null, glint: Boolean = false, color: Int? = null): BuiltItem? {
         val registries = mc.level?.registryAccess() ?: return null
         val components = CompoundTag()
         texture?.let {
@@ -217,6 +217,7 @@ object DisplayItemStacks {
             components.put("minecraft:profile", CompoundTag().apply { put("properties", ListTag().apply { add(textures) }) })
         }
         if (glint) components.putBoolean("minecraft:enchantment_glint_override", true)
+        color?.let { components.putInt("minecraft:dyed_color", it) }
         val tag = CompoundTag().apply {
             putString("id", item)
             putInt("count", 1)

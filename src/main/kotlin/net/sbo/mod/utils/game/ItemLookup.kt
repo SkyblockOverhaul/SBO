@@ -52,6 +52,15 @@ class ItemLookup(private val stack: ItemStack) {
         get() = loreListCached ?: stack[DataComponents.LORE]?.lines?.map { it.toFormattedString() }
             .orEmpty().also { loreListCached = it }
 
+    private var enchantmentsCached: Map<String, Int>? = null
+
+    /** The enchants Hypixel stores on the item by id like "scavenger" to 5. Empty without any. */
+    val enchantments: Map<String, Int>
+        get() = enchantmentsCached ?: run {
+            val tag = nbt?.getCompound("enchantments")?.orElse(null)
+            tag?.keySet()?.associateWith { tag.getInt(it).orElse(0) }.orEmpty()
+        }.also { enchantmentsCached = it }
+
     private var cleanLoreListCached: List<String>? = null
     val cleanLoreList: List<String>
         get() = cleanLoreListCached ?: stack[DataComponents.LORE]?.lines?.map { it.string.removeFormatting() }

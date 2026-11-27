@@ -29,6 +29,7 @@ import net.sbo.mod.diana.burrows.BurrowMap
 import net.sbo.mod.diana.guesses.HubBoundsScan
 import net.sbo.mod.diana.guesses.PreciseGuessBurrow
 import net.sbo.mod.diana.guesses.SpadeGuessOptimizer
+import net.sbo.mod.diana.guide.DianaGuideGui
 import net.sbo.mod.utils.hubcache.HubChunkCache
 import net.sbo.mod.diana.sphinx.SphinxSolver
 import net.sbo.mod.utils.data.cloud.CloudSync
@@ -183,6 +184,7 @@ object SBOKotlin : ClientModInitializer {
 		PartyFinderGui.register()
 		ProfileViewerGui.register()
 		SoundsGui.register()
+		DianaGuideGui.register()
 		AchievementsGui.register()
 		EventsGui.register()
 		HubGui.register()

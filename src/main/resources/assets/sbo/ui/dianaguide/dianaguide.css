@@ -1,0 +1,335 @@
+/* Diana guide window (/sboguide). SBO Dark colors as in sounds.css; other themes come from themes.css through useSboTheme. */
+body {
+    --bg: #1e1f22;
+    --panel: #2b2d31;
+    --panel-2: #313338;
+    --card: #26282c;
+    --card-hover: #2a2c31;
+    --border: #3f4147;
+    --border-hover: #5a5d66;
+    --text: #f2f3f5;
+    --text-strong: #ffffff;
+    --text-soft: #dbdee1;
+    --subtle: #b5bac1;
+    --muted: #949ba4;
+    --dim: #80848e;
+    --title: #55ffff;
+    --accent: #006efa;
+    --accent-hover: #2a88ff;
+    --accent-text: #ffffff;
+    --accent-soft: rgba(0, 110, 250, 0.3);
+    --accent-faint: rgba(0, 110, 250, 0.18);
+    --banner-bg: rgba(0, 110, 250, 0.14);
+    --banner-border: rgba(0, 110, 250, 0.5);
+    --banner-text: #bcd9ff;
+    --ok: #57c96b;
+    --ok-soft: rgba(87, 201, 107, 0.18);
+    --ok-border: rgba(87, 201, 107, 0.55);
+    --bad: #ee5c5c;
+    --bad-border: rgba(238, 92, 92, 0.6);
+    --danger: #da373c;
+    --estimated: #c9a7f0;
+    --input-bg: #1e1f22;
+    --input-border: #4e5058;
+    --input-border-hover: #6d6f78;
+    --control: #3c3f45;
+    --control-border: #55595f;
+    --control-hover: #4a4e55;
+    --control-active: #2f3236;
+    --menu: #2b2d31;
+    --popup: #111214;
+    --highlight: #3f4248;
+    --disabled: #4e5058;
+    --disabled-text: #949ba4;
+    --backdrop: rgba(0, 0, 0, 0.55);
+    --shadow: rgba(0, 0, 0, 0.6);
+    --scrollbar-thumb: #ffffff80;
+    --scrollbar-track: #00000020;
+    --toast-success: #3ba55d;
+    --toast-warning: #faa61a;
+    --toast-error: #ed4245;
+    --menu-danger: #f47b7d;
+    --tint: rgba(255, 255, 255, 0.06);
+    --tint-strong: rgba(255, 255, 255, 0.08);
+    --star: #f0b232;
+    --guilib-text: var(--text);
+    --guilib-text-strong: var(--text-strong);
+    --guilib-text-secondary: var(--text-soft);
+    --guilib-text-muted: var(--subtle);
+    --guilib-text-subtle: var(--dim);
+    --guilib-accent: var(--accent);
+    --guilib-accent-soft: var(--accent-soft);
+    --guilib-on-accent: var(--accent-text);
+    --guilib-surface: var(--menu);
+    --guilib-surface-2: var(--input-bg);
+    --guilib-surface-3: var(--popup);
+    --guilib-highlight: var(--highlight);
+    --guilib-tint: var(--tint);
+    --guilib-tint-strong: var(--tint-strong);
+    --guilib-backdrop: var(--backdrop);
+    --guilib-border: var(--input-border);
+    --guilib-border-hover: var(--input-border-hover);
+    --guilib-border-strong: var(--dim);
+    --guilib-border-subtle: var(--border);
+    --guilib-focus: var(--text-strong);
+    --guilib-button: var(--control);
+    --guilib-button-hover: var(--control-hover);
+    --guilib-button-active: var(--control-active);
+    --guilib-button-border: var(--control-border);
+    --guilib-track: var(--disabled);
+    --guilib-track-border: var(--input-border-hover);
+    --guilib-success: var(--toast-success);
+    --guilib-warning: var(--toast-warning);
+    --guilib-danger: var(--toast-error);
+    --guilib-danger-text: var(--menu-danger);
+    --guilib-scrollbar-thumb: var(--scrollbar-thumb);
+    --guilib-scrollbar-track: var(--scrollbar-track);
+    color: var(--text);
+}
+
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dg-window {
+    display: flex;
+    flex-direction: column;
+    /* min() instead of max-height: children are laid out against the capped height */
+    width: min(94vw, 460px);
+    height: min(92vh, 300px);
+    animation: dg-fade 150ms ease-out;
+}
+/* The window draws no border or background itself. GuiLib rounds the edges of a box and of its children separately
+   so a window border could end up a pixel away from the header. Header body and footer each draw their part of the frame. */
+.dg-header, .dg-main, .dg-footer { border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
+@keyframes dg-fade { from { opacity: 0; transform: translateY(6px); } }
+
+/* ---- header with the chapter tabs ---- */
+.dg-header {
+    padding: 3px 4px 0 8px;
+    background-color: var(--panel);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    border-radius: 6px 6px 0 0;
+}
+.dg-head-row { display: flex; align-items: center; gap: 6px; }
+.dg-title { font-weight: bold; color: var(--title); white-space: nowrap; }
+.dg-spacer { flex-grow: 1; }
+.dg-read { min-width: 0; overflow: hidden; color: var(--muted); font-size: 7px; white-space: nowrap; }
+.dg-icon-button { padding: 2px 3px; }
+.dg-icon { width: 8px; height: 8px; color: var(--text-soft); }
+.dg-icon-button:hover .dg-icon { color: var(--text-strong); }
+.dg-icon-button.loading .dg-icon { animation: dg-spin 800ms linear infinite; }
+@keyframes dg-spin { to { transform: rotate(360deg); } }
+.dg-close { padding: 1px 5px; background-color: transparent; border-color: transparent; }
+.dg-close:hover { background-color: var(--danger); }
+.dg-tabs .guilib-tab-list { border-bottom-width: 0; }
+.dg-tabs .guilib-tab { padding: 3px 7px; }
+/* The tab list scrolls on its own in narrow windows, same idle-hiding scrollbar as .guilib-autohide */
+.dg-tabs .guilib-tab-list {
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 300ms ease 600ms;
+}
+/*noinspection CssInvalidPseudoSelector*/
+.dg-tabs .guilib-tab-list:scrolling, .dg-tabs .guilib-tab-list:hover {
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+    transition: scrollbar-color 120ms;
+}
+
+/* ---- body and credit strip ---- */
+/* Less padding on the right, the scrollbar takes the rest of that side */
+.dg-main { flex-grow: 1; min-height: 0; padding: 6px 5px 6px 8px; background-color: var(--bg); }
+.dg-footer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 6px 3px 8px;
+    background-color: var(--panel);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    border-radius: 0 0 6px 6px;
+    color: var(--muted);
+    font-size: 6px;
+}
+.dg-footer-text { flex-grow: 1; min-width: 0; overflow: hidden; white-space: nowrap; }
+.dg-footer b, .dg-credit b { color: var(--text-soft); }
+.dg-link { color: var(--title); white-space: nowrap; cursor: pointer; }
+.dg-link:hover { text-decoration: underline; }
+
+.dg-section {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin: 6px 0 3px 0;
+    padding: 0 2px 2px 2px;
+    color: var(--text-strong);
+    border-bottom: 1px solid var(--border);
+}
+.dg-hint { color: var(--muted); font-size: 7px; }
+.dg-banner {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 6px;
+    margin-bottom: 5px;
+    border-radius: 3px;
+    background-color: var(--banner-bg);
+    border: 1px solid var(--banner-border);
+    color: var(--banner-text);
+}
+.dg-banner.bad { background-color: transparent; border-color: var(--bad-border); color: var(--text-soft); }
+.dg-banner-text { flex-grow: 1; min-width: 0; }
+.dg-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 3px; margin-bottom: 3px; }
+.dg-stat { padding: 0 3px; border-radius: 2px; background-color: var(--panel-2); font-size: 7px; white-space: nowrap; }
+.dg-stat-name { color: var(--muted); }
+
+.dg-chip { padding: 0 3px; border-radius: 2px; font-size: 7px; border: 1px solid transparent; background-color: var(--panel-2); white-space: nowrap; }
+.dg-chip.have { color: var(--ok); border-color: var(--ok-border); }
+.dg-chip.missing { color: var(--text-soft); border-color: var(--bad-border); }
+.dg-chip.unknown { color: var(--muted); }
+.dg-chip.disabled { color: var(--toast-warning); border-color: var(--toast-warning); }
+
+/* Items in the Minecraft rarity colors (themes.css) */
+.dg-r-common { color: var(--mc-white); }
+.dg-r-uncommon { color: var(--mc-green); }
+.dg-r-rare { color: var(--mc-blue); }
+.dg-r-epic { color: var(--mc-dark-purple); }
+.dg-r-legendary { color: var(--mc-gold); }
+.dg-r-mythic { color: var(--mc-light-purple); }
+
+/* ---- Loadout: inventory slots on the left, the picked item on the right ---- */
+.dg-loadout { display: flex; align-items: flex-start; gap: 10px; }
+.dg-inv {
+    display: grid;
+    grid-template-columns: auto auto;
+    gap: 6px 10px;
+    flex-shrink: 0;
+    padding: 5px 6px;
+    border-radius: 4px;
+    background-color: var(--panel);
+    border: 1px solid var(--border);
+}
+.dg-inv-group { display: flex; flex-direction: column; gap: 2px; }
+.dg-inv-group.wide { grid-column: 1 / 3; }
+.dg-slots-label { font-size: 6px; font-weight: bold; color: var(--muted); letter-spacing: 0.3px; }
+.dg-slots { display: flex; gap: 2px; }
+.dg-slots.col { flex-direction: column; }
+.dg-slot {
+    position: relative;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+}
+.dg-slot:hover { border-color: var(--border-hover); background-color: var(--card-hover); }
+.dg-slot.active { border-color: var(--accent); background-color: var(--accent-faint); }
+.dg-slot.missing { border-color: var(--bad-border); }
+/* GuiLib draws items without CSS opacity. Missing items are faded by a dark layer on top of them */
+.dg-dim { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: var(--backdrop); border-radius: 2px; }
+.dg-slot-badge { position: absolute; left: 0; top: 0; width: 9px; height: 9px; }
+.dg-slot-mark {
+    position: absolute;
+    right: -3px;
+    bottom: -3px;
+    width: 7px;
+    height: 7px;
+    border-radius: 4px;
+    font-size: 5px;
+    line-height: 7px;
+    text-align: center;
+    font-weight: bold;
+    color: var(--bg);
+}
+.dg-slot-mark.have { background-color: var(--ok); }
+.dg-slot-mark.missing { background-color: var(--bad); }
+.dg-slot-mark.unknown { background-color: var(--muted); }
+.dg-inv-legend { grid-column: 1 / 3; font-size: 6px; color: var(--muted); }
+
+.dg-side { flex-grow: 1; min-width: 0; }
+.dg-detail { padding: 5px 7px; border: 1px solid var(--border); border-radius: 4px; background-color: var(--card); }
+.dg-next-label { font-size: 6px; font-weight: bold; color: var(--title); letter-spacing: 0.3px; }
+.dg-detail-top { display: flex; align-items: center; gap: 5px; margin-bottom: 2px; }
+.dg-detail-icon { position: relative; width: 24px; height: 24px; flex-shrink: 0; }
+.dg-detail-item { width: 24px; height: 24px; }
+.dg-detail-name { font-size: 10px; font-weight: bold; }
+.dg-detail-type { display: flex; align-items: center; gap: 3px; margin-top: 3px; color: var(--muted); font-size: 7px; }
+.dg-detail-why { color: var(--text-soft); margin: 3px 0; }
+.dg-gains { display: flex; flex-wrap: wrap; gap: 2px; margin: 3px 0; }
+.dg-gain { padding: 0 3px; border-radius: 2px; background-color: var(--ok-soft); color: var(--ok); font-size: 7px; }
+.dg-gain.cost { background-color: var(--panel-2); color: var(--text-soft); }
+
+/* Enchants, colored like item lore: blue, pink and bold for ultimates */
+.dg-ench-head { display: flex; align-items: baseline; gap: 4px; margin: 4px 0 2px 0; font-size: 7px; color: var(--muted); }
+.dg-ench-head b { color: var(--text-soft); }
+.dg-ench { display: flex; flex-wrap: wrap; gap: 2px; }
+.dg-ench-chip { padding: 0 3px; border-radius: 2px; font-size: 7px; border: 1px solid transparent; background-color: var(--panel-2); color: var(--mc-blue); white-space: nowrap; }
+.dg-ench-chip.ult { color: var(--mc-light-purple); font-weight: bold; }
+.dg-ench-chip.have { border-color: var(--ok-border); }
+.dg-ench-chip.missing, .dg-ench-chip.low { border-color: var(--bad-border); }
+.dg-ench-level { color: var(--muted); font-weight: normal; }
+.dg-ench-mark { font-size: 6px; margin-right: 1px; }
+.dg-ench-mark.have { color: var(--ok); }
+.dg-ench-mark.missing, .dg-ench-mark.low { color: var(--bad); }
+
+/* Guide path: a line of steps, done ones green, the current one in the accent */
+.dg-track { display: flex; margin: 2px 0 4px 0; }
+.dg-track-step { flex: 1 1 0; min-width: 0; padding-right: 3px; font-size: 6px; color: var(--muted); border-top: 2px solid var(--border); padding-top: 2px; }
+.dg-track-step b { display: block; font-size: 6px; }
+.dg-track-step.done { border-top-color: var(--ok); }
+.dg-track-step.done b { color: var(--ok); }
+.dg-track-step.now { border-top-color: var(--accent); color: var(--text-strong); }
+/* ---- Pet Rules, Tracking ---- */
+.dg-grow { flex-grow: 1; min-width: 0; }
+/* Same column widths in every rule so the arrows and pets line up from row to row */
+.dg-rule {
+    display: grid;
+    grid-template-columns: 180px 10px minmax(0, 1fr) 54px;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 5px;
+    margin-bottom: 2px;
+    border-radius: 3px;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+}
+.dg-rule-when { color: var(--text-soft); }
+.dg-rule-arrow { color: var(--muted); text-align: center; }
+.dg-rule.missing { border-color: var(--bad-border); }
+.dg-rule.disabled { border-color: var(--toast-warning); }
+.dg-rule.disabled .dg-chip { color: var(--toast-warning); border-color: var(--toast-warning); }
+.dg-rule-pet { display: flex; align-items: center; gap: 4px; min-width: 0; font-weight: bold; }
+.dg-rule-icon { position: relative; width: 16px; height: 16px; flex-shrink: 0; }
+.dg-rule-item { width: 16px; height: 16px; }
+.dg-rule .dg-chip { justify-self: end; align-self: center; }
+.dg-rule-why { margin-top: 1px; color: var(--muted); font-size: 7px; }
+@media (max-width: 380px) {
+    .dg-rule { grid-template-columns: 130px 10px minmax(0, 1fr) 54px; }
+}
+.dg-track-row { display: grid; grid-template-columns: minmax(0, 1fr) 40px 70px; align-items: center; gap: 4px; padding: 2px 4px; border-radius: 3px; }
+.dg-track-row:hover { background-color: var(--card); }
+.dg-name { min-width: 0; overflow: hidden; white-space: nowrap; color: var(--text-soft); }
+.dg-value { color: var(--text-strong); text-align: right; }
+
+/* ---- Technique: the written chapter ---- */
+.dg-credit { margin-bottom: 4px; padding: 2px 5px; border-radius: 3px; background-color: var(--panel-2); color: var(--muted); font-size: 7px; }
+.dg-credit-end { margin-top: 6px; }
+.dg-article { margin-bottom: 3px; border: 1px solid var(--border); border-radius: 3px; background-color: var(--card); }
+.dg-article .guilib-details-summary { padding: 3px 6px; color: var(--text-strong); font-weight: bold; }
+.dg-article .guilib-details-content { padding: 0 6px 4px 6px; }
+.dg-part { margin-bottom: 4px; }
+.dg-part-heading { color: var(--title); font-weight: bold; margin-bottom: 1px; }
+.dg-part-text { margin: 0 0 1px 0; color: var(--text-soft); line-height: 11px; }
+.dg-part-list { margin: 0; padding-left: 10px; color: var(--text-soft); line-height: 11px; }
+
+/* Narrow windows: the slots go above the details */
+@media (max-width: 380px) {
+    .dg-loadout { flex-direction: column; }
+    .dg-inv { align-self: center; }
+}

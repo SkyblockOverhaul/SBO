@@ -42,6 +42,12 @@ object Keybinds : Category("Keybinds") {
         this.description = literal("Removes every rare mob and world waypoint.")
     }
 
+    var dianaGuideKey by keybind {
+        this.name = literal("Diana Guide")
+        this.since = "0.8.1-beta1"
+        this.description = literal("Opens the Diana guide (/sboguide) with your gear next to the guide, pet rules and tips.")
+    }
+
     init {
         sub {
             this.title = "Loadouts"
