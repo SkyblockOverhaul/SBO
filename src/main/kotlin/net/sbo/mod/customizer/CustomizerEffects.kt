@@ -50,10 +50,9 @@ object CustomizerEffects {
     class Segment(val part: String, val color: PartColor, val range: IntRange)
 
     /** The colors and motion of a part, counted over the chars of its whole chain. */
-    class Paint(val color: PartColor, val part: String, private val motion: String?, val range: IntRange, private val colorRange: IntRange) {
+    class Paint(val color: PartColor, val part: String, private val motion: String?, val range: IntRange) {
         private val length get() = range.last - range.first + 1
-        fun at(i: Int, animate: Boolean, now: Long): Int =
-            colorAt(color, part, i - colorRange.first, colorRange.last - colorRange.first + 1, animate, now)
+        fun at(i: Int, animate: Boolean, now: Long): Int = colorAt(color, part, i - range.first, length, animate, now)
 
         /**
          * A bracket or plus with its own color [hex] moves along with the part instead of standing still. A wave is
@@ -64,7 +63,7 @@ object CustomizerEffects {
             if (!animate || !colorMoves(color, part)) return parseHex(hex)
             if (color.effectOf(part) == CustomizerEffect.WAVE) return at(i, animate, now)
             val own = color.copy(color = hex)
-            return colorAt(own, part, i - colorRange.first, colorRange.last - colorRange.first + 1, animate, now)
+            return colorAt(own, part, i - range.first, length, animate, now)
         }
         fun moved(style: Style, i: Int, char: Char, animate: Boolean, now: Long): Style =
             moved(style, motion, i - range.first, length, char, animate, now)
@@ -76,7 +75,7 @@ object CustomizerEffects {
      * Paints of [segments] in text order: a part with `chain` flows on from the one before it while [touching] says
      * the two stand right next to each other. Every part keeps its own colors, effect and motion; a chain only counts
      * their chars over all of its parts, so a wave on level and name runs on as one wave instead of starting again.
-     * Colors that stand still keep their gradient over the part itself.
+     * Colors that stand still run as one gradient over the chain too, instead of starting again on every part.
      */
     fun paints(segments: List<Segment>, touching: (Segment, Segment) -> Boolean): List<Paint> {
         val starts = IntArray(segments.size)
@@ -88,7 +87,7 @@ object CustomizerEffects {
             val chain = segments.indices.filter { starts[it] == starts[k] }
             val own = segments[k]
             val range = segments[chain.first()].range.first..segments[chain.last()].range.last
-            Paint(own.color, own.part, own.color.motion, range, if (colorMoves(own.color, own.part)) range else own.range)
+            Paint(own.color, own.part, own.color.motion, range)
         }
     }
 
@@ -115,25 +114,36 @@ object CustomizerEffects {
      * Color of char [i] of a text [length] chars long; with [animate] false moving effects stand still:
      * they show the plain gradient, chroma a fixed rainbow. The wave runs there and back again, so the moving gradient has
      * no seam; chroma runs from the end of the text to its start like the wave; shine's gleam crosses in the first part of
-     * the period, then the text rests.
+     * the period, then the text rests. Wave and pulse run through the colors there and back
+     * again, so only neighbors blend (the last straight into the first would cross gray for colors like cyan and red). With
+     * more than two colors they rest one step on the first and the last, which the middle ones get by passing twice, so
+     * every color gets the same share. They take longer the more colors there are, so each step keeps the pace of a two
+     * color gradient.
      */
     fun colorAt(color: PartColor, part: String, i: Int, length: Int, animate: Boolean, now: Long = System.currentTimeMillis()): Int {
-        val from = parseHex(color.color)
-        val to = color.to?.let(::parseHex)
+        val stops = color.stops.map(::parseHex)
+        val from = stops.first()
+        val to = stops.takeIf { it.size > 1 }?.last()
         val t = i / (length - 1).coerceAtLeast(1).toFloat()
-        val still = to?.let { mix(from, it, t) } ?: from
+        val still = along(stops, t)
+        val path = if (stops.size > 2) stops + stops.reversed() + stops.first() else stops + stops.first()
+        val steps = (path.size - 1) / 2f
         if (!animate) {
             return if (color.effectOf(part) == CustomizerEffect.CHROMA) hue(i / length.toFloat() * CHROMA_SPREAD) else still
         }
         return when (color.effectOf(part)) {
             CustomizerEffect.WAVE -> {
                 if (to == null) return from
-                val pos = (i / length.toFloat() + phase(now, WAVE_MS)) % 1f
-                mix(from, to, if (pos < 0.5f) pos * 2f else (1f - pos) * 2f)
+                along(path, (i / length.toFloat() + phase(now, (WAVE_MS * steps).toLong())) % 1f)
             }
             CustomizerEffect.PULSE -> {
-                val fade = (1f - cos(phase(now, PULSE_MS) * 2f * PI.toFloat())) / 2f
-                mix(from, to ?: mix(from, 0xFFFFFF, PULSE_WHITE), fade)
+                if (to == null) {
+                    val fade = (1f - cos(phase(now, PULSE_MS) * 2f * PI.toFloat())) / 2f
+                    return mix(from, mix(from, 0xFFFFFF, PULSE_WHITE), fade)
+                }
+                val x = phase(now, (PULSE_MS * steps).toLong()) * (path.size - 1)
+                val k = x.toInt().coerceAtMost(path.size - 2)
+                mix(path[k], path[k + 1], (1f - cos((x - k) * PI.toFloat())) / 2f)
             }
             CustomizerEffect.CHROMA -> hue((i / length.toFloat() * CHROMA_SPREAD + 1f - phase(now, CHROMA_MS)) % 1f)
             CustomizerEffect.SHINE -> {
@@ -141,7 +151,7 @@ object CustomizerEffects {
                 val distance = kotlin.math.abs((i + 0.5f) / length - center)
                 if (distance >= SHINE_WIDTH) still else mix(still, 0xFFFFFF, (1f - distance / SHINE_WIDTH) * SHINE_STRENGTH)
             }
-            CustomizerEffect.FLASH -> if (phase(now, FLASH_MS) < 0.5f) still else to?.let { mix(it, from, t) } ?: mix(from, 0xFFFFFF, PULSE_WHITE)
+            CustomizerEffect.FLASH -> if (phase(now, FLASH_MS) < 0.5f) still else if (to != null) along(stops, 1f - t) else mix(from, 0xFFFFFF, PULSE_WHITE)
             CustomizerEffect.SPARKLE -> if (noise(i, now / SPARKLE_MS) % SPARKLE_ONE_IN == 0) mix(still, 0xFFFFFF, SHINE_STRENGTH) else still
             else -> still
         }
@@ -195,6 +205,14 @@ object CustomizerEffects {
             return ((1f - maxOf(0f, minOf(k, 4f - k, 1f))) * 255).toInt()
         }
         return channel(5f) shl 16 or (channel(3f) shl 8) or channel(1f)
+    }
+
+    /** Color at [t] from 0 to 1 of a gradient running evenly through [stops]. */
+    private fun along(stops: List<Int>, t: Float): Int {
+        if (stops.size == 1) return stops[0]
+        val x = t.coerceIn(0f, 1f) * (stops.size - 1)
+        val k = x.toInt().coerceAtMost(stops.size - 2)
+        return mix(stops[k], stops[k + 1], x - k)
     }
 
     private fun mix(a: Int, b: Int, t: Float): Int {

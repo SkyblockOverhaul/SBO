@@ -10,6 +10,7 @@ import net.sbo.guilib.core.dsl.select
 import net.sbo.guilib.core.dsl.span
 import net.sbo.guilib.core.dsl.switch
 import net.sbo.mod.customizer.CustomizerEffect
+import net.sbo.mod.customizer.CustomizerEffects
 import net.sbo.mod.customizer.CustomizerMotion
 import net.sbo.mod.customizer.CustomizerPart
 import net.sbo.mod.customizer.CustomizerSettings
@@ -18,6 +19,45 @@ import net.sbo.mod.customizer.PartColor
 import net.sbo.mod.customizer.TeamTagPlace
 
 private const val DEFAULT_GRADIENT_END = "#FFD966"
+
+/** Gradients turned off this game session per part (or the whole line), so turning one on again brings it back. */
+private val lastGradients = mutableMapOf<String, PartColor>()
+
+/** The color halfway between two hex colors, where a new color of a gradient starts. */
+private fun between(a: String, b: String): String {
+    val x = CustomizerEffects.parseHex(a)
+    val y = CustomizerEffects.parseHex(b)
+    fun channel(shift: Int) = ((x shr shift and 0xFF) + (y shr shift and 0xFF)) / 2 shl shift
+    return hex(channel(16) or channel(8) or channel(0))
+}
+
+/** Where the first and the last swatch of the gradient bar sit, in % of its width; the swatches between are spread evenly. */
+private const val STRIP_EDGE = 8
+
+/** The gradient bar's background: every color sits right under its swatch, so the swatches at the ends hide none of it. */
+private fun stripGradient(stops: List<String>): String {
+    val last = stops.size - 1
+    return "linear-gradient(90deg, " + stops.mapIndexed { k, stop ->
+        "$stop ${STRIP_EDGE + (100 - 2 * STRIP_EDGE) * k / last}%"
+    }.joinToString() + ")"
+}
+
+/** The gradient with color [k] of its [PartColor.stops] set to [hex]. */
+private fun PartColor.withStop(k: Int, hex: String): PartColor {
+    val last = stops.size - 1
+    return when (k) {
+        0 -> copy(color = hex)
+        last -> copy(to = hex)
+        else -> copy(mid = mid?.mapIndexed { j, m -> if (j == k - 1) hex else m })
+    }
+}
+
+/** The color with its gradient on: the one [target] had before it was turned off, else the default second color. */
+private fun PartColor.withGradient(target: String): PartColor {
+    if (to != null) return this
+    val last = lastGradients[target] ?: return copy(to = DEFAULT_GRADIENT_END)
+    return copy(to = last.to, mid = last.mid)
+}
 
 private val PLACES = listOf(TeamTagPlace.HEAD to "Head", TeamTagPlace.TAB to "Tab", TeamTagPlace.CHAT to "Chat")
 
@@ -28,8 +68,9 @@ private const val STRIKE = "strike"
 
 /**
  * The editor of one [part]. Where it shows: the stat has its rows above, the tag its own places. A wave needs both
- * colors, without the second one it stands still. Without their own colors the brackets flow with the part's gradient
- * and effect again.
+ * colors, without the second one it stands still. A gradient shows as a bar of its colors with a swatch per color at its
+ * place, the hex shows in the picker. Without their own colors the brackets flow with the part's gradient and effect again;
+ * while the parts flow as one line they always do, so brackets and plus have no own colors there.
  */
 internal fun NodeBuilder.partPanel(customizer: OwnCustomizerResponse, settings: CustomizerSettings, part: String, onChange: (CustomizerSettings) -> Unit) {
     if (part == CustomizerPart.STAT) {
@@ -85,7 +126,8 @@ internal fun NodeBuilder.partPanel(customizer: OwnCustomizerResponse, settings: 
                     val source = settings.colorOf(part)
                     onChange(settings.edit(LINE) { c ->
                         c.copy(
-                            color = source.color, to = source.to, effect = source.effect, motion = source.motion, chain = true,
+                            color = source.color, to = source.to, mid = source.mid, effect = source.effect, motion = source.motion, chain = true,
+                            open = null, close = null, plus = null,
                             bold = source.bold, italic = source.italic, underline = source.underline, strike = source.strike,
                         )
                     })
@@ -100,21 +142,56 @@ internal fun NodeBuilder.partPanel(customizer: OwnCustomizerResponse, settings: 
     val effect = color.effectOf(part)
     row("Color", if (target == LINE) "Tag, level, rank and name together." else COLOR_HINTS.getValue(part)) {
         div(className = "cz-inline") {
-            colorInput(value = argb(color.color), onChange = { c -> onChange(settings.edit(target) { it.copy(color = hex(c)) }) }, key = "from-$target")
-            color.to?.let { to ->
-                span(className = "cz-muted") { +"→" }
-                colorInput(value = argb(to), onChange = { c -> onChange(settings.edit(target) { it.copy(to = hex(c)) }) }, key = "to-$target")
+            if (color.to == null) {
+                colorInput(value = argb(color.color), onChange = { c -> onChange(settings.edit(target) { it.copy(color = hex(c)) }) }, key = "from-$target")
+            } else {
+                div(className = "cz-strip", style = "background: ${stripGradient(color.stops)}; background-clip: padding-box") {
+                    color.stops.forEachIndexed { k, stop ->
+                        colorInput(
+                            value = argb(stop),
+                            onChange = { c -> onChange(settings.edit(target) { it.withStop(k, hex(c)) }) },
+                            className = "cz-stop",
+                            key = "stop$k-$target",
+                        )
+                    }
+                }
+            }
+            if (customizer.gradient && color.to != null) {
+                if (color.stops.size < customizer.gradientColors) {
+                    button(
+                        className = "cz-toggle",
+                        title = "Another color in the gradient, in front of the last one",
+                        onClick = {
+                            onChange(settings.edit(target) {
+                                val stops = it.stops
+                                it.copy(mid = it.mid.orEmpty() + between(stops[stops.size - 2], stops.last()))
+                            })
+                        },
+                        key = "add-color-$target",
+                    ) { +"+" }
+                }
+                if (!color.mid.isNullOrEmpty()) {
+                    button(
+                        className = "cz-toggle",
+                        title = "Removes the color in front of the last one",
+                        onClick = { onChange(settings.edit(target) { it.copy(mid = it.mid?.dropLast(1)?.takeIf { m -> m.isNotEmpty() }) }) },
+                        key = "remove-color-$target",
+                    ) { +"-" }
+                }
             }
             if (customizer.gradient) {
                 button(
                     className = classNames("cz-toggle", "cz-on" to (color.to != null)),
-                    title = "A second color the first one fades into",
+                    title = "Colors the first one fades into; turned on again it comes back as it was",
                     onClick = {
                         val on = color.to == null
+                        if (!on) lastGradients[target] = color
                         onChange(settings.edit(target) {
-                            it.copy(
-                                to = if (on) DEFAULT_GRADIENT_END else null,
-                                effect = if (!on && effect == CustomizerEffect.WAVE) CustomizerEffect.STATIC else it.effect,
+                            if (on) it.withGradient(target)
+                            else it.copy(
+                                to = null,
+                                mid = null,
+                                effect = if (effect == CustomizerEffect.WAVE) CustomizerEffect.STATIC else it.effect,
                             )
                         })
                     },
@@ -127,7 +204,8 @@ internal fun NodeBuilder.partPanel(customizer: OwnCustomizerResponse, settings: 
             value = effect,
             onChange = { e ->
                 onChange(settings.edit(target) {
-                    it.copy(effect = e.value, to = if (e.value == CustomizerEffect.WAVE && customizer.gradient) it.to ?: DEFAULT_GRADIENT_END else it.to)
+                    val wave = e.value == CustomizerEffect.WAVE && customizer.gradient
+                    (if (wave) it.withGradient(target) else it).copy(effect = e.value)
                 })
             },
             className = "cz-select",
@@ -165,7 +243,7 @@ internal fun NodeBuilder.partPanel(customizer: OwnCustomizerResponse, settings: 
         }
     }
 
-    if (part in CustomizerPart.BRACKETS) {
+    if (part in CustomizerPart.BRACKETS && target != LINE) {
         row("Brackets", "The [ and ] around it.") {
             div(className = "cz-inline") {
                 if (color.open != null || color.close != null) {
@@ -183,7 +261,7 @@ internal fun NodeBuilder.partPanel(customizer: OwnCustomizerResponse, settings: 
             }
         }
     }
-    if (part == CustomizerPart.RANK) {
+    if (part == CustomizerPart.RANK && target != LINE) {
         row("Plus", "The + of VIP+, MVP+ and MVP++.") {
             div(className = "cz-inline") {
                 if (color.plus != null) {
@@ -201,7 +279,7 @@ internal fun NodeBuilder.partPanel(customizer: OwnCustomizerResponse, settings: 
         button(title = "Every part gets these colors, effect and style; brackets and plus stay", onClick = {
             onChange(ALL_PARTS.fold(settings) { next, p ->
                 next.withColor(p, next.colorOf(p).copy(
-                    color = color.color, to = color.to, effect = effect, motion = color.motion,
+                    color = color.color, to = color.to, mid = color.mid, effect = effect, motion = color.motion,
                     bold = color.bold, italic = color.italic, underline = color.underline, strike = color.strike,
                 ))
             })

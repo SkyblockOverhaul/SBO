@@ -255,12 +255,13 @@ internal object CustomizerRecolor {
         fun colorOf(k: Int, i: Int, char: Char): Int {
             val segment = segments[k]
             val color = segment.color
-            val tagBracket = segment.part == CustomizerPart.TAG && color.chain != true && (char == '[' || char == ']')
+            val own = color.chain != true
+            val tagBracket = segment.part == CustomizerPart.TAG && own && (char == '[' || char == ']')
             return when {
-                char == '[' && color.open != null -> paints[k].at(i, color.open, animate, now)
-                char == ']' && color.close != null -> paints[k].at(i, color.close, animate, now)
+                own && char == '[' && color.open != null -> paints[k].at(i, color.open, animate, now)
+                own && char == ']' && color.close != null -> paints[k].at(i, color.close, animate, now)
                 tagBracket -> TAG_BRACKETS
-                char == '+' && color.plus != null -> paints[k].at(i, color.plus, animate, now)
+                own && char == '+' && color.plus != null -> paints[k].at(i, color.plus, animate, now)
                 else -> paints[k].at(i, animate, now)
             }
         }

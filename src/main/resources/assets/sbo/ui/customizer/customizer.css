@@ -161,11 +161,16 @@ body { display: flex; align-items: center; justify-content: center; }
 .cz-panel-tall { height: 252px; }
 .cz-center { display: flex; justify-content: center; padding: 16px 0; color: var(--subtle); }
 
-.cz-row { display: flex; align-items: center; gap: 8px; min-height: 18px; padding: 2px 4px; border-radius: 3px; }
+.cz-row { display: flex; align-items: center; min-height: 18px; border-radius: 3px; }
 .cz-row:hover { background-color: var(--card); }
-.cz-label { width: 70px; flex-shrink: 0; color: var(--text-strong); }
-.cz-control { flex-grow: 1; min-width: 0; display: flex; justify-content: flex-end; }
+/* The name covers the row up to the control, padding included, so its hint shows anywhere but over the control */
+.cz-label { flex-grow: 1; flex-shrink: 0; flex-basis: 70px; align-self: stretch; display: flex; align-items: center; padding: 2px 8px 2px 4px; color: var(--text-strong); }
+.cz-control { flex-grow: 0; flex-shrink: 1; min-width: 0; display: flex; justify-content: flex-end; padding: 2px 4px 2px 0; }
 .cz-inline { display: flex; align-items: center; gap: 3px; }
+/* A gradient: its colors as a bar, a swatch per color at its place along it */
+.cz-strip { display: flex; align-items: center; justify-content: space-between; width: 110px; padding: 2px; border: 1px solid var(--border); border-radius: 3px; }
+.cz-stop { padding: 1px; gap: 0; }
+.cz-stop .guilib-color-hex { display: none; }
 .cz-select { min-width: 96px; }
 .cz-symbol { min-width: 44px; }
 .cz-symbol-part { min-width: 64px; }

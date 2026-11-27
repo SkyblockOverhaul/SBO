@@ -58,6 +58,8 @@ object CustomizerPart {
 data class PartColor(
     val color: String,
     val to: String? = null,
+    /** Colors between [color] and [to] for gradients of more than two colors; only with [to], null is a gradient of two. */
+    val mid: List<String>? = null,
     /** Colors of the opening [ and the closing ]; null keeps the old look: the part's color, gray for the team tag. */
     val open: String? = null,
     val close: String? = null,
@@ -87,6 +89,9 @@ data class PartColor(
         if (strike == true) out = out.withStrikethrough(true)
         return out
     }
+
+    /** Every color of the part in order: [color], the ones in between and [to]; only [color] without a gradient. */
+    val stops: List<String> get() = if (to == null) listOf(color) else listOf(color) + mid.orEmpty() + to
 
     val hasStyle: Boolean get() = bold == true || italic == true || underline == true || strike == true
 
@@ -324,6 +329,8 @@ data class OwnCustomizerResponse(
     val stats: List<CustomizerChoice> = emptyList(),
     /** The rank may pick a gradient instead of one color. */
     val gradient: Boolean = false,
+    /** Most colors one gradient may have, first and last included; backends before it only take two. */
+    val gradientColors: Int = 2,
     /** The rank has a team tag it can show above the head. */
     val team: Boolean = false,
     /** Symbols that may stand next to the name; empty on backends without the look. */

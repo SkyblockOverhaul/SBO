@@ -95,7 +95,7 @@ internal fun argb(hex: String): Int = CustomizerEffects.parseHex(hex) or 0xFF000
 
 internal fun background(color: PartColor, part: String): String = when {
     color.effectOf(part) == CustomizerEffect.CHROMA -> RAINBOW
-    color.to != null -> "linear-gradient(90deg, ${color.color}, ${color.to})"
+    color.to != null -> "linear-gradient(90deg, ${color.stops.joinToString()})"
     else -> color.color
 }
 
@@ -139,7 +139,10 @@ internal fun NodeBuilder.section(title: String, hint: String) {
     div(className = "cz-hint cz-section-hint") { +hint }
 }
 
-/** One setting: its name left (the hint shows on hover), the control right. */
+/**
+ * One setting: its name left, the control right. The name fills the free space of the row, so the hint shows on hover
+ * over the name and the empty background, not over the control.
+ */
 internal fun NodeBuilder.row(label: String, hint: String, control: NodeBuilder.() -> Unit) {
     div(className = "cz-row") {
         span(className = "cz-label", title = hint) { +label }
