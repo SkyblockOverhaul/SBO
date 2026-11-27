@@ -18,4 +18,8 @@ data class PartyDraft(
 ) {
     /** Same key as `PartyTarget.key`. */
     val key: String get() = if (subType.isEmpty()) partyType else "$partyType/$subType"
+
+    /** A copy that shares no list or map with this one. */
+    fun deepCopy(): PartyDraft =
+        copy(reqs = reqs.toMutableMap(), options = options.toMutableMap(), wantedRoles = wantedRoles.toMutableList())
 }

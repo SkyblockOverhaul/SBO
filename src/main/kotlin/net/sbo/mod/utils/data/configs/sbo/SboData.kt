@@ -78,8 +78,6 @@ data class SboData(
     var sphinxSinceLsLooting: Int = 0,
     var b2bLootingLs: Boolean = false,
 
-    var lastStatsProfile: String = "",
-
     var cloudSync: MutableMap<String, CloudSyncState> = mutableMapOf(), // account uuid -> state
     var cloudSyncUiScale: Float? = null, // null = the global size, see UiScale
     var eventsUiScale: Float? = null, // null = the global size, see UiScale

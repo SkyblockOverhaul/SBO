@@ -73,6 +73,10 @@ object PartyFinderApi {
         request.handle(onError, onSuccess)
     }
 
+    /** The profile the player is on. The server accepts it only for the key's own account. */
+    fun reportProfile(body: ProfileBody, onError: (PfError) -> Unit, onSuccess: () -> Unit) =
+        SboApi.authedPost("/pf/player/profile", json.encodeToString(body)).handle<JsonElement>(onError) { onSuccess() }
+
     /** By name it is open, by uuid it needs a valid SBO key. */
     fun viewerStats(body: ViewerStatsBody, onError: (PfError) -> Unit, onSuccess: (ViewerStatsData) -> Unit) {
         val text = json.encodeToString(body)

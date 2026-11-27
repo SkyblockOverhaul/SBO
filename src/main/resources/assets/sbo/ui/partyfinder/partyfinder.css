@@ -415,6 +415,11 @@ button.primary:disabled { background-color: var(--disabled); border-color: var(-
 .pf-size-row { display: flex; align-items: center; gap: 6px; padding: 2px 4px; }
 .pf-size-row .guilib-number { width: 80px; }
 .pf-form-buttons { display: flex; justify-content: flex-end; gap: 4px; margin-top: 6px; }
+.pf-problems { margin-top: 6px; padding: 4px 6px; border-radius: 3px; border: 1px solid var(--bad-border); background-color: var(--card); }
+.pf-problems-title { color: var(--bad); font-weight: 600; }
+.pf-problem-player { margin-top: 3px; }
+.pf-problem-name { color: var(--text-strong); font-weight: 600; }
+.pf-problem { margin-left: 6px; color: var(--text-soft); }
 
 .pf-dialog { width: 180px; }
 .pf-dialog.pf-report-dialog { width: 240px; }

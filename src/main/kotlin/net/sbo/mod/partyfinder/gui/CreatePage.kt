@@ -42,13 +42,22 @@ import net.sbo.mod.utils.data.configs.partyfinder.PartyDraft
 
 internal data class CreateProps(val target: PartyTarget, val own: MemberView?, val inQueue: Boolean, val onRules: () -> Unit = {})
 
+/** Input from outside the window. It goes into every subcategory of partyType the player opens, but only once, so later edits stay. */
+internal class CreatePrefill(private val partyType: String, private val edit: PartyDraft.() -> Unit) {
+    private val used = mutableSetOf<String>()
+
+    fun applyTo(target: PartyTarget, draft: PartyDraft) {
+        if (target.partyType == partyType && used.add(target.key)) draft.edit()
+    }
+}
+
 private val json = Json { ignoreUnknownKeys = true }
 
 /** Starts with the last input for this party type. */
 internal val CreatePage = component<CreateProps>("CreatePage") { props ->
     val target = props.target
     val config = DataManager.partyFinderConfigState
-    var draft by useStateLazy { startDraft(target) }
+    var draft by useStateLazy { startDraft(target).edited { wantedRoles = target.fittingRoles(ownRole, wantedRoles).toMutableList() } }
     val latest = useRef(draft)
     latest.current = draft
     val toast = useToast()
@@ -78,16 +87,16 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
     }
     val own = if (defaultOptions) props.own else ownForOptions
 
+    // Filled when the server refused the party because players miss requirements
+    var problems by useState(PartyFinderManager.createProblems)
+    useInterval(500) { problems = PartyFinderManager.createProblems }
+
     fun submit() {
         val final = draft.edited {}
         config.drafts[target.key] = final
         config.save()
-        if (PartyFinderManager.inQueue) {
-            PartyFinderManager.removePartyFromQueue { removed -> if (removed) PartyFinderManager.createParty(final) }
-        } else {
-            PartyFinderManager.createParty(final)
-        }
-        toast.info("Creating your party, this takes a few seconds...")
+        PartyFinderManager.createParty(final)
+        toast.info(if (PartyFinderManager.inQueue) "Updating your party, this can takes a few seconds..." else "Creating your party, this takes a few seconds...")
     }
 
     scroll(className = "pf-form guilib-autohide") {
@@ -175,6 +184,7 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
                                 ownRole = e.value.ifEmpty { null }
                                 // The own place counts towards the role limit, so one place for others may have to go
                                 ownRole?.let { if (wantedRoles.count { r -> r == it } + 1 > limit) wantedRoles.remove(it) }
+                                wantedRoles = target.fittingRoles(ownRole, wantedRoles).toMutableList()
                             }
                         }) {
                             option("", "No role")
@@ -183,12 +193,13 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
                     }
                 }
             }
-            p(className = "pf-hint") { +"Optional. Your role takes its own place in the party. The roles below are the places for the players you are looking for." }
+            p(className = "pf-hint") { +"Optional. Pick the roles you are looking for. Your own role is included." }
             if (target.roleLimit == 1) {
-                chips(values = draft.wantedRoles, onChange = { roles -> change { wantedRoles = roles.toMutableList() } }) {
+                val own = draft.ownRole
+                chips(values = draft.wantedRoles + listOfNotNull(own), onChange = { roles -> change { wantedRoles = roles.filter { it != own }.toMutableList() } }) {
                     target.roles.forEach {
-                        val mine = it.id == draft.ownRole
-                        option(it.id, it.label, disabled = mine, title = if (mine) "You play this one yourself." else null)
+                        val mine = it.id == own
+                        option(it.id, if (mine) "${it.label} (you)" else it.label, disabled = mine, title = if (mine) "You play this one yourself." else null)
                     }
                 }
             } else {
@@ -214,10 +225,25 @@ internal val CreatePage = component<CreateProps>("CreatePage") { props ->
             +"${note.length}/${PartyFinderManager.NOTE_MAX_LENGTH}. Letters, numbers, spaces and , . ! ? - _ + / : ' ( ) only, other characters are removed."
         }
 
+        val missed = problems?.takeIf { it.first == target.key }?.second.orEmpty()
+        if (missed.isNotEmpty()) {
+            div(className = "pf-problems") {
+                p(className = "pf-problems-title") { +"Not everyone in your party meets the requirements:" }
+                missed.groupBy { it.name }.forEach { (name, own) ->
+                    div(className = "pf-problem-player", key = name) {
+                        p(className = "pf-problem-name") { +name }
+                        own.forEach { p(className = "pf-problem") { +ProblemText.describe(it, target) } }
+                    }
+                }
+                p(className = "pf-hint") { +ProblemText.MEMBERS_RELOAD_HINT }
+            }
+        }
+
         div(className = "pf-form-buttons") {
             button(onClick = { draft = PartyDraft(target.partyType, target.subType, target.maxSize) }) { +"Reset" }
-            val createHint = "You must be alone or the party leader. Everyone already in your party has to meet the requirements too." +
-                if (props.inQueue) " Updating replaces the party you have listed right now." else ""
+            val createHint =
+                if (props.inQueue) "Updates your queued party with the new requirements and settings. Everyone in your party has to meet them too."
+                else "You must be alone or the party leader. Everyone in your party has to meet the requirements too."
             tooltip(createHint, placement = "top", className = "pf-tip") {
                 button(className = "primary", disabled = !target.createOpen, onClick = { submit() }) {
                     +if (props.inQueue) "Update party" else "Create party"
@@ -242,12 +268,12 @@ private fun startDraft(target: PartyTarget): PartyDraft {
         partySize = target.clampSize(partySize)
         // Saved drafts may name a role the target no longer has
         if (target.roles.none { it.id == ownRole }) ownRole = null
+        PartyFinderGui.prefill?.applyTo(target, this)
     }
 }
 
 /** A copy with its own maps, so state changes never touch the saved config. */
-private fun PartyDraft.edited(block: PartyDraft.() -> Unit): PartyDraft =
-    copy(reqs = reqs.toMutableMap(), options = options.toMutableMap(), wantedRoles = wantedRoles.toMutableList()).apply(block)
+private fun PartyDraft.edited(block: PartyDraft.() -> Unit): PartyDraft = deepCopy().apply(block)
 
 private fun NodeBuilder.reqField(def: ReqDef, draft: PartyDraft, own: MemberView?, change: (PartyDraft.() -> Unit) -> Unit) {
     val stat = def.stat
@@ -326,7 +352,7 @@ private fun NodeBuilder.anyOfInput(def: ReqDef, saved: JsonElement?, save: (Stri
     fun store(next: List<Pair<String, String?>>, matchAll: Boolean = all) {
         if (next.isEmpty()) return save(null)
         val list = buildJsonArray {
-            next.forEach { (id, minimum) ->
+            next.forEach { [id, minimum] ->
                 val field = def.choices.firstOrNull { it.id == id }?.minimumField
                 if (minimum == null || field == null) add(JsonPrimitive(id)) else add(buildJsonObject { put("id", id); put(field, minimum) })
             }
@@ -354,7 +380,7 @@ private fun NodeBuilder.anyOfInput(def: ReqDef, saved: JsonElement?, save: (Stri
                 option("all", "All of these")
             }
         }
-        picks.forEach { (id, minimum) ->
+        picks.forEach { [id, minimum] ->
             val choice: ItemChoice = def.choices.firstOrNull { it.id == id } ?: return@forEach
             if (choice.minimumField == null) return@forEach
             div(className = "pf-tier-row", key = id) {
@@ -378,9 +404,8 @@ private fun NodeBuilder.anyOfInput(def: ReqDef, saved: JsonElement?, save: (Stri
 }
 
 /**
- * Chips like the ones above, but with a count: click adds a player for the role, right click removes one.
- * At the role limit or with no place left a click puts the role back to 0. A role listed twice is wanted twice;
- * these are the places for others, the leader's own role counts only towards the role limit.
+ * Role buttons with a count. A click adds a player for the role and a right click removes one. Once the role
+ * is full, a click resets it. The count includes the leader's own role, so the buttons show the whole party.
  */
 private fun NodeBuilder.roleCountChips(target: PartyTarget, draft: PartyDraft, change: (PartyDraft.() -> Unit) -> Unit) {
     val places = draft.partySize - 1
@@ -391,16 +416,20 @@ private fun NodeBuilder.roleCountChips(target: PartyTarget, draft: PartyDraft, c
     }
     div(className = "guilib-chips") {
         target.roles.forEach { role ->
+            val mine = if (role.id == draft.ownRole) 1 else 0
             val count = draft.wantedRoles.count { it == role.id }
             val free = places - draft.wantedRoles.size
-            val limit = (target.roleLimit ?: Int.MAX_VALUE) - if (role.id == draft.ownRole) 1 else 0
+            val limit = (target.roleLimit ?: Int.MAX_VALUE) - mine
+            val fits = target.roleWeightLimit?.let { most ->
+                draft.wantedRoles.sumOf { target.roleWeight(it) } + target.roleWeight(draft.ownRole) + role.weight <= most
+            } ?: true
             div(
-                className = classNames("guilib-chip", "selected" to (count > 0)),
+                className = classNames("guilib-chip", "selected" to (count + mine > 0)),
                 key = "role:${role.id}",
-                onClick = { setCount(role.id, if (free > 0 && count < limit) count + 1 else 0) },
+                onClick = { setCount(role.id, if (free > 0 && count < limit && fits) count + 1 else 0) },
                 onContextMenu = { if (count > 0) setCount(role.id, count - 1) }
             ) {
-                if (count > 0) span(className = "pf-role-count") { +"${count}×" }
+                if (count + mine > 0) span(className = "pf-role-count") { +"${count + mine}×" }
                 span { +role.label }
             }
         }
@@ -409,5 +438,5 @@ private fun NodeBuilder.roleCountChips(target: PartyTarget, draft: PartyDraft, c
 
 // Extra help for roles that need to fit together
 private val ROLE_HINTS = mapOf(
-    "bestiary/dragons" to "2 Eyes needs to deal the most damage to get the best loot. Leechers place no eyes and can push them down, so only pick Leecher if your split has room for it."
+    "bestiary/dragons" to "A party can place up to 8 eyes. The player who places 2 Eyes needs to deal the most damage to get the best loot. Leechers place no eyes and need to be careful not to deal too much damage."
 )
