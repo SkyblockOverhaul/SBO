@@ -41,6 +41,12 @@ object PartyFinderGui {
     private val STYLES = listOf("sbo:ui/partyfinder/partyfinder.css", SboLook.STYLE)
     private const val KOFI_URL = "https://ko-fi.com/skyblock_overhaul"
 
+    // Set for the next window only, see openOn
+    private var nextKey: String? = null
+    private var nextPage = "parties"
+    internal var prefill: CreatePrefill? = null
+        private set
+
     /** Selectable fonts, id to label. Inter and Minecraft come with GuiLib, the others are declared in the CSS. */
     internal val FONTS = linkedMapOf(
         "inter" to "Inter",
@@ -59,6 +65,21 @@ object PartyFinderGui {
             return
         }
         GuiLib.open(App, STYLES, title = "SBO Party Finder")
+    }
+
+    /** Opens the create page of key, for example "kuudra/burning", with start filled in. Must run on the client thread. */
+    internal fun openCreate(key: String, start: CreatePrefill? = null) = openOn(key, "create", start)
+
+    /** Opens the party list of key. Must run on the client thread. */
+    internal fun openParties(key: String) = openOn(key, "parties", null)
+
+    private fun openOn(key: String, page: String, start: CreatePrefill?) {
+        if (World.isInSkyblock()) {
+            nextKey = key
+            nextPage = page
+            prefill = start
+        }
+        open()
     }
 
     fun register() {
@@ -80,8 +101,9 @@ object PartyFinderGui {
         val config = DataManager.partyFinderConfigState
         var data by useState(PartyCategories.data)
         var failed by useState(false)
-        var selected by useState(startKey())
-        var page by useState("parties")
+        var selected by useState(nextKey ?: startKey())
+        var page by useState(nextPage)
+        val firstPage = useRef(page)
         var settingsSection by useState("general")
         var favorites by useState(config.favorites.toList())
         var own by useState<MemberView?>(null)
@@ -117,13 +139,18 @@ object PartyFinderGui {
         val beforeTour = useRef<String?>(null)
 
         useEffect {
+            nextKey = null
+            nextPage = "parties"
             PartyCategories.get { loaded ->
                 if (loaded == null) failed = true else data = loaded
             }
             PartyFinderManager.listener = { success, text ->
                 if (success) toast.success(text) else toast.error(text, durationMs = 8000)
             }
-            onCleanup { PartyFinderManager.listener = null }
+            onCleanup {
+                PartyFinderManager.listener = null
+                prefill = null
+            }
         }
         useInterval(1000) {
             queued = PartyFinderManager.queuedParty
@@ -139,7 +166,7 @@ object PartyFinderGui {
         // Parties per party type for the sidebar, hidden when the server can't tell. They reload together with the party list.
         var partyCounts by useState<Map<String, Int>?>(null)
         fun loadCounts() = PartyFinderApi.counts(onError = { partyCounts = null }) { partyCounts = it }
-        useEffect(queued?.createdAt, inQueue) { loadCounts() }
+        useEffect(queued, inQueue) { loadCounts() }
 
         val target = data?.let { loaded ->
             targetOf(selected) ?: loaded.categories.firstOrNull()?.let { PartyCategories.target(it.id) }
@@ -328,7 +355,7 @@ object PartyFinderGui {
                                 } else {
                                     PartiesPage(
                                         PartiesProps(
-                                            target, own, ::ownFor, ownError, reload, queued?.createdAt ?: 0L, inQueue, onEdit = { page = "create" },
+                                            target, own, ::ownFor, ownError, reload, queued, inQueue, onEdit = { page = "create" },
                                             inspected = inspected?.member?.uuid, onInspect = { inspected = it },
                                         joinedParties = joinedParties,
                                             onRules = { page = "rules" },
@@ -361,7 +388,7 @@ object PartyFinderGui {
                         },
                         onDone = {
                             onboarding = false
-                            page = "parties"
+                            page = firstPage.current
                             beforeTour.current?.let { selected = it }
                             beforeTour.current = null
                         },

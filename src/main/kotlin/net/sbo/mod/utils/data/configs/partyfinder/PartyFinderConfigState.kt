@@ -23,6 +23,30 @@ data class PartyFinderConfigState(
     var listFilters: MutableMap<String, PartyListFilter> = mutableMapOf(),
     var autoInvite: Boolean = true,
     var autoRequeue: Boolean = true,
+    // Kicks players who join a listed Kuudra party through Hypixel's party finder without meeting its requirements
+    var autoKick: Boolean = false,
+    // Offers to list a party on SBO too after it was listed in Hypixel's party finder
+    var hypixelOffer: Boolean = true,
+    // Removes the Kuudra party from SBO without asking when it leaves Hypixel's party finder
+    var hypixelAutoDelist: Boolean = false,
+    // Asks whether to remove the Kuudra party from SBO when it leaves Hypixel's party finder
+    var hypixelDelistQuestion: Boolean = true,
+    // Chat reminder when a party event starts, see PartyEventHints
+    var eventHints: Boolean = true,
+    // Chat reminder for Dragon parties after placing a Summoning Eye alone
+    var dragonHints: Boolean = true,
+    // Chat reminder for Safari parties when going on a run alone
+    var safariHints: Boolean = true,
+    // Chat reminder for Scatha parties when a Worm or Scatha spawns for a player alone
+    var scathaHints: Boolean = true,
+    // Day on which the offer after Hypixel's party finder pauses, because the player ignored it twice in a row
+    var hypixelOfferPausedOn: String? = null,
+    // SBO Party Finder buttons above Hypixel menus, see HypixelMenus
+    var menuButtons: Boolean = true,
+    // When each kind of reminder was shown last, in epoch milliseconds by PartyHintKind
+    var hintsShownAt: MutableMap<String, Long> = mutableMapOf(),
+    // Hypixel only prints the tier when it changes
+    var lastKuudraTier: String? = null,
     // Players who can't request to join own parties and whose parties are hidden, see BlockedPlayers
     var blockedPlayers: MutableList<BlockedPlayer> = mutableListOf(),
     // Players pinned in the profile viewer, in the order the player sorted them

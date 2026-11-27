@@ -1,16 +1,44 @@
 package net.sbo.mod.partyfinder
 
+import net.sbo.mod.SBOKotlin.logger
 import net.sbo.mod.partyfinder.api.MemberView
+import net.sbo.mod.partyfinder.api.PartyFinderApi
 import net.sbo.mod.partyfinder.api.PfError
+import net.sbo.mod.partyfinder.api.ProfileBody
 import net.sbo.mod.utils.Player
+import net.sbo.mod.utils.SboKey
 import net.sbo.mod.utils.events.Register
 
 /** The player's own stats per party target, for "can I join?". They come from PlayerStatsCache, every category in one request. */
 object OwnStats {
+    // The profile Hypixel named after the last join or switch, null before the first one
+    private var profileId: String? = null
+
     fun uuid(): String = Player.getUUIDString().replace("-", "").ifEmpty { Player.accountUuid() }
 
     fun init() {
-        Register.onChatMessage(Regex("^Your profile was changed to: "), noFormatting = true) { _, _ -> clear() }
+        // Hypixel names the profile after every SkyBlock join and every switch. Its API only shows a switch
+        // after a while, so the mod sends the profile ID to the SBO server, which then knows about the switch right away.
+        Register.onChatMessage(Regex("^Profile ID: ([0-9a-fA-F-]{32,36})$"), noFormatting = true) { _, match ->
+            onProfileId(match.groupValues[1])
+        }
+    }
+
+    private fun onProfileId(id: String) {
+        if (id.equals(profileId, ignoreCase = true)) return
+        val switched = profileId != null
+        profileId = id
+        val reload = {
+            if (switched) {
+                clear()
+                PartyPlayer.load()
+            }
+        }
+        if (SboKey.get().isBlank()) return reload()
+        PartyFinderApi.reportProfile(ProfileBody(id), onError = { error ->
+            logger.warn("[SBO] Profile not sent: ${error.message}")
+            reload()
+        }) { reload() }
     }
 
     fun clear() = PlayerStatsCache.forget(uuid())
@@ -52,8 +80,8 @@ object OwnStats {
         onError: (PartyTarget, Map<String, String>, PfError) -> Unit,
         callback: (PartyTarget, Map<String, String>, MemberView) -> Unit
     ) {
-        PlayerStatsCache.own(onError = { error -> wanted.forEach { (target, options) -> onError(target, options, error) } }) { stats ->
-            wanted.forEach { (target, options) ->
+        PlayerStatsCache.own(onError = { error -> wanted.forEach { [target, options] -> onError(target, options, error) } }) { stats ->
+            wanted.forEach { [target, options] ->
                 stats.member(target.partyType, target.subType, statOptions(target, options))?.let { callback(target, options, it) }
                     ?: onError(target, options, noStats())
             }

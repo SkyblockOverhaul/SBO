@@ -1,5 +1,7 @@
 package net.sbo.mod.utils
 
+import it.unimi.dsi.fastutil.objects.Object2IntMaps
+import net.azureaaron.hmapi.data.error.ModApiErrorReason
 import net.azureaaron.hmapi.data.server.Environment
 import net.azureaaron.hmapi.events.HypixelPacketEvents
 import net.azureaaron.hmapi.network.HypixelNetworking
@@ -11,6 +13,7 @@ import net.azureaaron.hmapi.network.packet.v2.s2c.PartyInfoS2CPacket
 import net.sbo.mod.partyfinder.PartyFinderManager
 import net.sbo.mod.utils.data.AlphaData
 import net.sbo.mod.utils.chat.Chat
+import net.sbo.mod.utils.events.TickScheduler
 import net.sbo.mod.utils.events.annotations.SboEvent
 import net.sbo.mod.utils.events.impl.game.DisconnectEvent
 
@@ -26,12 +29,25 @@ object HypixelModApi {
     // Party role per member uuid without dashes: LEADER, MODERATOR or MEMBER
     private var partyRoles: Map<String, String> = emptyMap()
     private var mode: String = ""
+    /** In a Kuudra or dungeon run. */
+    val inInstance: Boolean get() = mode == KUUDRA_MODE || mode == DUNGEON_MODE
+    // Hypixel's names for the modes, Kuudra's Hollow is the instanced one
+    private const val KUUDRA_MODE = "instanced"
+    private const val DUNGEON_MODE = "dungeon"
 
     // listeners
     private val partyInfoListeners = mutableListOf<(isInParty: Boolean, isLeader: Boolean, members: List<String>) -> Unit>()
     private val errorListeners = mutableListOf<(packet: ErrorS2CPacket) -> Unit>()
 
+    // Hypixel refuses party requests that follow within about 2 seconds, and requests of other mods count towards that too
+    private const val PARTY_INFO_SPACING_MS = 5000L
+    private val partyInfoRequests = SpacedRequests(
+        PARTY_INFO_SPACING_MS, System::currentTimeMillis, { delayMs, action -> TickScheduler.sleep(delayMs, action) }, ::writePartyInfoPacket
+    )
+
     fun init() {
+        // Hypixel only sends the location to mods that subscribe to it
+        HypixelNetworking.registerToEvents(Object2IntMaps.singleton(LocationUpdateS2CPacket.ID, 1))
         HypixelPacketEvents.HELLO.register(::handlePacket)
         HypixelPacketEvents.PARTY_INFO.register(::handlePacket)
         HypixelPacketEvents.LOCATION_UPDATE.register(::handlePacket)
@@ -64,7 +80,7 @@ object HypixelModApi {
 
     private fun onLocationUpdatePacket(packet: LocationUpdateS2CPacket) {
         isOnSkyblock = packet.serverType.orElse("") == "SKYBLOCK"
-        mode = packet.mode.orElse("")
+        mode = packet.mode.orElse(null) ?: ""
     }
 
     private fun onHelloPacket(packet: HelloS2CPacket) {
@@ -78,6 +94,7 @@ object HypixelModApi {
     }
 
     private fun onPartyInfoPacket(packet: PartyInfoS2CPacket) {
+        partyInfoRequests.answered()
         this.isInParty = packet.inParty
         partyRoles = packet.members?.entries?.associate { (uuid, role) -> uuid.toString().replace("-", "") to role.toString() }.orEmpty()
 
@@ -118,6 +135,9 @@ object HypixelModApi {
             mode = ""
         }
 
+        // The retry only costs the player a short wait, so the first refusal is not shown in chat
+        if (packet.type() == PartyInfoS2CPacket.ID && packet.reason() == ModApiErrorReason.RATE_LIMITED && partyInfoRequests.refused()) return
+
         errorListeners.forEach { listener ->
             listener(packet)
         }
@@ -128,14 +148,19 @@ object HypixelModApi {
     }
 
     fun sendPartyInfoPacket(createParty: Boolean = false) {
+        if (isOnHypixel) {
+            if (createParty) PartyFinderManager.creatingParty = true
+            partyInfoRequests.request()
+        } else {
+            PartyFinderManager.creatingParty = false
+            Chat.chat("§6[SBO] §eYou are not on Hypixel. You can only use this feature on Hypixel. Relog or restart your game if you believe this to be in error.")
+        }
+    }
+
+    // A waiting request can outlive the connection
+    private fun writePartyInfoPacket() {
         try {
-            if (isOnHypixel) {
-                if (createParty) PartyFinderManager.creatingParty = true
-                HypixelNetworking.sendPartyInfoC2SPacket(2)
-            } else {
-                PartyFinderManager.creatingParty = false
-                Chat.chat("§6[SBO] §eYou are not on Hypixel. You can only use this feature on Hypixel. Relog or restart your game if you believe this to be in error.")
-            }
+            if (isOnHypixel) HypixelNetworking.sendPartyInfoC2SPacket(2) else PartyFinderManager.creatingParty = false
         } catch (_: Exception) {
             PartyFinderManager.creatingParty = false
         }

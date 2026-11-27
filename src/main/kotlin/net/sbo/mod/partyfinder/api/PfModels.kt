@@ -116,7 +116,12 @@ data class PartyOption(
 data class OptionValue(val id: String, val label: String = id)
 
 @Serializable
-data class RoleDef(val id: String, val label: String = id)
+data class RoleDef(
+    val id: String,
+    val label: String = id,
+    /** How much one player of this role counts towards the roleWeightLimit of the subcategory, e.g. the eyes they place. */
+    val weight: Int = 0
+)
 
 @Serializable
 data class CategoryDef(
@@ -146,12 +151,19 @@ data class SubcategoryDef(
     /** Replaces the roles of the category when set. */
     val roles: List<RoleDef>? = null,
     val roleLimit: Int? = null,
+    /** The highest total weight of all roles in one party, the leader's role included. */
+    val roleWeightLimit: Int? = null,
     val maxSize: Int? = null,
     val event: String? = null,
     val open: Boolean = true,
     val opensAt: Long? = null,
     /** Parties can be created, also shortly before the event starts; null from older backends */
     val createOpen: Boolean? = null,
+    /** Open according to the SkyBlock calendar alone, so the event surely runs. open can also cover bonus time around holidays. */
+    val calendarOpen: Boolean = false,
+    val calendarOpensAt: Long? = null,
+    /** When that window ends, only set while it is open and the end is known. */
+    val calendarClosesAt: Long? = null,
     // How this kind of party works, shown above the list and the create form
     val info: String? = null
 )
@@ -234,7 +246,9 @@ data class PartyBody(
     val note: String = "",
     val reqs: Map<String, JsonElement> = emptyMap(),
     val options: Map<String, String> = emptyMap(),
-    val roles: RolesBody = RolesBody()
+    val roles: RolesBody = RolesBody(),
+    /** A failed update leaves the listing as it was. */
+    val keepOnFail: Boolean? = null
 )
 
 @Serializable
@@ -268,6 +282,9 @@ data class CheckScope(val subType: String, val options: Map<String, String>? = n
 /** Send either uuid or name. A uuid only works with a valid SBO key. */
 @Serializable
 data class OwnStatsBody(val uuid: String? = null, val name: String? = null, val refresh: Boolean? = null, val items: Boolean? = null)
+
+@Serializable
+data class ProfileBody(val profileId: String)
 
 /** Send either uuids or names, at most 5 players. */
 @Serializable

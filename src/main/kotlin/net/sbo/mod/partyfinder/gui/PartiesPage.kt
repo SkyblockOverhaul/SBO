@@ -61,7 +61,8 @@ internal data class PartiesProps(
     val ownFor: (PartyTarget) -> MemberView?,
     val ownError: String?,
     val reload: Int,
-    val queuedAt: Long,
+    // The own listing, the list reloads when it changes
+    val queued: PartyView?,
     val inQueue: Boolean,
     val onEdit: () -> Unit,
     // Uuid of the player shown in the side panel
@@ -102,7 +103,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
     val clipboard = useClipboard()
 
     val autoRefresh = config.autoRefreshSeconds
-    useEffect(target.key, props.reload, props.queuedAt, props.joinedParties, refresh.value, autoRefresh) {
+    useEffect(target.key, props.reload, props.queued, props.joinedParties, refresh.value, autoRefresh) {
         val key = target.key
         if (loadKey.current != key) {
             parties = null
@@ -185,10 +186,10 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
             val skip = (options == OwnStats.statOptions(partyTarget) || OwnStats.cached(partyTarget, options) != null
                 || key in ownLoading.current) || failedAt != null && now - failedAt < 2 * 60_000
             if (skip) null else partyTarget to options
-        }.distinctBy { (partyTarget, options) -> keyOf(partyTarget, options) }
+        }.distinctBy { [partyTarget, options] -> keyOf(partyTarget, options) }
         .toList()
         if (wanted.isEmpty()) return@useEffect
-        ownLoading.current = ownLoading.current + wanted.map { (partyTarget, options) -> keyOf(partyTarget, options) }
+        ownLoading.current = ownLoading.current + wanted.map { [partyTarget, options] -> keyOf(partyTarget, options) }
         OwnStats.getMany(wanted, onError = { partyTarget, options, _ ->
             val key = keyOf(partyTarget, options)
             ownLoading.current = ownLoading.current - key
@@ -348,7 +349,7 @@ internal val PartiesPage = component<PartiesProps>("PartiesPage") { props ->
     }
 
     modal(open = changingRole != null, onClose = { changingRole = null }, className = "pf-dialog") {
-        val (party, member) = changingRole ?: return@modal
+        val [party, member] = changingRole ?: return@modal
         val partyTarget = target.forParty(party)
         val self = member.uuid == myId
         // The leader's place moves with their role, only the role limit can block one
@@ -683,7 +684,7 @@ private fun NodeBuilder.partyCard(
                 }
             }
             if (tags.isNotEmpty()) div(className = "pf-card-tags") {
-                tags.forEach { (text, info) ->
+                tags.forEach { [text, info] ->
                     if (info.isBlank()) span(className = "pf-tag option") { +text }
                     else tooltip(info, className = "pf-tip") { span(className = "pf-tag option") { +text } }
                 }
