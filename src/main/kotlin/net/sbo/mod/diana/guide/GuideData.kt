@@ -122,11 +122,44 @@ internal data class TechniquePart(
 @Serializable
 internal data class TechniqueSection(val title: String, val parts: List<TechniquePart>)
 
+/**
+ * A Magic Find source of the guide. It is checked in one of three ways: by its name in the /stats Magic Find pages
+ * ([stats]) or by a Loadout slot ([slot]) or by an enchant on the item of a slot ([enchant]).
+ *
+ * @property mf the guide value as text like "9 to 10"
+ * @property value the guide value as number for sorting and coins per Magic Find
+ * @property stats part of the source name in the /stats pages like "Magic Find · Attribute". Several names are split
+ * by "|". With [exact] the whole name has to match. Sources without it and without a slot can not be checked
+ * @property price the Skyblock id that is priced when the source is missing
+ * @property grind the source is earned by playing and not bought
+ * @property sometimes the source only counts some of the time and is left out of the total
+ */
+@Serializable
+internal data class MfSource(
+    val name: String,
+    val group: String,
+    val mf: String,
+    val value: Double,
+    val stats: String? = null,
+    val exact: Boolean = false,
+    val slot: String? = null,
+    val enchant: String? = null,
+    val level: Int? = null,
+    val price: String? = null,
+    val grind: Boolean = false,
+    val sometimes: Boolean = false
+)
+
+/** @property max the Magic Find the guide reaches in the menu outside Aatrox with a Looting VII weapon */
+@Serializable
+internal data class GuideMagicFind(val max: Double, val sources: List<MfSource>)
+
 @Serializable
 internal data class DianaGuide(
     val credit: GuideCredit,
     val path: GuidePath,
     val slots: List<GuideSlot>,
+    val magicFind: GuideMagicFind,
     val tracking: GuideTracking,
     val petRules: List<PetRuleGroup>,
     val technique: List<TechniqueSection>

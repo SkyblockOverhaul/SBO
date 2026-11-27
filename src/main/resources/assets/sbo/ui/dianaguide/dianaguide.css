@@ -317,6 +317,27 @@ body {
 .dg-name { min-width: 0; overflow: hidden; white-space: nowrap; color: var(--text-soft); }
 .dg-value { color: var(--text-strong); text-align: right; }
 
+/* ---- Magic Find: one table, the header buttons sort it ---- */
+.dg-mf-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 36px 32px 50px 44px 44px;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+.dg-mf-row:hover { background-color: var(--card); }
+.dg-mf-row.head { padding-top: 0; padding-bottom: 0; }
+.dg-mf-row.head:hover { background-color: transparent; }
+.dg-mf-row .dg-chip { justify-self: start; }
+.dg-sort { padding: 0; background-color: transparent; border-color: transparent; color: var(--muted); font-size: 7px; text-align: left; }
+.dg-sort.num { text-align: right; }
+.dg-sort:hover { color: var(--text-strong); background-color: transparent; }
+.dg-sort.on { color: var(--text-strong); }
+.dg-filter { padding: 1px 6px; font-size: 7px; }
+.dg-filter.on { background-color: var(--accent-soft); border-color: var(--accent); color: var(--text-strong); }
+.dg-chip.sometimes { color: var(--muted); }
+
 /* ---- Technique: the written chapter ---- */
 .dg-credit { margin-bottom: 4px; padding: 2px 5px; border-radius: 3px; background-color: var(--panel-2); color: var(--muted); font-size: 7px; }
 .dg-credit-end { margin-top: 6px; }

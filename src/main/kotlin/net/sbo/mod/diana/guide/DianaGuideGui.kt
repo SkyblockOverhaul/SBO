@@ -36,6 +36,7 @@ object DianaGuideGui {
 
     private val TABS = listOf(
         "loadout" to "Loadout",
+        "mf" to "Magic Find",
         "pets" to "Pet Rules",
         "tracking" to "Tracking",
         "technique" to "Technique",
@@ -114,6 +115,7 @@ object DianaGuideGui {
                 if (loading && profile == null && error == null) banner("Loading your equipment and pets from your SBO profile...")
                 when (chapter) {
                     "loadout" -> loadoutTab(guide, scanned)
+                    "mf" -> magicFindTab(guide, scanned, now.value)
                     "pets" -> petRulesTab(guide, now.value)
                     "tracking" -> trackingTab(guide)
                     else -> techniqueTab(guide)

@@ -143,6 +143,37 @@
       "why": "A Gyrokinetic Wand helps land them when the mob can't be Fire Frozen, like the Manticore."
     }
   ],
+  "magicFind": {
+    "max": 101.5,
+    "sources": [
+      { "name": "Crown of Avarice", "group": "Setup", "mf": "9 to 10", "value": 9, "slot": "helmet", "price": "CROWN_OF_AVARICE" },
+      { "name": "Golden Fleece", "group": "Setup", "mf": "5", "value": 5, "slot": "cloak", "price": "GOLDEN_FLEECE" },
+      { "name": "Griffin (King of Kings)", "group": "Setup", "mf": "10", "value": 10, "slot": "petDig" },
+      { "name": "Four-Eyed Fish", "group": "Setup", "mf": "5", "value": 5, "slot": "petDig", "price": "FOUR_EYED_FISH" },
+      { "name": "Daedalus Blade", "group": "Setup", "mf": "0.2 per Mythological bestiary tier", "value": 23, "slot": "weapon", "price": "DAEDALUS_AXE" },
+      { "name": "Looting VII", "group": "Setup", "mf": "25", "value": 25, "stats": "Daedalus Blade" },
+      { "name": "Fragged bonus", "group": "Setup", "mf": "23", "value": 23 },
+      { "name": "Pulse Heirloom", "group": "Accessories", "mf": "2", "value": 2, "stats": "Pulse" },
+      { "name": "Anguish Artifact", "group": "Accessories", "mf": "1.5", "value": 1.5, "stats": "Anguish", "price": "ANGUISH_ARTIFACT" },
+      { "name": "Bestiary Talisman", "group": "Accessories", "mf": "1", "value": 1, "stats": "Beastslayer|Bestiary Talisman" },
+      { "name": "Combat 60", "group": "Buffs and progress", "mf": "20", "value": 20, "stats": "Combat Skill", "grind": true },
+      { "name": "Booster Cookie", "group": "Buffs and progress", "mf": "10", "value": 10, "stats": "Booster Cookie", "price": "BOOSTER_COOKIE" },
+      { "name": "God Potion", "group": "Buffs and progress", "mf": "10", "value": 10, "stats": "Magic Find Effect", "price": "GOD_POTION_2" },
+      { "name": "Divine Gift", "group": "Buffs and progress", "mf": "5", "value": 5, "stats": "Divine Gift" },
+      { "name": "Celestial Mason Jar", "group": "Buffs and progress", "mf": "1", "value": 1, "stats": "Mason Jar", "price": "CELESTIAL_MASON_JAR" },
+      { "name": "Petscore", "group": "Buffs and progress", "mf": "13", "value": 13, "stats": "Pet Score", "grind": true },
+      { "name": "Elizabeth upgrade", "group": "Buffs and progress", "mf": "5", "value": 5, "stats": "Magic Find · Community Shop" },
+      { "name": "Bestiary", "group": "Buffs and progress", "mf": "45 to 60", "value": 45, "grind": true },
+      { "name": "Diana's Bookshelf", "group": "Buffs and progress", "mf": "1", "value": 1, "stats": "Diana's Bookshelf", "price": "DIANAS_BOOKSHELF" },
+      { "name": "Necron's Ladder", "group": "Buffs and progress", "mf": "1", "value": 1, "stats": "Necron's Ladder", "price": "NECRONS_LADDER" },
+      { "name": "Carnival shop", "group": "Buffs and progress", "mf": "3", "value": 3 },
+      { "name": "Attributes", "group": "Buffs and progress", "mf": "varies", "value": 5, "stats": "Magic Find · Attribute" },
+      { "name": "Year of the Witch Stew", "group": "Buffs and progress", "mf": "1 to 2", "value": 1 },
+      { "name": "Century Cake", "group": "Only sometimes", "mf": "1", "value": 1, "stats": "Century Cake", "sometimes": true },
+      { "name": "Shuriken", "group": "Only sometimes", "mf": "5", "value": 5, "sometimes": true },
+      { "name": "Aatrox Pathfinder", "group": "Only sometimes", "mf": "20", "value": 20, "sometimes": true }
+    ]
+  },
   "tracking": {
     "sources": [
       { "name": "Brain Food", "value": "5" },

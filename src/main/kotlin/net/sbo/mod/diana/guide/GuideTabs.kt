@@ -10,8 +10,6 @@ import net.sbo.guilib.core.dsl.li
 import net.sbo.guilib.core.dsl.p
 import net.sbo.guilib.core.dsl.span
 import net.sbo.guilib.core.dsl.ul
-import net.sbo.guilib.fabric.GuiLib
-import net.sbo.mod.utils.chat.Chat
 
 /**
  * The Pet Rules tab. Each rule shows the trigger and then the pet with its held item like the Hypixel Autopet menu.
@@ -21,17 +19,14 @@ internal fun NodeBuilder.petRulesTab(guide: DianaGuide, now: Long) {
     val readAt = PetRulesReader.readAt
     div(className = "dg-toolbar") {
         span(className = "dg-hint dg-grow") {
-            +if (readAt == null) "Open your Autopet rules once (/pets and then Autopet) to check which ones you have."
+            +if (readAt == null) "Open your Autopet rules once to check which ones you have."
             else "Checked against your Autopet rules ${ago(now - readAt)}. Open them again after a change."
         }
         button(
             disabled = !GearScan.onSkyblock(),
-            title = if (GearScan.onSkyblock()) "Opens /pets. Click Autopet there." else "Join SkyBlock to open your pets",
-            onClick = {
-                GuiLib.close()
-                Chat.command("pets")
-            }
-        ) { +"Open /pets" }
+            title = if (GearScan.onSkyblock()) "Opens /pets and outlines where to click" else "Join SkyBlock to open your pets",
+            onClick = { MenuGuide.start(MenuGuide.AUTOPET) }
+        ) { +"Show Autopet rules" }
     }
     guide.petRules.forEach { group ->
         div(className = "dg-section", key = "title:${group.title}") {
