@@ -18,7 +18,35 @@ object UpdateChecker {
     private var latestId: String? = null
     var isUpdateAvailable = false
 
+    private val PRE_RELEASE_REGEX = Regex("""(alpha|beta|rc|pre|snapshot)""", RegexOption.IGNORE_CASE)
+
     private fun String.extractCoreVersion(): String = VERSION_REGEX.find(this)?.value ?: this
+
+    private fun String.isPreRelease(): Boolean = PRE_RELEASE_REGEX.containsMatchIn(this)
+
+    /**
+     * Compares two core versions like `0.8.1` part by part, missing parts count as 0.
+     * Returns a negative number when [a] is older, 0 when equal and a positive number when newer.
+     */
+    private fun compareCore(a: String, b: String): Int {
+        val pa = a.split('.').map { it.toIntOrNull() ?: 0 }
+        val pb = b.split('.').map { it.toIntOrNull() ?: 0 }
+        for (i in 0 until maxOf(pa.size, pb.size)) {
+            val diff = pa.getOrElse(i) { 0 } - pb.getOrElse(i) { 0 }
+            if (diff != 0) return diff
+        }
+        return 0
+    }
+
+    /**
+     * True only when [latest] is really newer than [local]. A local dev or beta build ahead of the
+     * last release is not outdated. On the same core version a full release beats a local pre-release.
+     */
+    private fun isNewer(latest: String, local: String): Boolean {
+        val cmp = compareCore(latest.extractCoreVersion(), local.extractCoreVersion())
+        if (cmp != 0) return cmp > 0
+        return local.isPreRelease() && !latest.isPreRelease()
+    }
 
     fun init() {
         check()
@@ -35,10 +63,7 @@ object UpdateChecker {
             val latestEntry = versions.firstOrNull() ?: return@toJson
             val rawLatest = latestEntry.versionNumber
 
-            val coreLatest = rawLatest.extractCoreVersion()
-            val coreLocal = SBOKotlin.version.extractCoreVersion()
-
-            if (coreLatest != coreLocal) {
+            if (isNewer(rawLatest, SBOKotlin.version)) {
                 latestVersion = rawLatest
                 latestId = latestEntry.id
                 isUpdateAvailable = true
