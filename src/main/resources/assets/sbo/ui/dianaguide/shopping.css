@@ -1,0 +1,132 @@
+/*
+ * Attribute shard panel next to the bazaar and the Custom Amount sign (diana/guide/attributes/AttributeShopping.kt).
+ * Same look as the tracker overlays (ui/tracker/tracker.css): Minecraft font, dark box, accent line on top.
+ * The panel gets no mouse input, .hover is set by the mod from the element under the mouse.
+ */
+
+.shop {
+    --accent: #55ffff;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    width: 170px;
+    padding: 5px 6px 6px;
+    background-color: rgba(14, 14, 16, 0.85);
+    border-radius: 4px;
+    border-top: 1px solid var(--accent);
+    font-family: minecraft;
+    font-size: 8px;
+    color: #9a9ca3;
+}
+
+.shop-head {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    margin-bottom: 2px;
+    color: #6f7178;
+}
+
+.shop-title {
+    flex: 1;
+    color: var(--accent);
+}
+
+.shop-row {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 1px 2px;
+    border-radius: 2px;
+}
+
+.shop-row.hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Filler lines on the last page: same height as a shard line, nothing visible */
+.shop-row.empty,
+.shop-row.empty .shop-col {
+    color: transparent;
+}
+
+.shop-row.focus {
+    background-color: rgba(85, 255, 255, 0.08);
+}
+
+.shop-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.shop-col {
+    width: 22px;
+    text-align: right;
+    color: #e8e9ec;
+    white-space: nowrap;
+}
+
+.shop-head .shop-col {
+    color: #6f7178;
+}
+
+.shop-col.coins {
+    width: 34px;
+    color: #ffaa00;
+}
+
+/* On the sign the numbers are buttons */
+.shop-col.pick {
+    padding: 0 1px;
+    border: 1px solid rgba(85, 255, 255, 0.45);
+    border-radius: 2px;
+}
+
+.shop-col.pick.hover {
+    background-color: rgba(85, 255, 255, 0.2);
+    border-color: var(--accent);
+}
+
+.shop-pages {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 2px;
+}
+
+.shop-page {
+    padding: 0 4px;
+    border: 1px solid rgba(85, 255, 255, 0.45);
+    border-radius: 2px;
+    color: #e8e9ec;
+}
+
+.shop-page.hover {
+    background-color: rgba(85, 255, 255, 0.2);
+    border-color: var(--accent);
+}
+
+.shop-page.off {
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #4a4c52;
+}
+
+.shop-page-text {
+    color: #9a9ca3;
+}
+
+.shop-hint {
+    margin-top: 2px;
+    color: #6f7178;
+}
+
+.r-common { color: #ffffff; }
+.r-uncommon { color: #55ff55; }
+.r-rare { color: #5555ff; }
+.r-epic { color: #aa00aa; }
+.r-legendary { color: #ffaa00; }
+.r-mythic { color: #ff55ff; }

@@ -1,8 +1,9 @@
-package net.sbo.mod.diana.guide
+package net.sbo.mod.diana.guide.menus
 
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.world.item.ItemStack
 import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.diana.guide.RuleMatch
 import net.sbo.mod.utils.TextUtil.removeFormatting
 import net.sbo.mod.utils.events.TickScheduler.sleep
 import net.sbo.mod.utils.events.annotations.SboEvent

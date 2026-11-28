@@ -14,6 +14,9 @@ object OwnStats {
     // The profile Hypixel named after the last join or switch, null before the first one
     private var profileId: String? = null
 
+    /** The SkyBlock profile Hypixel named after the last join or switch. Null before the first one. */
+    fun profileId(): String? = profileId
+
     fun uuid(): String = Player.getUUIDString().replace("-", "").ifEmpty { Player.accountUuid() }
 
     fun init() {

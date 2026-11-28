@@ -28,7 +28,7 @@ import net.sbo.mod.customizer.SboCustomizer
 import net.sbo.mod.utils.data.cloud.CloudSync
 import net.sbo.mod.general.HelpCommand
 import net.sbo.mod.customizer.gui.CustomizerGui
-import net.sbo.mod.diana.guide.DianaGuideGui
+import net.sbo.mod.diana.guide.GuideGui
 import net.sbo.mod.guis.look.SboLook
 import net.sbo.mod.guis.look.useFitScale
 import net.sbo.mod.guis.look.useSboScale
@@ -120,7 +120,7 @@ object HubGui {
         Tile("Settings", "Every option, with a search over all of them", "/sbosettings", Items.COMPARATOR) { openSettings() },
         Tile("Party Finder", "Join a party or create your own", "/sbopf", Items.PLAYER_HEAD) { PartyFinderGui.open() },
         Tile("Events", "Your Diana events, trackers and comparisons", "/sboevents", Items.CLOCK) { EventsGui.open() },
-        Tile("Diana Guide", "Your gear next to the Diana guide, with tips", "/sboguide", Items.GOLDEN_SHOVEL) { DianaGuideGui.open() },
+        Tile("Diana Guide", "Your gear next to the Diana guide, with tips", "/sboguide", Items.GOLDEN_SHOVEL) { GuideGui.open() },
         Tile("Achievements", "Everything you unlocked and what is left", "/sboachievements", Items.NETHER_STAR) { AchievementsGui.open() },
         Tile("Sounds", "Your own sounds for spawns and drops", "/sbosounds", Items.JUKEBOX) { SoundsGui.open() },
         Tile("Move Overlays", "Place and resize the on-screen overlays", "/sboguis", Items.ITEM_FRAME) { mc.setScreen(OverlayEditScreen()) },

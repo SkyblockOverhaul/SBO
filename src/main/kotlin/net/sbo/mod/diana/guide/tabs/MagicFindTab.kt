@@ -1,12 +1,20 @@
-package net.sbo.mod.diana.guide
+package net.sbo.mod.diana.guide.tabs
 
+import java.util.Locale
 import net.sbo.guilib.core.dom.component
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.guilib.core.dsl.button
 import net.sbo.guilib.core.dsl.div
 import net.sbo.guilib.core.dsl.span
+import net.sbo.mod.diana.guide.DianaGuide
+import net.sbo.mod.diana.guide.GearScan
+import net.sbo.mod.diana.guide.GuideGui
+import net.sbo.mod.diana.guide.ScannedSlot
+import net.sbo.mod.diana.guide.SlotState
+import net.sbo.mod.diana.guide.ago
+import net.sbo.mod.diana.guide.menus.MenuGuide
+import net.sbo.mod.diana.guide.menus.StatsMenuReader
 import net.sbo.mod.utils.game.ItemPrices
-import java.util.Locale
 
 /** Whether the player has a Magic Find source. Sometimes is for sources that only count some of the time. */
 internal enum class MfState { HAVE, MISSING, UNKNOWN, SOMETIMES }
@@ -70,7 +78,7 @@ private val MagicFindView = component<MfProps>("DianaMagicFind") { (guide, scann
         button(
             disabled = !GearScan.onSkyblock(),
             title = if (GearScan.onSkyblock()) "Opens /stats and outlines where to click until Flat Bonuses" else "Join SkyBlock to open /stats",
-            onClick = { MenuGuide.start(MenuGuide.MAGIC_FIND) }
+            onClick = { MenuGuide.start(MenuGuide.MAGIC_FIND) { GuideGui.open("mf") } }
         ) { +"Show Magic Find" }
     }
     div(className = "dg-toolbar") {

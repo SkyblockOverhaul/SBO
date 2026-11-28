@@ -5,7 +5,7 @@ import net.minecraft.client.gui.components.Tooltip
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.network.chat.Component
 import net.sbo.mod.SBOKotlin.mc
-import net.sbo.mod.diana.guide.DianaGuideGui
+import net.sbo.mod.diana.guide.GuideGui
 import net.sbo.mod.diana.sphinx.SphinxSolver
 import net.sbo.mod.guis.HubGui
 import net.sbo.mod.settings.categories.Keybinds
@@ -36,7 +36,7 @@ object SboKeyBinds {
         },
         Action({ Keybinds.sphinxSolverKey }) { SphinxSolver.solve() },
         Action({ Keybinds.clearRareMobWorldWaypointsKey }) { WaypointManager.removeRareMobAndWorldWaypoints() },
-        Action({ Keybinds.dianaGuideKey }) { if (mc.screen == null) DianaGuideGui.open() },
+        Action({ Keybinds.dianaGuideKey }) { if (mc.screen == null) GuideGui.open() },
     )
 
     @SboEvent

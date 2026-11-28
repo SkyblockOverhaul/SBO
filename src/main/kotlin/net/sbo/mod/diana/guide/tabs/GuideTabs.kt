@@ -1,4 +1,4 @@
-package net.sbo.mod.diana.guide
+package net.sbo.mod.diana.guide.tabs
 
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.guilib.core.dsl.b
@@ -10,6 +10,15 @@ import net.sbo.guilib.core.dsl.li
 import net.sbo.guilib.core.dsl.p
 import net.sbo.guilib.core.dsl.span
 import net.sbo.guilib.core.dsl.ul
+import net.sbo.mod.diana.guide.DianaGuide
+import net.sbo.mod.diana.guide.GearScan
+import net.sbo.mod.diana.guide.GuideData
+import net.sbo.mod.diana.guide.GuideGui
+import net.sbo.mod.diana.guide.ago
+import net.sbo.mod.diana.guide.link
+import net.sbo.mod.diana.guide.menus.MenuGuide
+import net.sbo.mod.diana.guide.menus.PetRulesReader
+import net.sbo.mod.diana.guide.menus.RuleState
 
 /**
  * The Pet Rules tab. Each rule shows the trigger and then the pet with its held item like the Hypixel Autopet menu.
@@ -25,7 +34,7 @@ internal fun NodeBuilder.petRulesTab(guide: DianaGuide, now: Long) {
         button(
             disabled = !GearScan.onSkyblock(),
             title = if (GearScan.onSkyblock()) "Opens /pets and outlines where to click" else "Join SkyBlock to open your pets",
-            onClick = { MenuGuide.start(MenuGuide.AUTOPET) }
+            onClick = { MenuGuide.start(MenuGuide.AUTOPET) { GuideGui.open("pets") } }
         ) { +"Show Autopet rules" }
     }
     guide.petRules.forEach { group ->

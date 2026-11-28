@@ -154,12 +154,38 @@ internal data class MfSource(
 @Serializable
 internal data class GuideMagicFind(val max: Double, val sources: List<MfSource>)
 
+/**
+ * An attribute the guide wants. It is leveled with shards of one Hunting shard.
+ *
+ * @property key the shard name as the backend sends it in `dianaAttributes` like "king_minos"
+ * @property name the shard name like "King Minos"
+ * @property attribute the attribute name in the Attribute Menu like "King of Greed"
+ * @property priority "must" or "should" or "can"
+ * @property rarity the rarity of the shard in lower case. It sets how many shards a level takes
+ * @property bazaar the bazaar id of the shard for the price. Null for shards that are not on the bazaar
+ */
+@Serializable
+internal data class GuideAttribute(
+    val key: String,
+    val name: String,
+    val attribute: String,
+    val effect: String,
+    val priority: String,
+    val rarity: String,
+    val bazaar: String? = null
+)
+
+/** A group of the attribute list of the guide like "Tracking". The note says what does not exist in the game. */
+@Serializable
+internal data class GuideAttributeGroup(val title: String, val note: String? = null, val list: List<GuideAttribute>)
+
 @Serializable
 internal data class DianaGuide(
     val credit: GuideCredit,
     val path: GuidePath,
     val slots: List<GuideSlot>,
     val magicFind: GuideMagicFind,
+    val attributes: List<GuideAttributeGroup> = emptyList(),
     val tracking: GuideTracking,
     val petRules: List<PetRuleGroup>,
     val technique: List<TechniqueSection>

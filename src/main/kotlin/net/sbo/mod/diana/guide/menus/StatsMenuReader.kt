@@ -1,4 +1,4 @@
-package net.sbo.mod.diana.guide
+package net.sbo.mod.diana.guide.menus
 
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.world.item.ItemStack

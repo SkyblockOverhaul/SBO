@@ -286,7 +286,7 @@ body {
 .dg-track-step.done b { color: var(--ok); }
 .dg-track-step.now { border-top-color: var(--accent); color: var(--text-strong); }
 /* ---- Pet Rules, Tracking ---- */
-.dg-grow { flex-grow: 1; min-width: 0; }
+.dg-grow { flex-grow: 1; flex-basis: 0; min-width: 0; }
 /* Same column widths in every rule so the arrows and pets line up from row to row */
 .dg-rule {
     display: grid;
@@ -338,6 +338,28 @@ body {
 .dg-filter.on { background-color: var(--accent-soft); border-color: var(--accent); color: var(--text-strong); }
 .dg-chip.sometimes { color: var(--muted); }
 
+/* ---- Attributes: one card per attribute, a click buys its shard ---- */
+.dg-attr-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 3px; }
+.dg-attr { padding: 3px 5px; border-radius: 3px; background-color: var(--card); border: 1px solid var(--border); min-width: 0; }
+.dg-attr.missing { border-color: var(--bad-border); }
+.dg-attr.max { border-color: var(--ok-border); }
+.dg-attr-head { display: flex; align-items: center; gap: 3px; min-width: 0; }
+.dg-attr-name { flex-grow: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: bold; }
+.dg-attr-effect { color: var(--muted); font-size: 7px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dg-attr-foot { display: flex; align-items: center; gap: 4px; font-size: 7px; }
+.dg-attr-foot .dg-hint { margin: 0; }
+.dg-attr-lvl { color: var(--text-strong); }
+.dg-attr.unknown .dg-attr-lvl { color: var(--muted); }
+.dg-attr-need { margin-left: auto; color: var(--text-soft); white-space: nowrap; }
+.dg-attr-need.done { color: var(--ok); }
+.dg-attr.part { border-color: var(--accent); }
+.dg-attr.buy:hover { background-color: var(--card-hover); }
+.dg-attr-buy { color: var(--title); white-space: nowrap; }
+.dg-attr-effect { margin-bottom: 1px; }
+.dg-chip.must { color: var(--text-strong); border-color: var(--accent); }
+.dg-chip.should { color: var(--text-soft); border-color: var(--border-hover); }
+.dg-chip.can { color: var(--muted); }
+
 /* ---- Technique: the written chapter ---- */
 .dg-credit { margin-bottom: 4px; padding: 2px 5px; border-radius: 3px; background-color: var(--panel-2); color: var(--muted); font-size: 7px; }
 .dg-credit-end { margin-top: 6px; }
@@ -353,4 +375,5 @@ body {
 @media (max-width: 380px) {
     .dg-loadout { flex-direction: column; }
     .dg-inv { align-self: center; }
+    .dg-attr-grid { grid-template-columns: minmax(0, 1fr); }
 }

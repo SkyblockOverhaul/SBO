@@ -1,4 +1,4 @@
-package net.sbo.mod.diana.guide
+package net.sbo.mod.diana.guide.tabs
 
 import net.minecraft.world.item.ItemStack
 import net.sbo.guilib.core.dom.component
@@ -9,6 +9,10 @@ import net.sbo.guilib.core.dsl.div
 import net.sbo.guilib.core.dsl.item
 import net.sbo.guilib.core.dsl.span
 import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.diana.guide.DianaGuide
+import net.sbo.mod.diana.guide.GuideData
+import net.sbo.mod.diana.guide.ScannedSlot
+import net.sbo.mod.diana.guide.SlotState
 import net.sbo.mod.utils.game.ItemPrices
 
 private val ROMAN = listOf("", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X")

@@ -53,7 +53,7 @@ internal data class PerValue(val subType: String, val statId: String, val option
 
 internal object ViewerLayout {
     val HIDDEN_CATEGORIES = setOf("bestiary")
-    val HIDDEN_STATS = setOf("frozenBlaze", "frozenWaterPungi", "safariTickets", "slayerLevel", "kuudraCompletions", "kuudraWave100")
+    val HIDDEN_STATS = setOf("frozenBlaze", "frozenWaterPungi", "safariTickets", "slayerLevel", "kuudraCompletions", "kuudraWave100", "dianaAttributes")
 
     val TOP: Map<String, List<String>> = mapOf(
         "fishing" to listOf("trophyFisher", "trophyFishCaught", "bloodshotBelt")

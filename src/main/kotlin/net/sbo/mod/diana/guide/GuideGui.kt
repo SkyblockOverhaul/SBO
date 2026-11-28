@@ -1,5 +1,8 @@
 package net.sbo.mod.diana.guide
 
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.intOrNull
 import net.sbo.guilib.core.dom.component
 import net.sbo.guilib.core.dsl.NodeBuilder
 import net.sbo.guilib.core.dsl.a
@@ -15,6 +18,14 @@ import net.sbo.guilib.core.dsl.tabs
 import net.sbo.guilib.fabric.GuiLib
 import net.sbo.mod.SBOKotlin
 import net.sbo.mod.SBOKotlin.mc
+import net.sbo.mod.diana.guide.attributes.AttributeMenuReader
+import net.sbo.mod.diana.guide.attributes.AttributeShopping
+import net.sbo.mod.diana.guide.attributes.attributesTab
+import net.sbo.mod.diana.guide.tabs.loadoutTab
+import net.sbo.mod.diana.guide.tabs.magicFindTab
+import net.sbo.mod.diana.guide.tabs.petRulesTab
+import net.sbo.mod.diana.guide.tabs.techniqueTab
+import net.sbo.mod.diana.guide.tabs.trackingTab
 import net.sbo.mod.guis.look.SboLook
 import net.sbo.mod.guis.look.useSboScale
 import net.sbo.mod.guis.look.useSboTheme
@@ -23,6 +34,7 @@ import net.sbo.mod.partyfinder.gui.StatView
 import net.sbo.mod.profileviewer.DisplayItemStacks
 import net.sbo.mod.profileviewer.PlayerItems
 import net.sbo.mod.profileviewer.ProfileViewerApi
+import net.sbo.mod.profileviewer.ViewedProfile
 import net.sbo.mod.utils.Player
 import net.sbo.mod.utils.events.Register
 
@@ -31,30 +43,37 @@ import net.sbo.mod.utils.events.Register
  * Pet rules, tracking and the written technique chapter have their own tabs.
  * The advice comes from [GuideData] and the items of the player from [GearScan].
  */
-object DianaGuideGui {
+object GuideGui {
     private val STYLES = listOf("sbo:ui/dianaguide/dianaguide.css", SboLook.STYLE)
 
     private val TABS = listOf(
         "loadout" to "Loadout",
         "mf" to "Magic Find",
+        "attributes" to "Attributes",
         "pets" to "Pet Rules",
         "tracking" to "Tracking",
         "technique" to "Technique",
     )
 
-    /** Opens the window. Must run on the client thread. */
-    fun open() {
+    /** The tab the next open starts on. */
+    private var startTab = "loadout"
+
+    /** Opens the window on [tab]. Must run on the client thread. */
+    fun open(tab: String = "loadout") {
+        startTab = tab
         GuiLib.open(App, STYLES, title = "SBO Diana Guide")
     }
 
     fun register() {
         Register.command("sboguide") { mc.schedule { open() } }
+        AttributeMenuReader.register()
     }
 
     private val App = component("DianaGuide") {
         val guide = GuideData.guide
-        var chapter by useState("loadout")
+        var chapter by useState(startTab)
         var profile by useState<PlayerItems?>(null)
+        var attributeLevels by useState<Map<String, Int>?>(null)
         var loading by useState(true)
         var error by useState<String?>(null)
         var loadedAt by useState<Long?>(null)
@@ -74,6 +93,8 @@ object DianaGuideGui {
                 loading = false
             }) { loaded ->
                 profile = loaded.items
+                attributeLevels = readAttributeLevels(loaded)
+                AttributeShopping.profileLevels = attributeLevels
                 loadedAt = System.currentTimeMillis()
                 loading = false
             }
@@ -112,10 +133,10 @@ object DianaGuideGui {
                         button(disabled = loading, onClick = { reload++ }) { +"Retry" }
                     }
                 }
-                if (loading && profile == null && error == null) banner("Loading your equipment and pets from your SBO profile...")
                 when (chapter) {
                     "loadout" -> loadoutTab(guide, scanned)
                     "mf" -> magicFindTab(guide, scanned, now.value)
+                    "attributes" -> attributesTab(guide, attributeLevels, now.value)
                     "pets" -> petRulesTab(guide, now.value)
                     "tracking" -> trackingTab(guide)
                     else -> techniqueTab(guide)
@@ -138,6 +159,12 @@ object DianaGuideGui {
 
     private fun NodeBuilder.banner(text: String) {
         div(className = "dg-banner") { span(className = "dg-banner-text") { +text } }
+    }
+
+    /** The `dianaAttributes` breakdown of the Diana stats. Null when the backend did not send it. */
+    private fun readAttributeLevels(loaded: ViewedProfile): Map<String, Int>? {
+        val levels = loaded.stats["diana"]?.get("")?.get("dianaAttributes") as? JsonObject ?: return null
+        return levels.mapNotNull { (key, value) -> (value as? JsonPrimitive)?.intOrNull?.let { key to it } }.toMap()
     }
 
     private fun readText(loading: Boolean, loadedAt: Long?, now: Long): String = when {

@@ -174,6 +174,88 @@
       { "name": "Aatrox Pathfinder", "group": "Only sometimes", "mf": "20", "value": 20, "sometimes": true }
     ]
   },
+  "attributes": [
+    {"title": "Raw Stats", "list": [
+      {"key": "obsidian_defender", "name": "Obsidian Defender", "attribute": "Speed", "effect": "Speed", "priority": "can", "rarity": "uncommon", "bazaar": "SHARD_OBSIDIAN_DEFENDER"},
+      {"key": "ghost", "name": "Ghost", "attribute": "Veil", "effect": "True Defense", "priority": "can", "rarity": "epic", "bazaar": "SHARD_GHOST"},
+      {"key": "inferno_demonlord", "name": "Inferno Demonlord", "attribute": "Attack Speed", "effect": "Attack Speed", "priority": "should", "rarity": "epic", "bazaar": "SHARD_BURNINGSOUL"},
+      {"key": "kraken", "name": "Kraken", "attribute": "Vitality", "effect": "Vitality", "priority": "can", "rarity": "legendary", "bazaar": "SHARD_KRAKEN"},
+      {"key": "hideonbox", "name": "Hideonbox", "attribute": "Tuning Box", "effect": "Tuning Points", "priority": "should", "rarity": "legendary", "bazaar": "SHARD_HIDEONBOX"},
+      {"key": "cuboa", "name": "Cuboa", "attribute": "Echo of Boxes", "effect": "Boosts Hideonbox", "priority": "should", "rarity": "uncommon", "bazaar": "SHARD_CUBOA"},
+      {"key": "shinyfish", "name": "Shinyfish", "attribute": "Help From Above", "effect": "Health Regeneration", "priority": "can", "rarity": "legendary", "bazaar": "SHARD_SHINYFISH"}
+    ] },
+    {"title": "Elementals", "list": [
+      {"key": "grove", "name": "Grove", "attribute": "Nature Elemental", "effect": "Health", "priority": "can", "rarity": "common", "bazaar": "SHARD_GROVE"},
+      {"key": "bramble", "name": "Bramble", "attribute": "Wood Elemental", "effect": "Health", "priority": "can", "rarity": "uncommon", "bazaar": "SHARD_BRAMBLE"},
+      {"key": "sylvan", "name": "Sylvan", "attribute": "Forest Elemental", "effect": "Health", "priority": "can", "rarity": "rare", "bazaar": "SHARD_SYLVAN"},
+      {"key": "terra", "name": "Terra", "attribute": "Earth Elemental", "effect": "Health", "priority": "can", "rarity": "epic", "bazaar": "SHARD_TERRA"},
+      {"key": "tenebris", "name": "Tenebris", "attribute": "Shadow Elemental", "effect": "Health", "priority": "can", "rarity": "legendary", "bazaar": "SHARD_TENEBRIS"},
+      {"key": "mist", "name": "Mist", "attribute": "Fog Elemental", "effect": "Intelligence", "priority": "should", "rarity": "common", "bazaar": "SHARD_MIST"},
+      {"key": "tide", "name": "Tide", "attribute": "Water Elemental", "effect": "Intelligence", "priority": "should", "rarity": "uncommon", "bazaar": "SHARD_TIDE"},
+      {"key": "cascade", "name": "Cascade", "attribute": "Torrent Elemental", "effect": "Intelligence", "priority": "should", "rarity": "rare", "bazaar": "SHARD_CASCADE"},
+      {"key": "cryo", "name": "Cryo", "attribute": "Frost Elemental", "effect": "Intelligence", "priority": "should", "rarity": "epic", "bazaar": "SHARD_CRYO"},
+      {"key": "blizzard", "name": "Blizzard", "attribute": "Snow Elemental", "effect": "Intelligence", "priority": "should", "rarity": "legendary", "bazaar": "SHARD_BLIZZARD"},
+      {"key": "flash", "name": "Flash", "attribute": "Light Elemental", "effect": "Strength", "priority": "should", "rarity": "common", "bazaar": "SHARD_FLASH"},
+      {"key": "quake", "name": "Quake", "attribute": "Stone Elemental", "effect": "Strength", "priority": "should", "rarity": "uncommon", "bazaar": "SHARD_QUAKE"},
+      {"key": "bolt", "name": "Bolt", "attribute": "Lightning Elemental", "effect": "Strength", "priority": "should", "rarity": "rare", "bazaar": "SHARD_BOLT"},
+      {"key": "aero", "name": "Aero", "attribute": "Wind Elemental", "effect": "Strength", "priority": "should", "rarity": "epic", "bazaar": "SHARD_AERO"},
+      {"key": "tempest", "name": "Tempest", "attribute": "Storm Elemental", "effect": "Strength", "priority": "should", "rarity": "legendary", "bazaar": "SHARD_TEMPEST"},
+      {"key": "starborn", "name": "Starborn", "attribute": "Echo of Elemental", "effect": "Boosts Elemental Attributes", "priority": "should", "rarity": "legendary", "bazaar": "SHARD_STARBORN"}
+    ] },
+    {"title": "% Stats", "list": [
+      {"key": "xyz", "name": "XYZ", "attribute": "Mana Regeneration", "effect": "Mana Regeneration", "priority": "should", "rarity": "epic", "bazaar": "SHARD_XYZ"},
+      {"key": "end_stone_protector", "name": "End Stone Protector", "attribute": "Unlimited Fortitude", "effect": "Defense", "priority": "can", "rarity": "legendary", "bazaar": "SHARD_ENDSTONE_PROTECTOR"},
+      {"key": "taurus", "name": "Taurus", "attribute": "Unlimited Torment", "effect": "Mana", "priority": "should", "rarity": "legendary", "bazaar": "SHARD_TAURUS"},
+      {"key": "jormung", "name": "Jormung", "attribute": "Unlimited Power", "effect": "Strength", "priority": "should", "rarity": "legendary", "bazaar": "SHARD_JORMUNG"},
+      {"key": "etherdrake", "name": "Etherdrake", "attribute": "Unlimited Energy", "effect": "Crit Damage", "priority": "should", "rarity": "legendary", "bazaar": "SHARD_ETHERDRAKE"},
+      {"key": "molthorn", "name": "Molthorn", "attribute": "Almighty Echo", "effect": "Boosts Jormung and Etherdrake", "priority": "should", "rarity": "legendary", "bazaar": "SHARD_MOLTHORN"}
+    ] },
+    {"title": "Tracking", "list": [
+      {"key": "sphinx", "name": "Sphinx", "attribute": "Mythological Tracker", "effect": "Tracking toward Burrows", "priority": "must", "rarity": "epic", "bazaar": "SHARD_SPHINX"},
+      {"key": "dodo", "name": "Dodo", "attribute": "Tracking", "effect": "Raw Tracking", "priority": "must", "rarity": "legendary", "bazaar": "SHARD_DODO"},
+      {"key": "doomspiral", "name": "Doomspiral", "attribute": "Echo of Tracking", "effect": "Boosts Tracking Attributes", "priority": "must", "rarity": "legendary", "bazaar": "SHARD_DOOMSPIRAL"}
+    ] },
+    {"title": "Mobtype Magic Find", "note": "Humanoid Magic Find does not exist.", "list": [
+      {"key": "minotaur", "name": "Minotaur", "attribute": "Mythological Fortune", "effect": "Mythological", "priority": "must", "rarity": "rare", "bazaar": "SHARD_MINOTAUR"},
+      {"key": "wild_hog", "name": "Wild Hog", "attribute": "Animal Fortune", "effect": "Animal", "priority": "should", "rarity": "rare", "bazaar": "SHARD_WILD_HOG"},
+      {"key": "wiki_tiki", "name": "Wiki Tiki", "attribute": "Construct Fortune", "effect": "Construct", "priority": "can", "rarity": "rare", "bazaar": "SHARD_WIKI_TIKI"},
+      {"key": "giant_water_bug", "name": "Giant Water Bug", "attribute": "Aquatic Fortune", "effect": "Aquatic", "priority": "can", "rarity": "rare", "bazaar": "SHARD_GIANT_WATER_BUG"},
+      {"key": "hideyho", "name": "Hideyho", "attribute": "Elusive Fortune", "effect": "Elusive", "priority": "must", "rarity": "rare", "bazaar": "SHARD_HIDEYHO"},
+      {"key": "cinderbat", "name": "Cinderbat", "attribute": "Magic Find", "effect": "All Mobtypes", "priority": "must", "rarity": "legendary", "bazaar": "SHARD_CINDER_BAT"}
+    ] },
+    {"title": "Mobtype Defense", "note": "Humanoid, Construct and Elusive Resistance do not exist.", "list": [
+      {"key": "cretan_bull", "name": "Cretan Bull", "attribute": "Mythological Resistance", "effect": "Mythological", "priority": "can", "rarity": "common", "bazaar": "SHARD_CRETAN_BULL"},
+      {"key": "howling_spirit", "name": "Howling Spirit", "attribute": "Animal Resistance", "effect": "Animal", "priority": "can", "rarity": "common", "bazaar": "SHARD_HOWLING_SPIRIT"},
+      {"key": "dumpster_diver", "name": "Dumpster Diver", "attribute": "Aquatic Resistance", "effect": "Aquatic", "priority": "can", "rarity": "common", "bazaar": "SHARD_DUMPSTER_DIVER"},
+      {"key": "alligator", "name": "Alligator", "attribute": "Echo of Resistance", "effect": "Boosts Resistance Attributes", "priority": "can", "rarity": "epic", "bazaar": "SHARD_ALLIGATOR"}
+    ] },
+    {"title": "Mobtype Damage", "note": "Aquatic Damage does not exist.", "list": [
+      {"key": "minos_hunter", "name": "Minos Hunter", "attribute": "Mythological Ruler", "effect": "Mythological", "priority": "should", "rarity": "uncommon", "bazaar": "SHARD_MINOS_HUNTER"},
+      {"key": "sprawl", "name": "Sprawl", "attribute": "Animal Ruler", "effect": "Animal", "priority": "can", "rarity": "uncommon", "bazaar": "SHARD_SPRAWL"},
+      {"key": "wetwing", "name": "Wetwing", "attribute": "Humanoid Ruler", "effect": "Humanoid", "priority": "can", "rarity": "uncommon", "bazaar": "SHARD_WETWING"},
+      {"key": "shrieky_tiki", "name": "Shrieky Tiki", "attribute": "Construct Ruler", "effect": "Construct", "priority": "can", "rarity": "uncommon", "bazaar": "SHARD_SHRIEKY_TIKI"},
+      {"key": "queen_ant", "name": "Queen Ant", "attribute": "Elusive Ruler", "effect": "Elusive", "priority": "should", "rarity": "uncommon", "bazaar": "SHARD_QUEEN_ANT"},
+      {"key": "caiman", "name": "Caiman", "attribute": "Echo of Ruler", "effect": "Boosts Ruler Attributes", "priority": "should", "rarity": "epic", "bazaar": "SHARD_CAIMAN"}
+    ] },
+    {"title": "Other Damage", "list": [
+      {"key": "soul_of_the_alpha", "name": "Soul of the Alpha", "attribute": "Combo", "effect": "Damage from Kill Combo", "priority": "can", "rarity": "uncommon", "bazaar": "SHARD_SOUL_OF_THE_ALPHA"},
+      {"key": "matcho", "name": "Matcho", "attribute": "Ignition", "effect": "Fire Aspect Duration", "priority": "can", "rarity": "rare", "bazaar": "SHARD_MATCHO"},
+      {"key": "barbarian_duke_x", "name": "Barbarian Duke X", "attribute": "Warrior", "effect": "+25% Damage with Melee Weapons", "priority": "should", "rarity": "epic", "bazaar": "SHARD_BARBARIAN_DUKE_X"},
+      {"key": "thorn", "name": "Thorn", "attribute": "Dominance", "effect": "+15% Damage at Full Health", "priority": "should", "rarity": "epic", "bazaar": "SHARD_THORN"},
+      {"key": "spike", "name": "Spike", "attribute": "Payback", "effect": "+20% Damage after Getting Hit", "priority": "should", "rarity": "legendary", "bazaar": "SHARD_SPIKE"}
+    ] },
+    {"title": "Various", "list": [
+      {"key": "rain_slime", "name": "Rain Slime", "attribute": "Mana Steal", "effect": "Mana on Hit", "priority": "should", "rarity": "uncommon", "bazaar": "SHARD_RAIN_SLIME"},
+      {"key": "sycophant", "name": "Sycophant", "attribute": "Life Recovery", "effect": "Health on Hit", "priority": "should", "rarity": "uncommon", "bazaar": "SHARD_SYCOPHANT"},
+      {"key": "wither_spectre", "name": "Wither Spectre", "attribute": "Breeze", "effect": "Less Mana Used out of Combat", "priority": "should", "rarity": "rare", "bazaar": "SHARD_WITHER_SPECTER"},
+      {"key": "murderwing", "name": "Murderwing", "attribute": "Sky High", "effect": "Feather Falling", "priority": "can", "rarity": "epic", "bazaar": "SHARD_MURDERWING"},
+      {"key": "shellwise", "name": "Shellwise", "attribute": "Shell", "effect": "Knockback Immunity", "priority": "must", "rarity": "epic", "bazaar": "SHARD_SHELLWISE"},
+      {"key": "king_minos", "name": "King Minos", "attribute": "King of Greed", "effect": "+10% Coins from Burrows", "priority": "must", "rarity": "epic", "bazaar": "SHARD_KING_MINOS"},
+      {"key": "hideonsack", "name": "Hideonsack", "attribute": "Sack Size", "effect": "Sack Space", "priority": "can", "rarity": "epic", "bazaar": "SHARD_HIDEONSACK"},
+      {"key": "rainbug", "name": "Rainbug", "attribute": "Miracle Chance", "effect": "Dye Chance", "priority": "can", "rarity": "legendary"},
+      {"key": "tiamat", "name": "Tiamat", "attribute": "Echo of Echoes", "effect": "Boosts all Echo Attributes", "priority": "must", "rarity": "legendary", "bazaar": "SHARD_TIAMAT"}
+    ] }
+  ],
   "tracking": {
     "sources": [
       { "name": "Brain Food", "value": "5" },
